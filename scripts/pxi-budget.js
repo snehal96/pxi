@@ -6,7 +6,7 @@
  *
  *   bun scripts/pxi-budget.js <px0-binary> <pxi-binary> <workspace> [px0-app.js] [pxi-app.js]
  *
- * Measured: server RSS, page JS heap after GC, DOM elements idle and after
+ * Measured: server RSS once idle (after its 15 s memory release), page JS heap after GC, DOM elements idle and after
  * opening pxi's views (Worktrees, Source Control) and returning to Explorer,
  * and the gzipped UI bundle. Budgets are in BUDGET below; see MAINTAINING.md.
  */
@@ -101,7 +101,11 @@ async function measure(bin, label) {
     await sleep(4000); // index built
     const idle = await pageMetrics(url, '');
     const views = await pageMetrics(url, VIEWS);
-    const rss = rssMB(server.pid);
+    // The server returns memory to the OS after 15 seconds without requests
+    // (server.go scavenge); compare settled memory, the lowest of 3 samples.
+    await sleep(17000);
+    let rss = Infinity;
+    for (let i = 0; i < 3; i++) { rss = Math.min(rss, rssMB(server.pid)); await sleep(500); }
     return { label, rss, heap: Math.max(idle.heapMB, views.heapMB), domIdle: idle.dom, domViews: views.dom };
   } finally {
     server.kill();
