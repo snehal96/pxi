@@ -1,0 +1,25 @@
+web/pxi/shell.css
+  s_7a413e23f08ed2::t_b0995d0bcb90ae 87,237,312-381
+web/src/pxi-scm.js
+  s_7a413e23f08ed2::t_919e36b56933ac 10,68-70,72-81,94,102
+web/src/pxi-scmhead.js
+  s_7a413e23f08ed2::t_037f2539af235c 1-230
+web/src/pxi-shell.js
+  s_7a413e23f08ed2::t_acdfb89735935d 15-16,256-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e530d2ebfa237fb1280a469287e90c02d23cd4f3",
+  "prompts": {},
+  "sessions": {
+    "s_7a413e23f08ed2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_7a413e23f08ed2",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
