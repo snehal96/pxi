@@ -1,0 +1,23 @@
+MAINTAINING.md
+  s_f84c085a1effb8::t_fc39f32e7e2eb0 11-12
+agent_test.go
+  s_f84c085a1effb8::t_8c41d7e3c83ae3 502,506-508
+scripts/pxi-budget.js
+  s_f84c085a1effb8::t_7a53154d5ed055 20-21,146,159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d815b56c0590acc3c20f0d20b84857e3925ab320",
+  "prompts": {},
+  "sessions": {
+    "s_f84c085a1effb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_f84c085a1effb8",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
