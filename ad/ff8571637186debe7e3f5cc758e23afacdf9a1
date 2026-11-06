@@ -1,0 +1,23 @@
+fork_claude.go
+  s_4ac1c31b5dc6a4::t_7a4284b9603743 1412-1414
+web/pxi/claude.js
+  s_4ac1c31b5dc6a4::t_72ef6c7efa28c4 449-452
+web/src/pxi-claude.js
+  s_4ac1c31b5dc6a4::t_01fd701b55f7b9 230-231,237,275-276,281
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "adff8571637186debe7e3f5cc758e23afacdf9a1",
+  "prompts": {},
+  "sessions": {
+    "s_4ac1c31b5dc6a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_4ac1c31b5dc6a4",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
