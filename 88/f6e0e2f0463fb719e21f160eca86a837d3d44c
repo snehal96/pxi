@@ -1,0 +1,24 @@
+fork_html.go
+  h_a00a27c9fca8dc 1-88
+fork_html_test.go
+  h_a00a27c9fca8dc 1-104
+server.go
+  h_a00a27c9fca8dc 235
+web/pxi/shell.css
+  h_a00a27c9fca8dc 427-434
+web/src/main.js
+  h_a00a27c9fca8dc 40-41,138
+web/src/pxi-html.js
+  h_a00a27c9fca8dc 1-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "88f6e0e2f0463fb719e21f160eca86a837d3d44c",
+  "prompts": {},
+  "humans": {
+    "h_a00a27c9fca8dc": {
+      "author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
