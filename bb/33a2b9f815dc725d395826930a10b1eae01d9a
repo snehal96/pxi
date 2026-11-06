@@ -1,0 +1,21 @@
+.github/workflows/sync-upstream.yml
+  s_861e7ce5b90835::t_4fb68b13a6be94 1-190
+FORK.md
+  s_861e7ce5b90835::t_44f8ea24d0a4f9 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bb33a2b9f815dc725d395826930a10b1eae01d9a",
+  "prompts": {},
+  "sessions": {
+    "s_861e7ce5b90835": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_861e7ce5b90835",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
