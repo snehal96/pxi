@@ -26,7 +26,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
                               backing: .buffered, defer: false)
         window.title = "pxi"
         window.titlebarAppearsTransparent = false
-        window.tabbingMode = .preferred
+        // Separate windows, like VS Code: each can live on its own desktop
+        // (Space), even in full screen. Only New Tab joins windows as tabs
+        // (AppDelegate.newWindow(tabbedWith:) allows it for that pair).
+        window.tabbingMode = .disallowed
         window.backgroundColor = .windowBackgroundColor
         window.minSize = NSSize(width: 640, height: 400)
         super.init(window: window)
@@ -53,7 +56,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
             self?.window?.title = t.isEmpty ? "pxi" : t
         }
         if !window.setFrameUsingName("pxi.main") { window.center() }
-        window.setFrameAutosaveName("pxi.main")
+        if app.windowCount == 0 { window.setFrameAutosaveName("pxi.main") }
     }
 
     required init?(coder: NSCoder) { fatalError("unused") }

@@ -44,6 +44,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let wc = BrowserWindowController(app: self, configuration: configuration)
         windows.append(wc)
         if let parent, let w = wc.window {
+            parent.tabbingMode = .preferred
+            w.tabbingMode = .preferred
             parent.addTabbedWindow(w, ordered: .above)
             w.makeKeyAndOrderFront(nil)
         } else {
@@ -54,6 +56,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if configuration == nil, let baseURL { wc.load(baseURL) }
         return wc
+    }
+
+    var windowCount: Int { windows.count }
+
+    // Right-click on the Dock icon: New Window, like VS Code.
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        let m = NSMenu()
+        let item = NSMenuItem(title: "New Window", action: #selector(newDocumentWindow(_:)), keyEquivalent: "")
+        item.target = self
+        m.addItem(item)
+        return m
     }
 
     func windowClosed(_ wc: BrowserWindowController) {
