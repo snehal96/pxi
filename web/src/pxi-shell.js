@@ -16,6 +16,7 @@ import { initScm, setScmVisible, scmRevealBranches } from './pxi-scm.js';
 import { SCMH_BRANCH_ICON } from './pxi-scmhead.js';
 import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
 import { initPxiPalette } from './pxi-palette.js';
+import { setTipsPermanentlyHidden } from './tips.js';
 
 const VIEW_KEY = 'pxi.sideView';
 
@@ -218,6 +219,9 @@ export function initShell() {
   if (!app || !side || abBar) return;
   document.body.classList.add('pxi-shell');
   pxiCompactDiffControls();
+  // Closing the tip popup (X) means "stop popping up", remembered in settings.json
+  // for every window and workspace. Tips stay in the right bar's Tips view.
+  $('#tip-widget-close')?.addEventListener('click', () => setTipsPermanentlyHidden(true));
 
   abBar = document.createElement('nav');
   abBar.id = 'activitybar';
