@@ -199,9 +199,15 @@ def plain_file(path: str, s: str) -> str:
     return brand(s)
 
 
+# Files that must name px0 on purpose (reading px0's old settings folder).
+SKIP = {"fork_brand.go", "fork_brand_test.go"}
+
+
 def targets():
     files = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
     for f in files:
+        if f in SKIP:
+            continue
         if f.endswith("_test.go"):
             yield f, test_file
             continue
@@ -213,7 +219,7 @@ def targets():
             yield f, js_file
         elif f in ("web/index.html", "web/workbench.html"):
             yield f, html_file
-        elif f in ("Makefile", "scripts/replace-local.sh", ".gitignore"):
+        elif f in ("Makefile", "scripts/replace-local.sh"):
             yield f, plain_file
 
 

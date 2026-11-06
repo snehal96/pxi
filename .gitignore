@@ -1,6 +1,6 @@
 dist/
 bench-repos/
-pxi
+px0
 px0.exe
 *.test
 *.prof
@@ -26,4 +26,7 @@ web/vendor/*.min.js.gz
 
 # Logs
 *.log
+px0
+
+# pxi build outputs
 pxi
