@@ -21,7 +21,7 @@ need go     "brew install go"
 need bun    "brew install oven-sh/bun/bun"
 need swiftc "xcode-select --install"
 need git    "xcode-select --install"
-[ "$missing" = 0 ] || { echo "Install the above, then run macos/build.sh again."; exit 1; }
+[ "$missing" = 0 ] || { echo "Install the above (or run macos/install.sh, which does it for you), then run macos/build.sh again."; exit 1; }
 
 echo "==> web assets"
 bun "$ROOT/scripts/build-web.js" >/dev/null

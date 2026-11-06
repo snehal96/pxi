@@ -27,17 +27,15 @@ reading, reviewing and pushing agent-written changes in one place.
 
 ## Install (Mac app)
 
-Needs Go, Bun and the Xcode command line tools (the build script says which is missing):
+One command installs everything it needs (Xcode command line tools, Homebrew,
+Go, Bun), builds pxi.app into `/Applications` and opens it:
 
 ```bash
-xcode-select --install                 # skip if already installed
-brew install go oven-sh/bun/bun
-git clone git@github.com:snehal96/pxi.git ~/pxi && cd ~/pxi
-macos/build.sh --install               # about 2 minutes; builds pxi.app into /Applications
-open -a pxi ~/code/your-repo
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/snehal96/pxi/master/macos/install.sh)"
 ```
 
-To update: `cd ~/pxi && git pull && macos/build.sh --install`, then **pxi → Restart pxi**.
+Run the same command again to update, then **pxi → Restart pxi**. The source lives
+in `~/pxi`; from a clone, `macos/install.sh` does the same.
 
 Open folders from **File → Open Folder…** (`Cmd+O`), by dropping a folder on the
 Dock icon, or with `open -a pxi ~/code/project`. See [macos/README.md](macos/README.md).
