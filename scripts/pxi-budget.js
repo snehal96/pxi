@@ -129,9 +129,11 @@ async function measure(bin, label) {
     await sleep(4000); // index built
     const idle = await pageMetrics(url, '');
     const views = await pageMetrics(url, VIEWS);
-    // The server returns memory to the OS after 15 seconds without requests
-    // (server.go scavenge); compare settled memory, the lowest of 3 samples.
-    await sleep(17000);
+    // The server returns memory to the OS once it has been idle 15 seconds,
+    // checking every 10 (server.go scavenge), so the release lands 15-25 s
+    // after the last request. Wait past it: compare settled memory, not
+    // garbage that is about to be released.
+    await sleep(26000);
     let rss = Infinity;
     for (let i = 0; i < 3; i++) { rss = Math.min(rss, rssMB(server.pid)); await sleep(500); }
     return { label, rss, heap: Math.max(idle.heapMB, views.heapMB), domIdle: idle.dom, domViews: views.dom };
