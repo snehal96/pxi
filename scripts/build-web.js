@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * scripts/build-web.js
  *
@@ -12,6 +12,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import zlib from 'node:zlib';
+
+// pxi: builds run on Bun, which has no --check flag; parse with its transpiler.
+function checkSyntax(file) {
+  if (typeof Bun !== 'undefined') {
+    new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(file, 'utf8'));
+    return;
+  }
+  execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,7 +56,7 @@ function buildWithBun(entryFile, outFile) {
     stdio: 'inherit'
   });
   try {
-    execFileSync(process.execPath, ['--check', outFile], { stdio: 'pipe' });
+    checkSyntax(outFile);
   } catch (err) {
     console.error(`[build-web] Syntax error in generated bundle ${path.basename(outFile)}:`, err.stderr?.toString() || err.message);
     process.exit(1);
@@ -128,7 +137,7 @@ function buildWithNode(entryFile, outFile) {
   fs.writeFileSync(outFile, combined, 'utf8');
 
   try {
-    execFileSync(process.execPath, ['--check', outFile], { stdio: 'pipe' });
+    checkSyntax(outFile);
   } catch (err) {
     console.error(`[build-web] Syntax error in generated bundle ${path.basename(outFile)}:`, err.stderr?.toString() || err.message);
     process.exit(1);

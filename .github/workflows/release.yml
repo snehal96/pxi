@@ -31,14 +31,14 @@ jobs:
           go-version: '1.24'
           cache: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
+          bun-version: 1.3.14
 
       - name: Bundle Web Assets
         run: |
-          node ./scripts/build-web.js
+          bun ./scripts/build-web.js
 
       - name: Determine Version
         id: get_version

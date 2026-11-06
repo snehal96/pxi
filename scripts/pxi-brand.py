@@ -178,7 +178,42 @@ THEME_RULES = {
 }
 
 
+# pxi builds the web assets with Bun (scripts, Make, CI, Docker).
+BUN_RULES = {
+    "scripts/build-web.js": [
+        ("#!/usr/bin/env node\n", "#!/usr/bin/env bun\n"),
+        ("import zlib from 'node:zlib';\n", "import zlib from 'node:zlib';\n\n" + "// pxi: builds run on Bun, which has no --check flag; parse with its transpiler.\nfunction checkSyntax(file) {\n  if (typeof Bun !== 'undefined') {\n    new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(file, 'utf8'));\n    return;\n  }\n  execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });\n}\n"),
+        ("execFileSync(process.execPath, ['--check', outFile], { stdio: 'pipe' });", "checkSyntax(outFile);"),
+    ],
+    "scripts/check-web.js": [
+        ("#!/usr/bin/env node\n", "#!/usr/bin/env bun\n"),
+        ("import { execFileSync } from 'node:child_process';\n", "import { execFileSync } from 'node:child_process';\n\n" + "// pxi: checks run on Bun, which has no --check flag; parse with its transpiler.\nfunction checkSyntax(file) {\n  if (typeof Bun !== 'undefined') {\n    new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(file, 'utf8'));\n    return;\n  }\n  execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });\n}\n"),
+        ("execFileSync('node', ['--check', filePath], { stdio: 'pipe' });", "checkSyntax(filePath);"),
+        ("execFileSync('node', ['--check', bundlePath], { stdio: 'pipe' });", "checkSyntax(bundlePath);"),
+    ],
+    "package.json": [
+        ('"build": "node ./scripts/build-web.js"', '"build": "bun ./scripts/build-web.js"'),
+        ('"build-web": "node ./scripts/build-web.js"', '"build-web": "bun ./scripts/build-web.js"'),
+        ('"check": "node ./scripts/check-web.js"', '"check": "bun ./scripts/check-web.js"'),
+    ],
+    "Makefile": [
+        ("@node ./scripts/build-web.js", "@bun ./scripts/build-web.js"),
+        ("@node ./scripts/check-web.js", "@bun ./scripts/check-web.js"),
+    ],
+    "scripts/test-bench.sh": [("  node scripts/build-web.js", "  bun scripts/build-web.js")],
+    "Dockerfile": [
+        ("FROM node:20-alpine AS web-builder", "FROM oven/bun:1.3.14-alpine AS web-builder"),
+        ("RUN node ./scripts/build-web.js", "RUN bun ./scripts/build-web.js"),
+    ],
+    ".github/workflows/ci.yml": [("      - name: Setup Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: '20'\n", '      - name: Setup Bun\n        uses: oven-sh/setup-bun@v2\n        with:\n          bun-version: 1.3.14\n'), ("run: node ./scripts/build-web.js", "run: bun ./scripts/build-web.js")],
+    ".github/workflows/release.yml": [("      - name: Setup Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: '20'\n", '      - name: Setup Bun\n        uses: oven-sh/setup-bun@v2\n        with:\n          bun-version: 1.3.14\n'), ("          node ./scripts/build-web.js", "          bun ./scripts/build-web.js")],
+}
+
+
 def themes(path: str, s: str) -> str:
+    for a, b in BUN_RULES.get(path, []):
+        if b not in s:
+            s = s.replace(a, b)
     for a, b in THEME_RULES.get(path, []):
         if b not in s:
             s = s.replace(a, b)
@@ -227,7 +262,11 @@ def html_file(path: str, s: str) -> str:
 
 
 def plain_file(path: str, s: str) -> str:
-    return brand(s)
+    return brand(themes(path, s))
+
+
+def rules_file(path: str, s: str) -> str:
+    return themes(path, s)
 
 
 # Files that must name px0 on purpose (reading px0's old settings folder).
@@ -252,6 +291,8 @@ def targets():
             yield f, html_file
         elif f in ("Makefile", "scripts/replace-local.sh"):
             yield f, plain_file
+        elif f in BUN_RULES:
+            yield f, rules_file
 
 
 def main():

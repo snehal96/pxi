@@ -10,7 +10,7 @@ macos/build.sh             # builds macos/dist/pxi.app (Apple silicon + Intel)
 macos/build.sh --install   # and copies it to /Applications
 ```
 
-Needs Go, Node and the Xcode command line tools. The app is ad-hoc signed for
+Needs Go, Bun and the Xcode command line tools. The app is ad-hoc signed for
 local use; on another Mac, right-click it and choose **Open** the first time.
 
 ## How it works

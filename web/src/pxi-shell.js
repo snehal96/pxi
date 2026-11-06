@@ -4,12 +4,13 @@
 // in the inspector. It drives px0's own sidebar modes (tree.js) rather than
 // replacing them, so upstream changes to those keep working. Styles live in
 // web/pxi/shell.css.
-import { $, S, MOD } from './state.js';
+import { $, S, MOD, doc_ } from './state.js';
 import { layout, render } from './renderer.js';
 import { setSidebarMode, hasGitView } from './tree.js';
 import { showRightInspector } from './inspector.js';
 import { openSettings } from './settings.js';
 import { on } from './bus.js';
+import { setDiffMode, layoutPref } from './diff.js';
 import { initWorktrees, setWorktreesVisible } from './pxi-worktrees.js';
 
 const VIEW_KEY = 'pxi.sideView';
@@ -107,12 +108,47 @@ function setBadge(id, text, warn = false) {
   el.classList.toggle('warn', warn);
 }
 
+// Editor toolbar: one icon toggles source/diff (px0's #diff-btn, ⌘D), and a
+// second one, shown only in a diff, flips side by side / inline.
+const PXI_LAYOUT_ICON = {
+  split: '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M8 2.5v11"/></svg>',
+  unified: '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M1.5 8h13"/></svg>',
+};
+
+function pxiCompactDiffControls() {
+  const dsw = $('#diff-switch');
+  const diffBtn = $('#diff-btn');
+  if (!dsw || !diffBtn) return;
+  const btn = document.createElement('button');
+  btn.id = 'pxi-diff-layout';
+  btn.type = 'button';
+  dsw.append(btn);
+  const sync = () => {
+    const d = doc_();
+    btn.hidden = !d?.diffMode;
+    const unified = (d?.diffMode || layoutPref()) === 'unified';
+    btn.innerHTML = unified ? PXI_LAYOUT_ICON.unified : PXI_LAYOUT_ICON.split;
+    btn.title = unified ? 'Inline view (click for side by side)' : 'Side by side (click for inline)';
+    btn.setAttribute('aria-label', btn.title);
+  };
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const d = doc_();
+    if (!d?.diffMode) return;
+    setDiffMode(d.diffMode === 'unified' ? 'split' : 'unified');
+    sync();
+  });
+  new MutationObserver(sync).observe(diffBtn, { attributes: true, attributeFilter: ['class', 'title'] });
+  sync();
+}
+
 /** Call once the workspace metadata (S.meta) has loaded. */
 export function initShell() {
   const app = $('#app');
   const side = $('#side');
   if (!app || !side || abBar) return;
   document.body.classList.add('pxi-shell');
+  pxiCompactDiffControls();
 
   abBar = document.createElement('nav');
   abBar.id = 'activitybar';

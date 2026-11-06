@@ -47,7 +47,7 @@ help:
 
 web:
 	@echo "Bundling web assets..."
-	@node ./scripts/build-web.js
+	@bun ./scripts/build-web.js
 
 build-web: web
 
@@ -66,7 +66,7 @@ test: web
 	go test -v ./...
 
 web-check:
-	@node ./scripts/check-web.js
+	@bun ./scripts/check-web.js
 
 test-short:
 	go test -short ./...

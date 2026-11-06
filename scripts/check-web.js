@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * scripts/check-web.js
  * Fast validator for web/src/*.js syntax, relative import integrity, and frontend tests.
@@ -7,6 +7,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+
+// pxi: checks run on Bun, which has no --check flag; parse with its transpiler.
+function checkSyntax(file) {
+  if (typeof Bun !== 'undefined') {
+    new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(file, 'utf8'));
+    return;
+  }
+  execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +29,7 @@ let hasError = false;
 for (const file of files) {
   const filePath = path.join(srcDir, file);
   try {
-    execFileSync('node', ['--check', filePath], { stdio: 'pipe' });
+    checkSyntax(filePath);
   } catch (err) {
     console.error(`[check-web] Syntax error in ${file}:`, err.stderr?.toString() || err.message);
     hasError = true;
@@ -52,7 +61,7 @@ for (const bundle of ['web/app.js', 'web/workbench.js']) {
   const bundlePath = path.join(rootDir, bundle);
   if (fs.existsSync(bundlePath)) {
     try {
-      execFileSync('node', ['--check', bundlePath], { stdio: 'pipe' });
+      checkSyntax(bundlePath);
     } catch (err) {
       console.error(`[check-web] Syntax error in ${bundle}:`, err.stderr?.toString() || err.message);
       hasError = true;

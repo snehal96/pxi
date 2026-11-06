@@ -15,7 +15,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 echo "==> web assets"
-node "$ROOT/scripts/build-web.js" >/dev/null
+bun "$ROOT/scripts/build-web.js" >/dev/null
 
 echo "==> pxi server (universal)"
 for arch in arm64 amd64; do

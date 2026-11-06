@@ -147,6 +147,25 @@ body.pxi-shell .tab .x svg { width: 10px; height: 10px; }
 body.pxi-shell .main-top-bar { height: 30px; background: var(--bg); border-bottom: 1px solid var(--line); }
 body.pxi-shell .view-switch button { font-size: 12px; line-height: 20px; }
 
+/* Source/Diff as VS Code-style icon actions: #diff-btn toggles (⌘D), and
+   #pxi-diff-layout flips side by side / inline. */
+body.pxi-shell #diff-switch { background: none; border: 0; padding: 0; gap: 2px; display: flex; align-items: center; }
+body.pxi-shell #diff-switch[hidden] { display: none; }
+body.pxi-shell #diff-source, body.pxi-shell #diff-btn .diff-btn-label, body.pxi-shell #diff-btn .diff-caret,
+body.pxi-shell #diff-menu { display: none !important; }
+body.pxi-shell .diff-seg { display: contents; }
+body.pxi-shell #diff-btn, body.pxi-shell #pxi-diff-layout, body.pxi-shell #btn-edit-mode {
+  width: 26px; height: 22px; padding: 0; display: grid; place-items: center; border-radius: 4px;
+  color: var(--dim); background: none;
+}
+body.pxi-shell #pxi-diff-layout[hidden] { display: none; }
+body.pxi-shell #diff-btn svg.diff-btn-icon { width: 15px; height: 15px; }
+body.pxi-shell #diff-btn:hover:not(:disabled), body.pxi-shell #pxi-diff-layout:hover, body.pxi-shell #btn-edit-mode:hover { background: var(--bg3); color: var(--fg); }
+body.pxi-shell #diff-btn.on { background: var(--bg4); color: var(--fg); }
+body.pxi-shell #diff-btn:disabled { opacity: .35; }
+body.pxi-shell #btn-edit-mode span { display: none; }
+body.pxi-shell #btn-edit-mode svg { width: 14px; height: 14px; }
+
 /* ---------- inspector (right) as VS Code panel tabs ---------- */
 body.pxi-shell #right-side { background: var(--bg2); }
 body.pxi-shell .inspector-head { height: 35px; }

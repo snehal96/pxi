@@ -17,7 +17,11 @@ features every week. These rules keep that cheap.
    a pull request. A conflicting merge opens an issue listing the files.
 4. **Prefer upstream's fix.** When upstream fixes something pxi patches, drop pxi's
    version in the sync pull request.
-5. **README.md is pxi's own**: `.gitattributes` keeps it on merges (`merge=ours`).
+5. **Bun builds the web assets** (`bun scripts/build-web.js`, `bun test web/src/`).
+   Bun's bundler keeps modules apart, but upstream's Node fallback shares one scope:
+   keep top-level names in pxi's modules unique (prefix them) and put no comment after
+   an `import` line, so the fallback still works if someone builds without Bun.
+6. **README.md is pxi's own**: `.gitattributes` keeps it on merges (`merge=ours`).
    Locally, enable that once: `git config merge.ours.driver true`.
 
 ## Security fixes pxi carries (`fork_security.go`)

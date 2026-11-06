@@ -1,9 +1,9 @@
 # Stage 1: Bundle frontend assets
-FROM node:20-alpine AS web-builder
+FROM oven/bun:1.3.14-alpine AS web-builder
 WORKDIR /build
 COPY scripts/ ./scripts/
 COPY web/ ./web/
-RUN node ./scripts/build-web.js
+RUN bun ./scripts/build-web.js
 
 # Stage 2: Build static Go binary
 FROM golang:1.25-alpine AS go-builder

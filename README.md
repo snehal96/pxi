@@ -24,7 +24,7 @@ reading, reviewing and pushing agent-written changes in one place.
 
 ## Install (Mac app)
 
-Needs Go, Node and the Xcode command line tools.
+Needs Go, Bun and the Xcode command line tools.
 
 ```bash
 git clone git@github.com:snehal96/pxi.git && cd pxi
