@@ -1,0 +1,18 @@
+.github/workflows/diag-memory.yml
+  h_a00a27c9fca8dc 1-31
+scripts/pxi-budget.js
+  h_a00a27c9fca8dc 125,131-132
+zz_diag_pprof.go
+  h_a00a27c9fca8dc 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed6c743aae669e96f57827d79f7fc1853dcbb125",
+  "prompts": {},
+  "humans": {
+    "h_a00a27c9fca8dc": {
+      "author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
