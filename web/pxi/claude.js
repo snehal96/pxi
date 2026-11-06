@@ -29,6 +29,7 @@
     x: '<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 2l6 6M8 2l-6 6"/></svg>',
     chev: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4l4 4-4 4"/></svg>',
     term: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6l2 2-2 2M8.5 10.5h3"/></svg>',
+    chrome: '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.2"/><path d="M1.8 8h12.4M8 1.8c2 2.2 2 10.2 0 12.4M8 1.8c-2 2.2-2 10.2 0 12.4"/></svg>',
     side: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M6 2.5v11"/></svg>',
   };
   const TOOL_VERB = { Read: 'Read', Edit: 'Edit', MultiEdit: 'Edit', Write: 'Write', Bash: 'Run', Grep: 'Search', Glob: 'Find files', WebFetch: 'Fetch', WebSearch: 'Web search', Task: 'Agent', Agent: 'Agent', TodoWrite: 'To-dos', NotebookEdit: 'Edit notebook' };
@@ -96,6 +97,7 @@
       '    <textarea rows="1" placeholder="Ask Claude…  (@ to mention a file, Enter to send, Shift+Enter for a new line)"></textarea>' +
       '    <div class="cl-mention" hidden></div>' +
       '    <div class="cl-bar"><select data-act="mode" title="Permission mode"></select><select data-act="model" title="Model"></select>' +
+      '      <button class="cl-toggle" data-act="chrome" title="Claude in Chrome: let Claude use your Chrome (open pages, click, read, screenshot). Needs the Claude in Chrome extension.">' + I.chrome + '<span>Chrome</span></button>' +
       '      <span class="grow"></span><span class="cl-hint"></span>' +
       '      <button class="cl-send" data-act="send" title="Send (Enter)">' + I.send + '</button>' +
       '      <button class="cl-send cl-interrupt" data-act="interrupt" title="Stop Claude (Esc)" hidden>' + I.stop + '</button></div>' +
@@ -106,12 +108,13 @@
       wrap: q('.cl-wrap'), places: q('.cl-places'), account: q('[data-act="account"]'), log: q('.cl-log'),
       title: q('.cl-htitle'), where: q('.cl-where'), state: q('.cl-state'), stop: q('[data-act="stop"]'),
       input: q('textarea'), ctx: q('.cl-ctx'), mention: q('.cl-mention'), mode: q('[data-act="mode"]'),
-      model: q('[data-act="model"]'), send: q('[data-act="send"]'), interrupt: q('[data-act="interrupt"]'), hint: q('.cl-hint'),
+      model: q('[data-act="model"]'), chrome: q('[data-act="chrome"]'), send: q('[data-act="send"]'), interrupt: q('[data-act="interrupt"]'), hint: q('.cl-hint'),
     };
     els.mode.innerHTML = MODES.map(([v, l]) => '<option value="' + v + '">' + l + '</option>').join('');
     els.model.innerHTML = MODELS.map(([v, l]) => '<option value="' + v + '">' + l + '</option>').join('');
     els.mode.value = pref('mode', 'default');
     els.model.value = pref('model', '');
+    els.chrome.classList.toggle('on', pref('chrome', '0') === '1');
     root.addEventListener('click', onClick);
     root.addEventListener('change', onChange);
     els.input.addEventListener('keydown', onKey);
@@ -332,8 +335,16 @@
     return { html: '<div class="cl-diff">' + rows + '</div>', a, d };
   }
 
+  // mcp__claude-in-chrome__navigate -> "Chrome · navigate"
+  function toolVerb(name) {
+    const m = /^mcp__(.+?)__(.+)$/.exec(name || '');
+    if (!m) return TOOL_VERB[name] || name;
+    const server = m[1] === 'claude-in-chrome' ? 'Chrome' : m[1];
+    return server + ' · ' + m[2].replace(/_/g, ' ');
+  }
+
   function addTool(ev) {
-    const verb = TOOL_VERB[ev.name] || ev.name;
+    const verb = toolVerb(ev.name);
     const isFile = ['Read', 'Edit', 'MultiEdit', 'Write', 'NotebookEdit'].includes(ev.name);
     const label = isFile ? shortPath(ev.label) : ev.label;
     let detail = '';
@@ -396,7 +407,7 @@
         break;
       }
       default:
-        title = esc(TOOL_VERB[ev.tool] || ev.tool) + (ev.label ? ' <span class="cl-faint">' + esc(ev.label) + '</span>' : '');
+        title = esc(toolVerb(ev.tool)) + (ev.label ? ' <span class="cl-faint">' + esc(ev.label) + '</span>' : '');
         body = ev.input ? '<pre class="cl-out">' + esc(JSON.stringify(ev.input, null, 2)) + '</pre>' : '';
     }
     const plan = ev.tool === 'ExitPlanMode', question = ev.tool === 'AskUserQuestion';
@@ -404,7 +415,8 @@
       '<div class="cl-ask-head">' + title + '</div><div class="cl-ask-body">' + body + '</div>' +
       '<div class="cl-ask-bar">' +
       (question ? '<button class="cl-btn cl-primary" data-ans="answer">Answer</button>' :
-        '<button class="cl-btn cl-primary" data-ans="allow" title="⌘Enter">' + (plan ? 'Approve plan' : ev.tool === 'Bash' ? 'Run' : 'Accept') + '</button>' + extra) +
+        '<button class="cl-btn cl-primary" data-ans="allow" title="⌘Enter">' + (plan ? 'Approve plan' : ev.tool === 'Bash' ? 'Run' : 'Accept') + '</button>' + extra +
+        (ev.always && !extra ? '<button class="cl-btn" data-ans="always" title="Accept, and don\'t ask again for this kind of action (Claude Code saves the rule)">Always allow</button>' : '')) +
       '<button class="cl-btn cl-ghost" data-ans="deny">' + (plan ? 'Keep planning' : question ? 'Skip' : 'Reject') + '</button>' +
       '<input class="cl-reason" placeholder="' + (plan ? 'What to change in the plan…' : 'Tell Claude what to do instead (optional)') + '">' +
       '</div></div>');
@@ -432,6 +444,7 @@
     const req = card.dataset.req;
     const body = { session: cur.session, req, allow: how !== 'deny', message: card.querySelector('.cl-reason')?.value || '' };
     if (how === 'all') { body.mode = 'acceptEdits'; }
+    if (how === 'always') { body.always = true; }
     if (how === 'answer') {
       const answers = {};
       for (const q of card.querySelectorAll('.cl-q')) {
@@ -448,7 +461,7 @@
       await ctx.apiPostJson('/api/pxi/claude/answer', body);
       const plan = card.dataset.tool === 'ExitPlanMode';
       if (plan && body.allow) setMode('default'); // Claude leaves plan mode once the plan is approved
-      markAnswered(card, body.allow, how === 'all' ? 'Accepted · edits now automatic' : how === 'answer' ? 'Answered' :
+      markAnswered(card, body.allow, how === 'all' ? 'Accepted · edits now automatic' : how === 'always' ? 'Accepted · won\'t ask again' : how === 'answer' ? 'Answered' :
         plan ? (body.allow ? 'Plan approved' : 'Sent back with your notes') : null);
     } catch (e) {
       card.querySelectorAll('button').forEach(b => { b.disabled = false; });
@@ -488,7 +501,7 @@
     const text = els.input.value.trim();
     if (!text || !cur) return;
     const c = contextBlock();
-    const body = { account, where: cur.where, session: cur.session, text: c.text + text, ctx: c.label, model: els.model.value, mode: els.mode.value };
+    const body = { account, where: cur.where, session: cur.session, text: c.text + text, ctx: c.label, model: els.model.value, mode: els.mode.value, chrome: els.chrome.classList.contains('on') };
     els.input.value = '';
     autosize();
     els.send.disabled = true;
@@ -605,6 +618,7 @@
       case 'stop': control('stop'); break;
       case 'detach': attach = false; drawCtx(); break;
       case 'attach': attach = true; drawCtx(); break;
+      case 'chrome': els.chrome.classList.toggle('on'); setPref('chrome', els.chrome.classList.contains('on') ? '1' : '0'); break;
       case 'side': els.wrap.classList.toggle('cl-noside'); setPref('side', els.wrap.classList.contains('cl-noside') ? '0' : '1'); break;
     }
   }

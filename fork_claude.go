@@ -529,6 +529,8 @@ type pxiClaudeRun struct {
 	stderr  bytes.Buffer
 	reqSeq  int
 	ide     *pxiIDEClient // a terminal claude connected through the IDE bridge
+	chrome  bool          // started with --chrome (Claude in Chrome tools)
+	done    chan struct{} // closed when the process has exited
 }
 
 type pxiClaudeMgr struct {
@@ -611,7 +613,7 @@ var pxiClaudeModes = map[string]bool{"default": true, "acceptEdits": true, "plan
 var pxiClaudeModelRe = regexp.MustCompile(`^[a-zA-Z0-9._\-\[\]]{0,64}$`)
 
 // start launches the process for a session (new or resumed). Caller holds m.mu.
-func (m *pxiClaudeMgr) startLocked(acc pxiClaudeAccount, cwd, where, session string, resume bool, model, mode string) (*pxiClaudeRun, error) {
+func (m *pxiClaudeMgr) startLocked(acc pxiClaudeAccount, cwd, where, session string, resume bool, model, mode string, chrome bool) (*pxiClaudeRun, error) {
 	busy := 0
 	for _, r := range m.runs {
 		if r.cmd != nil {
@@ -638,6 +640,9 @@ func (m *pxiClaudeMgr) startLocked(acc pxiClaudeAccount, cwd, where, session str
 	if mode != "" && mode != "default" {
 		args = append(args, "--permission-mode", mode)
 	}
+	if chrome {
+		args = append(args, "--chrome")
+	}
 	cmd := exec.Command(bin, args...)
 	cmd.Dir = cwd
 	cmd.Env = pxiClaudeEnv(acc)
@@ -650,7 +655,7 @@ func (m *pxiClaudeMgr) startLocked(acc pxiClaudeAccount, cwd, where, session str
 	if err != nil {
 		return nil, err
 	}
-	run := &pxiClaudeRun{Session: session, Account: acc.ID, Where: where, Mode: mode, Model: model, cwd: cwd, cmd: cmd, stdin: stdin, asks: map[string]pxiClaudeEv{}, histEnd: -1}
+	run := &pxiClaudeRun{Session: session, Account: acc.ID, Where: where, Mode: mode, Model: model, cwd: cwd, cmd: cmd, stdin: stdin, asks: map[string]pxiClaudeEv{}, histEnd: -1, chrome: chrome, done: make(chan struct{})}
 	if fi, err := os.Stat(filepath.Join(pxiClaudeProjectDir(acc, cwd), session+".jsonl")); err == nil {
 		run.histEnd = fi.Size()
 	} else {
@@ -728,6 +733,7 @@ func (m *pxiClaudeMgr) read(run *pxiClaudeRun, stdout io.Reader) {
 		}
 	}
 	waitErr := run.cmd.Wait()
+	defer close(run.done)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	code := run.cmd.ProcessState.ExitCode()
@@ -867,6 +873,7 @@ func (m *pxiClaudeMgr) controlRequestLocked(run *pxiClaudeRun, id string, raw js
 		Input       json.RawMessage `json:"input"`
 		Description string          `json:"description"`
 		ToolUseID   string          `json:"tool_use_id"`
+		Suggestions json.RawMessage `json:"permission_suggestions"`
 	}
 	json.Unmarshal(raw, &req)
 	if req.Subtype != "can_use_tool" {
@@ -882,7 +889,12 @@ func (m *pxiClaudeMgr) controlRequestLocked(run *pxiClaudeRun, id string, raw js
 	case "ExitPlanMode", "AskUserQuestion":
 		ev["input"] = input // the plan text and questions are the point
 	}
-	run.asks[id] = pxiClaudeEv{"ev": ev, "input": input}
+	var sugg []any
+	json.Unmarshal(req.Suggestions, &sugg)
+	if len(sugg) > 0 && req.ToolName != "ExitPlanMode" && req.ToolName != "AskUserQuestion" {
+		ev["always"] = true // Claude Code offers a rule ("don't ask again for ...")
+	}
+	run.asks[id] = pxiClaudeEv{"ev": ev, "input": input, "sugg": sugg}
 	run.Asking = len(run.asks)
 	if run.idle != nil {
 		run.idle.Stop()
@@ -1279,6 +1291,7 @@ func (s *Server) handlePxiClaudeSend(w http.ResponseWriter, r *http.Request) {
 		Model   string `json:"model"`
 		Mode    string `json:"mode"`
 		Ctx     string `json:"ctx"` // what the attached context was, for the panel: "main.go:3-9"
+		Chrome  bool   `json:"chrome"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, pxiClaudeBodyMax)).Decode(&b); err != nil {
 		fail(w, http.StatusBadRequest, "bad request")
@@ -1312,11 +1325,23 @@ func (s *Server) handlePxiClaudeSend(w http.ResponseWriter, r *http.Request) {
 	}
 	m := pxiClaudeGet()
 	m.mu.Lock()
+	// Chrome on or off takes a new process: end the idle one, then resume.
+	if run := m.runs[b.Session]; run != nil && run.stdin != nil && run.chrome != b.Chrome && !run.Busy && len(run.asks) == 0 {
+		run.stdin.Close()
+		run.stdin = nil
+		done := run.done
+		m.mu.Unlock()
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+		}
+		m.mu.Lock()
+	}
 	defer m.mu.Unlock()
 	run := m.runs[b.Session]
 	if run == nil || run.stdin == nil {
 		var err error
-		run, err = m.startLocked(acc, cwd, b.Where, b.Session, resume, b.Model, b.Mode)
+		run, err = m.startLocked(acc, cwd, b.Where, b.Session, resume, b.Model, b.Mode, b.Chrome)
 		if err != nil {
 			fail(w, http.StatusConflict, err.Error())
 			return
@@ -1358,6 +1383,7 @@ func (s *Server) handlePxiClaudeAnswer(w http.ResponseWriter, r *http.Request) {
 		Message string         `json:"message"`
 		Answers map[string]any `json:"answers"` // AskUserQuestion
 		Mode    string         `json:"mode"`    // also switch mode, e.g. acceptEdits ("allow all edits")
+		Always  bool           `json:"always"`  // also apply Claude Code's suggested rule (don't ask again)
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 64<<10)).Decode(&b); err != nil {
 		fail(w, http.StatusBadRequest, "bad request")
@@ -1400,6 +1426,9 @@ func (s *Server) handlePxiClaudeAnswer(w http.ResponseWriter, r *http.Request) {
 			input["answers"] = b.Answers
 		}
 		resp = map[string]any{"behavior": "allow", "updatedInput": input}
+		if sugg, _ := pending["sugg"].([]any); b.Always && len(sugg) > 0 {
+			resp["updatedPermissions"] = sugg
+		}
 	} else {
 		msg := strings.TrimSpace(b.Message)
 		if msg == "" {
