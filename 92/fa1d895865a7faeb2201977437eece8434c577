@@ -1,0 +1,39 @@
+README.md
+  s_fbda1db9998055::t_b17fe9262b30bb 21-23,27-28
+fork_claude.go
+  s_fbda1db9998055::t_2149abd38b0945 1-1435
+fork_claude_test.go
+  s_fbda1db9998055::t_b9ca30566270b7 1-174
+fork_term_windows.go
+  s_fbda1db9998055::t_f6b4d89dda5c76 7-9
+macos/README.md
+  s_fbda1db9998055::t_0a88e705516771 50
+server.go
+  s_fbda1db9998055::t_4b6dfaeb9c581b 235
+web/pxi/claude.css
+  s_fbda1db9998055::t_315ef4f99ef7fb 1-160
+web/pxi/claude.js
+  s_fbda1db9998055::t_afbfaafca7cbb6 1-644
+web/src/pxi-claude.js
+  s_fbda1db9998055::t_62bcdb8a30f216 1-186
+web/src/pxi-shell.js
+  s_fbda1db9998055::t_e64aa77ac83a3c 20,35,45,119-121,229
+web/src/pxi-worktrees.js
+  s_fbda1db9998055::t_f8a661132e0497 11,43,176,219-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "92fa1d895865a7faeb2201977437eece8434c577",
+  "prompts": {},
+  "sessions": {
+    "s_fbda1db9998055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_fbda1db9998055",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
