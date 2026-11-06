@@ -6,7 +6,7 @@ worktree of a repository in one window, a terminal, Claude Code sessions, and a 
 
 ## Rules that keep upstream merges easy
 
-1. **New code goes in new files** (`fork_*.go`, `worktrees.go`, new `web/src/*.js`
+1. **New code goes in new files or folders** (`macos/` holds the Mac app) (`fork_*.go`, `worktrees.go`, new `web/src/*.js`
    modules). Upstream files get one-line hooks only, each marked `// fork:`.
    `git grep -n "fork:"` lists every hook.
 2. **Merge upstream weekly.** `.github/workflows/sync-upstream.yml` does it every Monday:
