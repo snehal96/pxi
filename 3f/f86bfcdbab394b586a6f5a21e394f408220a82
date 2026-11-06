@@ -1,0 +1,29 @@
+fork_html.go
+  s_8bd1d8640abe9a::t_173c85d2a17ce0 1-88
+fork_html_test.go
+  s_8bd1d8640abe9a::t_0a686a09bfc234 1-104
+server.go
+  s_8bd1d8640abe9a::t_67b2487b9c12b6 235
+web/pxi/shell.css
+  s_8bd1d8640abe9a::t_a33655966ca8b2 382-390
+web/src/main.js
+  s_8bd1d8640abe9a::t_1f6846c3867930 40-41,138
+web/src/pxi-html.js
+  s_8bd1d8640abe9a::t_7ab6b1e489fa6f 1-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3ff86bfcdbab394b586a6f5a21e394f408220a82",
+  "prompts": {},
+  "sessions": {
+    "s_8bd1d8640abe9a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_8bd1d8640abe9a",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
