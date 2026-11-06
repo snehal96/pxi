@@ -1,0 +1,14 @@
+.github/workflows/budget.yml
+  h_a00a27c9fca8dc 8,42-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c01026c5d21e4b7cba40be3bd684e22f49175d94",
+  "prompts": {},
+  "humans": {
+    "h_a00a27c9fca8dc": {
+      "author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
