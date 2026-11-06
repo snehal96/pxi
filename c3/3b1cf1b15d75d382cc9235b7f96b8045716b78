@@ -1,0 +1,27 @@
+macos/build.sh
+  s_921041c35d9e7f::t_fe67b0c6f6d516 42
+macos/icon/pxi.svg
+  s_921041c35d9e7f::t_128a79015d7e73 1-31
+macos/make-icon.swift
+  s_921041c35d9e7f::t_eedaf14e2cfff9 1-2,5-7,10,16-17,23-24
+scripts/pxi-brand.py
+  s_921041c35d9e7f::t_c16566e72f34b9 57-64
+web/index.html
+  s_921041c35d9e7f::t_7b000a3e7ec8fd 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c33b1cf1b15d75d382cc9235b7f96b8045716b78",
+  "prompts": {},
+  "sessions": {
+    "s_921041c35d9e7f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_921041c35d9e7f",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
