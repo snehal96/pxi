@@ -18,7 +18,7 @@ import zlib from 'node:zlib';
 
 const BUDGET = {
   serverRssPct: 10,      // server memory: at most 10% over px0 ...
-  serverRssMB: 1.5,      // ... or 1.5 MB, whichever is larger (a ~7 MB Go process varies ~1 MB)
+  serverRssMB: 1,        // ... or 1 MB, whichever is larger (a ~7 MB Go process varies ±0.3 MB)
   heapPct: 10,           // page JS heap after GC
   idleDomExtra: 120,     // DOM elements pxi adds at rest (the activity bar)
   viewsDomExtra: 200,    // after opening and leaving pxi's views: they must free their rows
@@ -103,12 +103,21 @@ async function pageMetrics(url, steps) {
   }
 }
 
-// Opens Worktrees and Source Control, then returns to Explorer. A no-op on px0.
+// pxi: opens Worktrees and Source Control, then returns to Explorer. px0 does
+// the same git work through its own "changed files" toggle, so both builds pay
+// for px0's git view and only pxi's additions (Worktrees, sections) differ.
 const VIEWS = `
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  for (const v of ['worktrees', 'scm', 'explorer']) {
-    document.querySelector('[data-ab="' + v + '"]')?.click();
+  if (document.getElementById('activitybar')) {
+    for (const v of ['worktrees', 'scm', 'explorer']) {
+      document.querySelector('[data-ab="' + v + '"]')?.click();
+      await wait(1500);
+    }
+  } else {
     await wait(1500);
+    document.getElementById('btn-changed')?.click();
+    await wait(1500);
+    document.getElementById('btn-files')?.click();
   }`;
 
 async function measure(bin, label) {

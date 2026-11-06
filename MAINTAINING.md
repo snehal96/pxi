@@ -8,7 +8,7 @@ features every week. These rules keep that cheap.
 pxi exists because editors grew heavy. **No feature may make pxi use more memory than
 the px0 it is built on.** CI enforces it (`.github/workflows/budget.yml` runs
 `scripts/pxi-budget.js`): it builds px0 at the merge-base and pxi, runs both on the
-same workspace, and fails when pxi exceeds px0 on server memory (+10% or +1.5 MB,
+same workspace, and fails when pxi exceeds px0 on server memory (+10% or +1 MB,
 whichever is larger: noise on a ~7 MB process),
 page JS heap (+10%), DOM elements at rest (+120: the activity bar) or after
 opening and leaving pxi's views (+200), or UI bundle size (+12% gzipped).
