@@ -435,6 +435,9 @@ func (ix *Index) Build() {
 			if e.Type()&os.ModeSymlink != 0 {
 				continue
 			}
+			if isDir && isNestedWorktree(filepath.Join(abs, name)) { // fork: fork_nested.go
+				continue
+			}
 			if ig.Match(childRel, isDir) {
 				// Listed so the tree can show it dimmed, but never walked or
 				// indexed, so search and quick open stay out of it.

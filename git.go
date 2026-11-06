@@ -150,7 +150,7 @@ func gitStatusAndStagedAgainst(root, base, head string) (status map[string]strin
 		}
 		switch f[0] {
 		case '?': // "? <path>"
-			if k, ok := key(f[2:]); ok {
+			if k, ok := key(f[2:]); ok && !isNestedWorktree(filepath.Join(root, filepath.FromSlash(f[2:]))) { // fork: fork_nested.go
 				wtStatus[k] = "U" // untracked
 			}
 		case '1': // "1 <XY> <sub> <mH> <mI> <mW> <hH> <hI> <path>"
@@ -408,7 +408,7 @@ func gitHasUncommittedChanges(root string) bool {
 	if err != nil {
 		return false
 	}
-	return len(strings.TrimSpace(string(out))) > 0
+	return porcelainHasChanges(root, string(out)) // fork: fork_nested.go
 }
 
 // gitStage adds relpath to the index. An empty relpath (the served root
@@ -418,7 +418,7 @@ func gitStage(root, relpath string) error {
 	if relpath == "" {
 		relpath = "."
 	}
-	out, err := exec.Command("git", "-C", root, "add", "-A", "--", relpath).CombinedOutput()
+	out, err := exec.Command("git", gitAddAllArgs(root, relpath)...).CombinedOutput() // fork: fork_nested.go
 	if err != nil {
 		return fmt.Errorf("git add: %w: %s", err, strings.TrimSpace(string(out)))
 	}
@@ -529,7 +529,7 @@ func gitSnapshotWorktree(root string) string {
 		"GIT_COMMITTER_EMAIL=pxi@localhost",
 	)
 
-	addCmd := exec.Command("git", "-C", root, "add", "-A")
+	addCmd := exec.Command("git", gitAddAllArgs(root, ".")...) // fork: fork_nested.go
 	addCmd.Env = env
 	if addCmd.Run() != nil {
 		return ""
