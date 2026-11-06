@@ -84,8 +84,7 @@ body.pxi-shell .tr.git-D .nm, body.pxi-shell .tr.git-D .gs { color: var(--pxi-gi
 body.pxi-view-explorer #git-panel, body.pxi-view-explorer #unpushed { display: none !important; }
 /* Source Control lists changed files only; with none, the commit box and sections fill it. */
 body.pxi-view-scm #tree:not(.changed-only) { display: none; }
-body.pxi-view-scm #side:has(#tree:not(.changed-only)) #git-panel { flex: 1; height: auto !important; max-height: none; }
-body.pxi-view-scm .git-panel-body { overflow-y: auto; }
+
 
 /* Files from another worktree are for reading and reviewing here. */
 body.pxi-wt-tab .diff-hunk-btn, body.pxi-wt-tab #btn-edit-mode, body.pxi-wt-tab .line-btn { display: none !important; }
@@ -235,7 +234,7 @@ body.pxi-shell #mode-switch { display: none; }
 
 /* ---------- Source Control sections (web/src/pxi-scm.js) ---------- */
 body.pxi-shell #git-recent-commits { display: none; }      /* replaced by History */
-#pxi-scm { border-top: 1px solid var(--line); margin-top: 8px; }
+#pxi-scm { border-top: 1px solid var(--line); }
 .scm-sec-head {
   display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 6px 0 4px; cursor: pointer; user-select: none;
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--fg);
@@ -310,3 +309,73 @@ body.pxi-shell .tip-widget { right: 52px; }
 .pp-menu-empty { padding: 6px 8px; }
 body.pxi-panel-open #pxi-term-btn { color: var(--fg); background: color-mix(in srgb, var(--fg) 12%, transparent); }
 #pxi-term-btn svg { display: block; }
+
+/* ---------- Source Control laid out like VS Code (web/src/pxi-scmhead.js) ----------
+   Order: SOURCE CONTROL header, message box, primary button (inside px0's git
+   panel), CHANGES header, changed files, unpushed commits, then the sections.
+   px0's own elements stay in the page; CSS orders and trims them. */
+body:not(.pxi-view-scm) #scmh-head, body:not(.pxi-view-scm) #scmh-popover,
+body:not(.pxi-view-scm) #scmh-changes, body:not(.pxi-view-scm) #pxi-scm { display: none !important; }
+body.pxi-view-scm #side { overflow-y: auto; }
+body.pxi-view-scm #side > header.panel-head:not(#scmh-head) { display: none; }   /* px0's EXPLORER header */
+body.pxi-view-scm #scmh-head { order: 1; }
+body.pxi-view-scm #scmh-popover { order: 2; }
+body.pxi-view-scm #git-panel { order: 3; }
+body.pxi-view-scm #scmh-changes { order: 4; }
+body.pxi-view-scm #tree { order: 5; flex: none; overflow: visible; }
+body.pxi-view-scm #unpushed { order: 6; }
+body.pxi-view-scm #pxi-scm { order: 7; }
+body.pxi-view-scm.pxi-changes-collapsed #tree { display: none; }
+body.pxi-changes-collapsed #scmh-changes .scm-chev { transform: none; }
+
+body.pxi-view-scm #git-panel { flex: none; height: auto !important; max-height: none; min-height: 0; border-top: 0; background: transparent; }
+body.pxi-view-scm .git-panel-head, body.pxi-view-scm #git-panel-resizer,
+body.pxi-view-scm #git-clean-state, body.pxi-view-scm .git-panel-actions,
+body.pxi-view-scm .git-instructions-wrap, body.pxi-view-scm #git-recent-commits { display: none !important; }
+body.pxi-view-scm .git-panel-body { padding: 0 12px 6px 20px; overflow: visible; }
+/* the message box stays, even on a clean tree, as in VS Code */
+body.pxi-view-scm #git-commit-section, body.pxi-view-scm #git-commit-section[hidden] { display: block !important; margin: 0; padding: 0; border: 0; }
+body.pxi-view-scm #git-commit-msg, body.pxi-view-scm #git-commit-msg[hidden] { display: block !important; }
+
+.scmh-head { gap: 2px; text-transform: uppercase; }
+.scmh-title { letter-spacing: .02em; }
+.scmh-btn { position: relative; display: grid; place-items: center; width: 24px; height: 22px; border-radius: 4px; color: var(--dim); flex: none; }
+.scmh-btn:hover:not(:disabled) { background: var(--bg3); color: var(--fg); }
+.scmh-btn:disabled { opacity: .4; cursor: default; }
+.scmh-n { position: absolute; right: -1px; bottom: -2px; font-size: 9px; font-weight: 700; line-height: 1; color: var(--fg); text-transform: none; }
+.scmh-n:empty { display: none; }
+
+#scmh-popover { margin: 0 12px 8px 20px; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg3); }
+#scmh-popover[hidden] { display: none; }
+.scmh-pop-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--dim); margin-bottom: 6px; }
+#scmh-popover .git-agent-picker { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+#scmh-popover .git-ai-row { margin: 0; }
+#scmh-popover .git-generate-btn { width: 100%; }
+.scmh-link { margin-top: 6px; font-size: 12px; color: var(--accent-fg); padding: 0; }
+.scmh-link:hover { text-decoration: underline; }
+
+.scmh-msg { position: relative; }
+body.pxi-view-scm .scmh-msg #git-commit-msg {
+  width: 100%; min-height: 30px; max-height: 160px; margin: 0; padding: 5px 28px 5px 8px; resize: vertical;
+  font: 13px/1.4 var(--ui); color: var(--fg);
+}
+.scmh-gen { position: absolute; right: 4px; top: 4px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; color: var(--dim); }
+.scmh-gen:hover { background: var(--bg4); color: var(--fg); }
+
+.scmh-commit {
+  display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 28px; margin: 6px 0 2px;
+  border-radius: 2px; background: var(--pxi-button-bg-); color: var(--pxi-button-fg-); font-size: 13px;
+}
+.scmh-commit:hover:not(:disabled) { background: var(--pxi-button-hover-); }
+.scmh-commit:disabled { opacity: .45; cursor: default; }
+.scmh-commit svg { flex: none; }
+
+#scmh-changes[hidden] { display: none; }
+#scmh-changes .scm-sec-count, #pxi-scm .scm-sec-count {
+  margin-left: 6px; min-width: 18px; height: 16px; padding: 0 5px; border-radius: 8px; line-height: 16px; text-align: center;
+  background: var(--bg4); color: var(--fg); font-size: 10.5px; font-weight: 600;
+}
+#scmh-changes .scm-sec-count:empty, #pxi-scm .scm-sec-count:empty { display: none; }
+#pxi-branch-btn svg { display: block; }
+/* VS Code shows nothing under the commit button on a clean tree */
+body.pxi-view-scm #tree.changed-only.no-changes { display: none; }

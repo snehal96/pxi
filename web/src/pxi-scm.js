@@ -7,6 +7,7 @@ import { esc, api, apiPostJson } from './state.js';
 import { openFile } from './tabs.js';
 import { loadCommitFiles, commitFileRows, COMMIT_FILES_PAGE } from './commitfiles.js';
 import { showToast } from './ui.js';
+import { setScmHeadVisible } from './pxi-scmhead.js';
 
 const SCM_COLLAPSED_KEY = 'pxi.scm.collapsed';
 const SCM_POLL_MS = 8000;
@@ -64,8 +65,20 @@ let scmHost = null;
 
 /** Remembers where the sections go; they are built the first time Source Control opens. */
 export function initScm() {
-  scmHost = document.getElementById('git-panel-body');
+  // In the sidebar itself, below the changed files (VS Code's order), not
+  // inside px0's git panel.
+  scmHost = document.getElementById('side');
   document.addEventListener('visibilitychange', scmSchedule);
+  document.addEventListener('pxi:scm-refresh', () => { scmSig = ''; scmRefresh(); });
+}
+
+/** Opens the Branches section and scrolls to it (the status bar's branch). */
+export function scmRevealBranches() {
+  if (!scmEl) return;
+  scmCollapsed.delete('branches');
+  scmSaveCollapsed();
+  scmApplyCollapsed();
+  scmEl.querySelector('[data-sec="branches"]')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function scmEnsureDom() {
@@ -78,7 +91,7 @@ function scmEnsureDom() {
     '<span class="scm-sec-title">' + s.title + '</span><span class="scm-sec-count" data-count="' + s.id + '"></span>' +
     '<span class="scm-grow"></span><span class="scm-hacts">' + scmActions(s.id) + '</span></header>' +
     '<div class="scm-sec-body" data-body="' + s.id + '"></div></section>').join('');
-  scmHost.append(scmEl);
+  scmHost.insertBefore(scmEl, scmHost.querySelector('.side-foot'));
   scmApplyCollapsed();
   scmEl.addEventListener('click', scmOnClick);
 }
@@ -86,6 +99,7 @@ function scmEnsureDom() {
 export function setScmVisible(on) {
   if (on === scmVisible) return;
   scmVisible = on;
+  setScmHeadVisible(on);
   if (on) {
     scmEnsureDom();
     scmRefresh();

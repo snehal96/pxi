@@ -12,7 +12,8 @@ import { openSettings } from './settings.js';
 import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
 import { initWorktrees, setWorktreesVisible } from './pxi-worktrees.js';
-import { initScm, setScmVisible } from './pxi-scm.js';
+import { initScm, setScmVisible, scmRevealBranches } from './pxi-scm.js';
+import { SCMH_BRANCH_ICON } from './pxi-scmhead.js';
 import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
 
 const VIEW_KEY = 'pxi.sideView';
@@ -257,6 +258,26 @@ export function initShell() {
     tb.innerHTML = TERM_STATUS_ICON + '<span>Terminal</span>';
     tb.addEventListener('click', toggleTerminal);
     status.prepend(tb);
+    // The current branch, at the left of the status bar as in VS Code; click
+    // for the Branches section of Source Control.
+    const bb = document.createElement('button');
+    bb.id = 'pxi-branch-btn';
+    bb.className = 'footer-btn';
+    bb.hidden = true;
+    bb.addEventListener('click', async () => {
+      await showView('scm');
+      scmRevealBranches();
+    });
+    status.prepend(bb);
+    const src = $('#git-branch');
+    const showBranch = () => {
+      const name = (src?.textContent || '').trim();
+      bb.hidden = !name;
+      bb.innerHTML = SCMH_BRANCH_ICON + '<span>' + name.replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>';
+      bb.title = name ? name + ': show branches' : '';
+    };
+    if (src) new MutationObserver(showBranch).observe(src, { childList: true, characterData: true, subtree: true });
+    showBranch();
   }
   initTerminal();
   new MutationObserver(markActive).observe(document.body, { attributes: true, attributeFilter: ['class'] });
