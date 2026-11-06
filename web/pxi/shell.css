@@ -379,3 +379,12 @@ body.pxi-view-scm .scmh-msg #git-commit-msg {
 #pxi-branch-btn svg { display: block; }
 /* VS Code shows nothing under the commit button on a clean tree */
 body.pxi-view-scm #tree.changed-only.no-changes { display: none; }
+
+/* ---------- HTML preview (web/src/pxi-html.js) ---------- */
+#pxi-html-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; z-index: 6; }
+body.pxi-shell #pxi-html-btn {
+  width: 26px; height: 22px; padding: 0; display: grid; place-items: center; border-radius: 4px; color: var(--dim); background: none;
+}
+body.pxi-shell #pxi-html-btn[hidden] { display: none; }
+body.pxi-shell #pxi-html-btn:hover { background: var(--bg3); color: var(--fg); }
+body.pxi-shell #pxi-html-btn.on { background: var(--bg4); color: var(--fg); }

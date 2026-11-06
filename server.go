@@ -232,6 +232,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc(s.routePath("/api/worktrees"), s.handleWorktrees) // fork: worktrees.go
 	s.registerPxiGitRoutes()                                          // fork: fork_git.go
 	s.registerPxiTermRoutes()                                         // fork: fork_term.go
+	s.registerPxiHTMLRoutes()                                         // fork: fork_html.go
 }
 
 // NewServer creates and initializes a px0 Server instance, binding index and language servers,
