@@ -1,0 +1,31 @@
+fork_git.go
+  s_1a95b0841fcd8b::t_660fc219e25c10 1-389
+fork_git_test.go
+  s_1a95b0841fcd8b::t_94c1493f079f7f 1-130
+server.go
+  s_1a95b0841fcd8b::t_d19b7fd480f28f 233
+web/pxi/shell.css
+  s_1a95b0841fcd8b::t_5549465b77c438 70-73,217-264
+web/src/diff.js
+  s_1a95b0841fcd8b::t_e9a91e48954212 178
+web/src/pxi-scm.js
+  s_1a95b0841fcd8b::t_a5f80984d95a84 1-332
+web/src/pxi-shell.js
+  s_1a95b0841fcd8b::t_20f4ffdb04c70d 15,24,37,64-65,69,84,103-105,171-174,182-184,215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ecb5eb4f8efb4336d9bbc4a85a2abbcb6daa718d",
+  "prompts": {},
+  "sessions": {
+    "s_1a95b0841fcd8b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_1a95b0841fcd8b",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
