@@ -15,6 +15,7 @@ import { initWorktrees, setWorktreesVisible } from './pxi-worktrees.js';
 import { initScm, setScmVisible, scmRevealBranches } from './pxi-scm.js';
 import { SCMH_BRANCH_ICON } from './pxi-scmhead.js';
 import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
+import { initPxiPalette } from './pxi-palette.js';
 
 const VIEW_KEY = 'pxi.sideView';
 
@@ -280,6 +281,7 @@ export function initShell() {
     showBranch();
   }
   initTerminal();
+  initPxiPalette();
   new MutationObserver(markActive).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
   // Tabs for files in other worktrees say which worktree they belong to.
