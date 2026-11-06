@@ -296,7 +296,7 @@ func (m *agentManager) Select(name string, modelOpt ...string) error {
 	m.mu.Lock()
 	if m.pinned {
 		m.mu.Unlock()
-		return errors.New("px0 was started with -agent, so the harness is fixed for this run")
+		return errors.New("pxi was started with -agent, so the harness is fixed for this run")
 	}
 	m.mu.Unlock()
 
@@ -1170,7 +1170,7 @@ func (tm *threadManager) load() {
 			if tr.Running {
 				tr.Running = false
 				if tr.Error == "" {
-					tr.Error = "interrupted: px0 exited before this reply finished"
+					tr.Error = "interrupted: pxi exited before this reply finished"
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 import Cocoa
 
-/// The menu bar. Key equivalents are chosen so they never take a shortcut px0
-/// uses (Cmd+W closes a px0 tab, Cmd+P opens files, Cmd+Shift+R, Cmd+D, ...):
+/// The menu bar. Key equivalents are chosen so they never take a shortcut the page
+/// uses (Cmd+W closes a file tab, Cmd+P opens files, Cmd+Shift+R, Cmd+D, ...):
 /// the page sees each key first, and only keys it ignores reach the menu.
 enum MainMenu {
     static func build() -> NSMenu {
@@ -103,7 +103,7 @@ enum MainMenu {
     private static func helpMenu() -> NSMenu {
         let m = NSMenu(title: "Help")
         let d = NSApp.delegate as AnyObject?
-        m.addItem(item("Show px0 Log", #selector(AppDelegate.showLogFile(_:)), target: d))
+        m.addItem(item("Show Log", #selector(AppDelegate.showLogFile(_:)), target: d))
         return m
     }
 }

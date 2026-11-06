@@ -1,11 +1,11 @@
 import Foundation
 
-/// Runs the bundled px0 binary as a workbench and finds its URL.
+/// Runs the bundled pxi server as a workbench and finds its URL.
 ///
-/// px0 allows one workbench per user, recorded in <state>/workbench.lock. If one
-/// is already serving (the `px0` CLI, or a pxi that crashed), pxi attaches to it
+/// pxi allows one workbench per user, recorded in <state>/workbench.lock. If one
+/// is already serving (the `pxi` CLI, or a pxi app that crashed), pxi attaches to it
 /// and leaves it running on quit. Otherwise pxi starts its own on a fixed port,
-/// so the page's origin, and with it the browser storage px0 keeps (layout,
+/// so the page's origin, and with it the browser storage the page keeps (layout,
 /// open tabs), stays the same from launch to launch.
 final class PxServer {
     static let preferredPort = 47770
@@ -22,10 +22,10 @@ final class PxServer {
     private let binary: URL
 
     init() {
-        binary = Bundle.main.resourceURL!.appendingPathComponent("px0")
+        binary = Bundle.main.resourceURL!.appendingPathComponent("pxi")
         let logs = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/pxi")
         try? FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
-        logURL = logs.appendingPathComponent("px0.log")
+        logURL = logs.appendingPathComponent("pxi.log")
     }
 
     /// Blocking; call off the main thread.
@@ -52,26 +52,26 @@ final class PxServer {
         do {
             try p.run()
         } catch {
-            return .failure("Cannot start px0: \(error.localizedDescription)")
+            return .failure("Cannot start the pxi server: \(error.localizedDescription)")
         }
         process = p
 
         let deadline = Date().addingTimeInterval(20)
         while Date() < deadline {
             if let url = Self.runningWorkbench(lock: lock) {
-                // Ours unless px0 exited because another workbench won the race.
+                // Ours unless the server exited because another workbench won the race.
                 owned = p.isRunning
                 return .success(url)
             }
             if !p.isRunning {
-                return .failure("px0 exited with status \(p.terminationStatus).\n\n\(tail())")
+                return .failure("The pxi server exited with status \(p.terminationStatus).\n\n\(tail())")
             }
             Thread.sleep(forTimeInterval: 0.05)
         }
-        return .failure("px0 did not start within 20 seconds.\n\n\(tail())")
+        return .failure("The pxi server did not start within 20 seconds.\n\n\(tail())")
     }
 
-    /// Stops the workbench if pxi started it. px0 handles SIGTERM by stopping
+    /// Stops the workbench if the app started it. The server handles SIGTERM by stopping
     /// every workspace and removing PR checkouts, so it gets a moment for that.
     func stop() {
         guard owned, let p = process, p.isRunning else { return }
@@ -90,13 +90,13 @@ final class PxServer {
         return text.split(separator: "\n", omittingEmptySubsequences: false).suffix(lines).joined(separator: "\n")
     }
 
-    // MARK: - px0's workbench lock
+    // MARK: - the workbench lock
 
     static func lockURL(_ env: [String: String]) -> URL {
         if let xdg = env["XDG_STATE_HOME"], !xdg.isEmpty {
-            return URL(fileURLWithPath: xdg).appendingPathComponent("px0/workbench.lock")
+            return URL(fileURLWithPath: xdg).appendingPathComponent("pxi/workbench.lock")
         }
-        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".px0/workbench.lock")
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".pxi/workbench.lock")
     }
 
     /// The URL in the lock file, if a workbench there answers its ping.

@@ -1,7 +1,7 @@
 import Cocoa
 import WebKit
 
-/// One pxi window: a WKWebView showing px0, with the browser behaviours px0
+/// One pxi window: a WKWebView showing the pxi UI, with the browser behaviours it
 /// relies on (dialogs, new tabs, leave-page warnings) done natively.
 final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate {
     let webView: WKWebView
@@ -60,7 +60,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
 
     static func baseConfiguration() -> WKWebViewConfiguration {
         let c = WKWebViewConfiguration()
-        c.websiteDataStore = .default() // keeps px0's localStorage across launches
+        c.websiteDataStore = .default() // keeps the page's localStorage across launches
         c.preferences.isElementFullscreenEnabled = true
         c.preferences.setValue(true, forKey: "developerExtrasEnabled")
         return c
@@ -107,14 +107,14 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
     private func loadFailed(_ error: Error) {
         let ns = error as NSError
         if ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled { return }
-        loading.show(message: "Could not load px0: \(error.localizedDescription)", isError: true, logURL: app?.server.logURL)
+        loading.show(message: "Could not load pxi: \(error.localizedDescription)", isError: true, logURL: app?.server.logURL)
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         webView.reload() // the page's process crashed or was reclaimed
     }
 
-    // MARK: - Navigation policy: px0 stays in pxi, everything else opens in the browser
+    // MARK: - Navigation policy: pxi pages stay in pxi, everything else opens in the browser
 
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -137,7 +137,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
             NSWorkspace.shared.open(url)
             return nil
         }
-        // px0's own pages (a PR review, a workspace opened in a "new tab")
+        // pxi's own pages (a PR review, a workspace opened in a "new tab")
         // open as a new pxi window, in the same window group as this one.
         guard let app else { return nil }
         let wc = app.newWindow(configuration: configuration, tabbedWith: window)
@@ -199,10 +199,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
         }
     }
 
-    // MARK: - Closing: px0's "leave page?" checks (unsaved edits, agents still writing)
+    // MARK: - Closing: the page's "leave page?" checks (unsaved edits, agents still writing)
 
     /// Asks the page whether leaving would lose work, the way a browser does on
-    /// close: px0 marks that by cancelling `beforeunload`.
+    /// close: the page marks that by cancelling `beforeunload`.
     func hasUnsavedWork(_ done: @escaping (Bool) -> Void) {
         let js = "const e = new Event('beforeunload', {cancelable: true}); window.dispatchEvent(e); return e.defaultPrevented;"
         webView.callAsyncJavaScript(js, arguments: [:], in: nil, in: .page) { result in
@@ -260,7 +260,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
         app?.applyZoom(clamped, except: self)
     }
 
-    /// Opens a folder (or PR URL) as a px0 workspace in this window, through the
+    /// Opens a folder (or PR URL) as a pxi workspace in this window, through the
     /// workbench's own API so it lands in Recent like any other.
     func openTarget(_ target: String) {
         let js = """

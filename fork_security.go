@@ -48,12 +48,12 @@ func hostGuard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !allowedRequestHost(r.Host) {
 			w.Header().Set("Cache-Control", "no-store")
-			fail(w, http.StatusForbidden, "open px0 by IP address or localhost")
+			fail(w, http.StatusForbidden, "open pxi by IP address or localhost")
 			return
 		}
 		if !sameOriginWrite(r) {
 			w.Header().Set("Cache-Control", "no-store")
-			fail(w, http.StatusForbidden, "request did not come from px0")
+			fail(w, http.StatusForbidden, "request did not come from pxi")
 			return
 		}
 		next.ServeHTTP(w, r)

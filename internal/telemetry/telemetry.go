@@ -87,7 +87,7 @@ func FilesBucket(n int) string {
 func getOrGenerateDistinctID() string {
 	home, err := os.UserHomeDir()
 	if err == nil && home != "" {
-		idPath := filepath.Join(home, ".px0", "anonymous_id")
+		idPath := filepath.Join(home, ".pxi", "anonymous_id")
 		if data, err := os.ReadFile(idPath); err == nil {
 			id := strings.TrimSpace(string(data))
 			if len(id) >= 16 {
@@ -98,12 +98,12 @@ func getOrGenerateDistinctID() string {
 
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {
-		return fmt.Sprintf("px0-%d", time.Now().UnixNano())
+		return fmt.Sprintf("pxi-%d", time.Now().UnixNano())
 	}
 	id := hex.EncodeToString(b)
 
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
-		dir := filepath.Join(home, ".px0")
+		dir := filepath.Join(home, ".pxi")
 		if err := os.MkdirAll(dir, 0755); err == nil {
 			_ = os.WriteFile(filepath.Join(dir, "anonymous_id"), []byte(id), 0644)
 		}
@@ -175,7 +175,7 @@ func (t *Service) Track(event string, props map[string]any) {
 	// Enrich with standard PostHog environment and session properties
 	props["distinct_id"] = t.distinctID
 	props["$session_id"] = t.sessionID
-	props["$lib"] = "px0"
+	props["$lib"] = "pxi"
 	props["$lib_version"] = t.version
 	props["$os"] = runtime.GOOS
 	props["$arch"] = runtime.GOARCH
@@ -212,7 +212,7 @@ func (t *Service) Close(reason string) {
 		props := map[string]any{
 			"distinct_id":      t.distinctID,
 			"$session_id":      t.sessionID,
-			"$lib":             "px0",
+			"$lib":             "pxi",
 			"$lib_version":     t.version,
 			"$os":              runtime.GOOS,
 			"$arch":            runtime.GOARCH,
@@ -278,7 +278,7 @@ func (t *Service) send(evt telemetryEvent) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "px0/"+t.version)
+	req.Header.Set("User-Agent", "pxi/"+t.version)
 
 	resp, err := t.client.Do(req)
 	if err != nil {

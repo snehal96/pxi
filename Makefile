@@ -28,10 +28,10 @@ endif
 all: build
 
 help:
-	@echo "px0 make targets:"
-	@echo "  make build             - build px0 binary and replace local installed binary"
+	@echo "pxi make targets:"
+	@echo "  make build             - build pxi binary and replace local installed binary"
 	@echo "  make update            - alias for make build (build and replace installed binary)"
-	@echo "  make install           - install px0 to ~/.local/bin/px0 (or INSTALL_PATH=...)"
+	@echo "  make install           - install pxi to ~/.local/bin/pxi (or INSTALL_PATH=...)"
 	@echo "  make web               - bundle web assets (JS/CSS/themes)"
 	@echo "  make test              - run go test suite"
 	@echo "  make test-short        - run fast unit tests (short mode)"
@@ -52,15 +52,15 @@ web:
 build-web: web
 
 build: web
-	@echo "Building px0 for local system..."
-	go build -trimpath -ldflags="$(LDFLAGS)" -o px0 .
-	@echo "Built ./px0 ($$(du -h px0 | cut -f1))"
-	@./scripts/replace-local.sh ./px0
+	@echo "Building pxi for local system..."
+	go build -trimpath -ldflags="$(LDFLAGS)" -o pxi .
+	@echo "Built ./pxi ($$(du -h pxi | cut -f1))"
+	@./scripts/replace-local.sh ./pxi
 
 update: build
 
 install: build
-	@INSTALL_PATH=$${INSTALL_PATH:-$(HOME)/.local/bin/px0} ./scripts/replace-local.sh ./px0
+	@INSTALL_PATH=$${INSTALL_PATH:-$(HOME)/.local/bin/pxi} ./scripts/replace-local.sh ./pxi
 
 test: web
 	go test -v ./...
@@ -109,6 +109,6 @@ publish:
 	@echo "  git push origin master --tags"
 
 clean:
-	rm -f px0 web/app.js web/workbench.js
+	rm -f pxi web/app.js web/workbench.js
 	touch web/app.js web/workbench.js
 	rm -rf dist/

@@ -130,7 +130,7 @@ func (m *ReviewWorkflowManager) configFilePath() string {
 	if m.server == nil || m.server.ix == nil {
 		return ""
 	}
-	return filepath.Join(m.server.ix.Root(), ".px0", "workflows.json")
+	return filepath.Join(m.server.ix.Root(), ".pxi", "workflows.json")
 }
 
 func (m *ReviewWorkflowManager) loadConfig() ReviewWorkflowConfig {

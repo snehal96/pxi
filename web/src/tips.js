@@ -62,6 +62,7 @@ export async function setTipsPermanentlyHidden(hidden) {
  */
 export async function fetchTips() {
   const url = S.settings?.['tips.url'] || TIPS_URL;
+  if (!url) { updateTipsCountBadge(); return loadedTips; }
   try {
     const ctrl = new AbortController();
     const timeout = setTimeout(() => ctrl.abort(), 4000);
@@ -305,7 +306,7 @@ export function initTips() {
   });
 
   $('#btn-refresh-tips')?.addEventListener('click', async () => {
-    showToast('i', 'Fetching latest tips from px0.ai...');
+    showToast('i', 'Reloading tips...');
     await fetchTips();
     renderTipsList();
     showToast('i', `Loaded ${loadedTips.length} tips.`);

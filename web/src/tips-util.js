@@ -1,6 +1,6 @@
 // web/src/tips-util.js
 
-export const TIPS_URL = 'https://px0.ai/tips.json';
+export const TIPS_URL = ''; // pxi: no remote tips
 export const TIPS_STORAGE_KEY_HIDDEN = 'px0.tips.hidden';
 export const TIPS_STORAGE_KEY_CACHE = 'px0.tips.cache';
 export const TIPS_STORAGE_KEY_INDEX = 'px0.tips.lastIndex';
@@ -19,7 +19,7 @@ export const DEFAULT_TIPS = [
     title: "Command Palette",
     category: "Navigation",
     tag: "Palette",
-    content: "Access all px0 commands, switch color themes, configure LSP servers, or trigger actions with **`Cmd/Ctrl + Shift + P`**.",
+    content: "Access all pxi commands, switch color themes, configure LSP servers, or trigger actions with **`Cmd/Ctrl + Shift + P`**.",
     shortcut: "Mod+Shift+P"
   },
   {
@@ -51,7 +51,7 @@ export const DEFAULT_TIPS = [
     title: "Zero-Latency Pull Request Review",
     category: "Git",
     tag: "PR Review",
-    content: "Run `px0 <pr-url>` from your terminal to review GitHub, GitLab, Gitea/Forgejo, or Bitbucket PRs directly with instant diffs and comments."
+    content: "Run `pxi <pr-url>` from your terminal to review GitHub, GitLab, Gitea/Forgejo, or Bitbucket PRs directly with instant diffs and comments."
   },
   {
     id: "split-unified-diff",
@@ -207,7 +207,7 @@ export const DEFAULT_TIPS = [
     title: "Custom CSS Themes",
     category: "Interface",
     tag: "Theme",
-    content: "Create custom color themes by placing CSS files in `~/.px0/themes/`. px0 concatenates and serves them alongside built-in themes automatically."
+    content: "Create custom color themes by placing CSS files in `~/.pxi/themes/`. pxi concatenates and serves them alongside built-in themes automatically."
   },
   {
     id: "word-wrap",
@@ -222,21 +222,21 @@ export const DEFAULT_TIPS = [
     title: "Multi-Workspace Workbench",
     category: "Workbench",
     tag: "Workbench",
-    content: "Run `px0` with no arguments to launch the Review Workbench. Quickly reopen recent workspaces, pin favorite projects, or open new PR URLs from a single port."
+    content: "Run `pxi` with no arguments to launch the Review Workbench. Quickly reopen recent workspaces, pin favorite projects, or open new PR URLs from a single port."
   },
   {
     id: "remote-dev",
     title: "Zero-Setup Remote & Cloud Workspaces",
     category: "Terminal",
     tag: "Remote",
-    content: "Run `px0 -host 0.0.0.0` on your remote VM, container, or server to review code locally over Tailscale, SSH port forward, or private LAN without remote agent daemons."
+    content: "Run `pxi -host 0.0.0.0` on your remote VM, container, or server to review code locally over Tailscale, SSH port forward, or private LAN without remote agent daemons."
   },
   {
     id: "virtual-rendering",
     title: "Ultra-Fast Virtualized Rendering",
     category: "Performance",
     tag: "Performance",
-    content: "px0 smoothly opens files with 400,000+ lines by mounting only visible rows into the DOM and releasing memory back to the OS after 15 seconds of inactivity."
+    content: "pxi smoothly opens files with 400,000+ lines by mounting only visible rows into the DOM and releasing memory back to the OS after 15 seconds of inactivity."
   },
   {
     id: "settings-ui-json",
@@ -251,7 +251,7 @@ export const DEFAULT_TIPS = [
     title: "Keyboard Shortcuts Reference",
     category: "Navigation",
     tag: "Shortcuts",
-    content: "Press **`?`** anywhere in px0 (when not focused on a text input) to view the cheat sheet of all navigation, editing, and review shortcuts.",
+    content: "Press **`?`** anywhere in pxi (when not focused on a text input) to view the cheat sheet of all navigation, editing, and review shortcuts.",
     shortcut: "?"
   }
 ];

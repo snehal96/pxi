@@ -53,7 +53,7 @@ func TestFetchLatestRelease(t *testing.T) {
 			BrowserDownloadURL string `json:"browser_download_url"`
 		}{
 			{
-				Name:               "px0-0.2.0-linux-amd64",
+				Name:               "pxi-0.2.0-linux-amd64",
 				BrowserDownloadURL: "https://example.com/download/px0",
 			},
 		},
@@ -75,7 +75,7 @@ func TestFetchLatestRelease(t *testing.T) {
 	if rel.TagName != "v0.2.0" {
 		t.Errorf("got TagName %q, want v0.2.0", rel.TagName)
 	}
-	if len(rel.Assets) != 1 || rel.Assets[0].Name != "px0-0.2.0-linux-amd64" {
+	if len(rel.Assets) != 1 || rel.Assets[0].Name != "pxi-0.2.0-linux-amd64" {
 		t.Errorf("unexpected assets: %+v", rel.Assets)
 	}
 }
@@ -84,7 +84,7 @@ func TestUpdateStatePersistence(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_STATE_HOME", tmpDir)
 
-	statePath := filepath.Join(tmpDir, "px0", "update_check.json")
+	statePath := filepath.Join(tmpDir, "pxi", "update_check.json")
 	if _, err := os.Stat(statePath); !os.IsNotExist(err) {
 		t.Fatalf("expected state file to not exist yet")
 	}
@@ -110,7 +110,7 @@ func TestUpdateStatePersistence(t *testing.T) {
 }
 
 func TestDownloadVerifiedAsset(t *testing.T) {
-	assetName := "px0-0.2.0-linux-amd64"
+	assetName := "pxi-0.2.0-linux-amd64"
 	binary := []byte("test binary")
 	digest := fmt.Sprintf("%x", sha256.Sum256(binary))
 
@@ -137,7 +137,7 @@ func TestDownloadVerifiedAsset(t *testing.T) {
 }
 
 func TestDownloadVerifiedAssetRejectsMismatch(t *testing.T) {
-	assetName := "px0-0.2.0-linux-amd64"
+	assetName := "pxi-0.2.0-linux-amd64"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/checksums.txt" {
 			_, _ = fmt.Fprintf(w, "%064x  %s\n", 0, assetName)
@@ -154,7 +154,7 @@ func TestDownloadVerifiedAssetRejectsMismatch(t *testing.T) {
 }
 
 func TestChecksumForRejectsMissingAndMalformedEntries(t *testing.T) {
-	assetName := "px0-0.2.0-linux-amd64"
+	assetName := "pxi-0.2.0-linux-amd64"
 	for name, checksums := range map[string]string{
 		"missing":   fmt.Sprintf("%064x  other-asset\n", 0),
 		"malformed": "not-a-sha256  " + assetName + "\n",
@@ -182,7 +182,7 @@ func TestRunSelfUpdateMock(t *testing.T) {
 		t.Fatalf("failed to write fake binary: %v", err)
 	}
 
-	assetName := fmt.Sprintf("px0-0.2.0-%s-%s%s", runtime.GOOS, runtime.GOARCH, ext)
+	assetName := fmt.Sprintf("pxi-0.2.0-%s-%s%s", runtime.GOOS, runtime.GOARCH, ext)
 
 	// Setup mock server
 	var serverURL string
@@ -243,7 +243,7 @@ func TestInstallUpdate(t *testing.T) {
 		t.Fatalf("failed to seed current binary: %v", err)
 	}
 
-	assetName := fmt.Sprintf("px0-0.2.0-%s-%s", runtime.GOOS, runtime.GOARCH)
+	assetName := fmt.Sprintf("pxi-0.2.0-%s-%s", runtime.GOOS, runtime.GOARCH)
 	newBinary := []byte("#!/bin/sh\necho 'px0 0.2.0'\n")
 	digest := fmt.Sprintf("%x", sha256.Sum256(newBinary))
 

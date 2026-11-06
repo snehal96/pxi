@@ -483,7 +483,7 @@ func (g *GitHubProvider) TokenSetup(host string) TokenSetup {
 	return TokenSetup{
 		URL: "https://github.com/settings/personal-access-tokens/new",
 		Steps: []string{
-			"Name the token (e.g. px0) and pick an expiration.",
+			"Name the token (e.g. pxi) and pick an expiration.",
 			"Under Repository access, choose the repositories you review (or All repositories).",
 			"Under Repository permissions, set Contents and Pull requests to Read and write.",
 			"Generate the token and copy it.",
@@ -994,7 +994,7 @@ func (g *GitLabProvider) TokenSetup(host string) TokenSetup {
 	return TokenSetup{
 		URL: "https://" + host + "/-/user_settings/personal_access_tokens",
 		Steps: []string{
-			"Select Add new token, name it (e.g. px0) and pick an expiration date.",
+			"Select Add new token, name it (e.g. pxi) and pick an expiration date.",
 			"Under Select scopes, check api.",
 			"Create the token and copy it.",
 		},
@@ -1608,7 +1608,7 @@ func (g *GiteaProvider) TokenSetup(host string) TokenSetup {
 	return TokenSetup{
 		URL: "https://" + host + "/user/settings/applications",
 		Steps: []string{
-			"Under Generate new token, name it (e.g. px0).",
+			"Under Generate new token, name it (e.g. pxi).",
 			"Under Select permissions, set repository and issue to Read and write.",
 			"Generate the token and copy it.",
 		},
@@ -1655,7 +1655,7 @@ func (g *GiteaProvider) PRHeadRef(t PRTarget) string {
 
 // Gitea reads the password as the token; the username is not checked.
 func (g *GiteaProvider) GitAuth(t PRTarget, token string) gitAuth {
-	return basicGitAuth(t.Host, "px0", token)
+	return basicGitAuth(t.Host, "pxi", token)
 }
 
 // giteaTokenHost is the one host the gitea.token setting and GITEA_TOKEN are
@@ -2064,9 +2064,9 @@ func (b *BitbucketProvider) TokenSetup(host string) TokenSetup {
 	return TokenSetup{
 		URL: "https://id.atlassian.com/manage-profile/security/api-tokens",
 		Steps: []string{
-			"Select Create API token with scopes, name it (e.g. px0) and pick an expiry.",
+			"Select Create API token with scopes, name it (e.g. pxi) and pick an expiry.",
 			"Choose Bitbucket as the app.",
-			"Grant read and write access to repositories and pull requests, and read access to your account (px0 uses it to check push access).",
+			"Grant read and write access to repositories and pull requests, and read access to your account (pxi uses it to check push access).",
 			"Create the token, copy it, and enter your Atlassian account email below.",
 		},
 		Env: "BITBUCKET_TOKEN",

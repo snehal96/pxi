@@ -752,7 +752,7 @@ func (c *lspClient) initialize(ctx context.Context) error {
 		"processId": os.Getpid(),
 		"rootUri":   pathToURI(c.root),
 		"clientInfo": map[string]string{
-			"name": "px0", "version": version,
+			"name": "pxi", "version": version,
 		},
 		"workspaceFolders": []any{
 			map[string]string{"uri": pathToURI(c.root), "name": filepath.Base(c.root)},
@@ -2910,7 +2910,7 @@ func (m *lspManager) Install(name string, option int) (*lspJob, error) {
 	}
 	in := opts[option]
 	if !in.Auto {
-		return nil, fmt.Errorf("px0 does not run %q; run it in a terminal", strings.Join(in.Cmd, " "))
+		return nil, fmt.Errorf("pxi does not run %q; run it in a terminal", strings.Join(in.Cmd, " "))
 	}
 	tool, ok := lookPathIn(in.Cmd[0], lspBinDirs())
 	if !ok {

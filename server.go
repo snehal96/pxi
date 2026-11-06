@@ -767,10 +767,10 @@ var (
 
 func vendorCacheDir() string {
 	if c := os.Getenv("XDG_CACHE_HOME"); c != "" {
-		return filepath.Join(c, "px0", "vendor")
+		return filepath.Join(c, "pxi", "vendor")
 	}
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
-		return filepath.Join(home, ".px0", "cache", "vendor")
+		return filepath.Join(home, ".pxi", "cache", "vendor")
 	}
 	return filepath.Join(os.TempDir(), "px0-cache", "vendor")
 }
@@ -2745,11 +2745,11 @@ func localPost(w http.ResponseWriter, r *http.Request) bool {
 	}
 	host = strings.Trim(host, "[]")
 	if host != "localhost" && net.ParseIP(host) == nil {
-		fail(w, http.StatusForbidden, "open px0 by IP address or localhost to set up language servers")
+		fail(w, http.StatusForbidden, "open pxi by IP address or localhost to set up language servers")
 		return false
 	}
 	if o, err := url.Parse(r.Header.Get("Origin")); err != nil || o.Host != r.Host {
-		fail(w, http.StatusForbidden, "request did not come from px0")
+		fail(w, http.StatusForbidden, "request did not come from pxi")
 		return false
 	}
 	return true
@@ -2999,10 +2999,10 @@ type WorkspaceSession struct {
 // if available, falling back to ~/.px0/sessions or os.TempDir()/px0-sessions.
 func sessionDir() string {
 	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
-		return filepath.Join(xdg, "px0", "sessions")
+		return filepath.Join(xdg, "pxi", "sessions")
 	}
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
-		return filepath.Join(home, ".px0", "sessions")
+		return filepath.Join(home, ".pxi", "sessions")
 	}
 	return filepath.Join(os.TempDir(), "px0-sessions")
 }

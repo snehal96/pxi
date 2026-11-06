@@ -4,10 +4,8 @@
 <meta charset="utf-8">
 <base href="/">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>px0 workbench</title>
-<link rel="icon" type="image/x-icon" href="https://px0.ai/favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="https://px0.ai/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="https://px0.ai/favicon-16x16.png">
+<title>pxi workbench</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314161d'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Menlo,monospace' font-size='15' font-weight='700' fill='%23fff'%3Epx%3Ctspan fill='%235bcc8f'%3Ei%3C/tspan%3E%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -23,8 +21,7 @@
     <main class="wb-main">
       <header class="wb-hero">
         <div class="empty-logo">
-          <img class="logo-dark" src="https://px0.ai/logo/px0-logo-dark.png" alt="px0" width="160" height="60">
-          <img class="logo-light" src="https://px0.ai/logo/px0-logo-light.png" alt="px0" width="160" height="60">
+          <svg class="pxi-wordmark" width="160" height="60" viewBox="0 0 48 18" role="img" aria-label="pxi"><text x="1" y="14" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="700" fill="currentColor">px<tspan fill="#5bcc8f">i</tspan></text></svg>
         </div>
         <p class="wb-tagline">Open a folder or a pull request to review.</p>
       </header>
@@ -45,7 +42,7 @@
            always worktrees of one clone (workbench_clone.go). -->
       <section id="wb-clone" class="wb-clone" hidden>
         <p class="wb-clone-head">No local clone of <b id="wb-clone-repo"></b> found.</p>
-        <p class="wb-faint">Pull requests open as git worktrees of a clone of their repository, so nothing is cloned twice. Point px0 at your clone, or let it make one.</p>
+        <p class="wb-faint">Pull requests open as git worktrees of a clone of their repository, so nothing is cloned twice. Point pxi at your clone, or let it make one.</p>
         <form id="wb-clone-form" class="wb-open" autocomplete="off">
           <div class="wb-field">
             <input id="wb-clone-path" type="text" spellcheck="false" autocapitalize="off" placeholder="~/path/to/your/clone"
@@ -55,7 +52,7 @@
           <button type="submit" class="wb-btn wb-primary">Use this clone</button>
         </form>
         <p class="wb-clone-actions">
-          <button id="wb-clone-managed" type="button" class="wb-btn">Let px0 clone it</button>
+          <button id="wb-clone-managed" type="button" class="wb-btn">Let pxi clone it</button>
           <span id="wb-clone-dest" class="wb-faint wb-clone-dest"></span>
           <button id="wb-clone-cancel" type="button" class="wb-btn">Cancel</button>
         </p>
@@ -96,11 +93,10 @@
   <!-- Same status bar as the app: logo and version, then the CPU · RAM · LSP
        chip, here summed over the workbench and every running workspace. -->
   <footer id="status" class="wb-status">
-    <a class="side-logo" href="https://px0.ai" target="_blank" rel="noopener" title="px0.ai">
-      <img class="logo-dark" src="https://px0.ai/logo/px0-logo-dark.png" alt="px0" width="35" height="13">
-      <img class="logo-light" src="https://px0.ai/logo/px0-logo-light.png" alt="px0" width="35" height="13">
+    <a class="side-logo" href="https://github.com/snehal96/pxi" target="_blank" rel="noopener" title="pxi on GitHub">
+      <svg class="pxi-wordmark" width="35" height="13" viewBox="0 0 48 18" role="img" aria-label="pxi"><text x="1" y="14" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="700" fill="currentColor">px<tspan fill="#5bcc8f">i</tspan></text></svg>
     </a>
-    <span id="st-ver" class="status-ver" title="px0 version"></span>
+    <span id="st-ver" class="status-ver" title="pxi version"></span>
     <span class="status-sep"></span>
     <span id="st-running"></span>
     <span class="grow"></span>
@@ -114,7 +110,7 @@
       </span>
     </span>
     <span class="side-actions">
-      <a class="mini" href="https://github.com/px0-ai/px0" target="_blank" rel="noopener" title="px0 on GitHub" aria-label="px0 on GitHub">
+      <a class="mini" href="https://github.com/snehal96/pxi" target="_blank" rel="noopener" title="pxi on GitHub" aria-label="pxi on GitHub">
         <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
       </a>
       <button class="mini" id="btn-theme" title="Select theme" aria-label="Select theme" aria-haspopup="listbox">

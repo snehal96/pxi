@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	defaultRepo       = "px0-ai/px0"
+	defaultRepo       = "snehal96/pxi"
 	updateCheckPeriod = 24 * time.Hour
 )
 
@@ -51,13 +51,13 @@ func getRepoName() string {
 func stateFilePath() string {
 	// Respect XDG_STATE_HOME or fallback to ~/.local/state/px0 or ~/.px0
 	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
-		return filepath.Join(xdg, "px0", "update_check.json")
+		return filepath.Join(xdg, "pxi", "update_check.json")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return filepath.Join(os.TempDir(), "px0_update_check.json")
 	}
-	return filepath.Join(home, ".px0", "update_check.json")
+	return filepath.Join(home, ".pxi", "update_check.json")
 }
 
 func readUpdateState() (*updateState, error) {
@@ -261,7 +261,7 @@ func AutoUpdate(currentVersion string) {
 
 	if latestVer == "" || compareSemver(latestVer, currentVersion) <= 0 {
 		if ui.Verbose {
-			ui.Status("ok", fmt.Sprintf("px0 is up to date (v%s)", currentVersion), "", 0, os.Stdout)
+			ui.Status("ok", fmt.Sprintf("pxi is up to date (v%s)", currentVersion), "", 0, os.Stdout)
 		}
 		return
 	}
@@ -277,7 +277,7 @@ func AutoUpdate(currentVersion string) {
 		latestVer = strings.TrimPrefix(rel.TagName, "v")
 		if compareSemver(latestVer, currentVersion) <= 0 {
 			if ui.Verbose {
-				ui.Status("ok", fmt.Sprintf("px0 is up to date (v%s)", currentVersion), "", 0, os.Stdout)
+				ui.Status("ok", fmt.Sprintf("pxi is up to date (v%s)", currentVersion), "", 0, os.Stdout)
 			}
 			return
 		}
@@ -292,7 +292,7 @@ func AutoUpdate(currentVersion string) {
 		return
 	}
 
-	ui.Status("step", fmt.Sprintf("updating px0 v%s -> v%s...", currentVersion, latestVer), "pass -no-update to skip", 0, os.Stdout)
+	ui.Status("step", fmt.Sprintf("updating pxi v%s -> v%s...", currentVersion, latestVer), "pass -no-update to skip", 0, os.Stdout)
 
 	if err := installUpdate(rel, latestVer, execPath); err != nil {
 		ui.Status("warn", fmt.Sprintf("auto-update failed: %v", err), "continuing with current version", 0, os.Stderr)
@@ -301,7 +301,7 @@ func AutoUpdate(currentVersion string) {
 
 	writeUpdateState(&updateState{LastChecked: time.Now(), LatestVer: latestVer})
 
-	ui.Status("ok", fmt.Sprintf("px0 has been updated to v%s", latestVer), "restart px0 to see the latest changes", 0, os.Stdout)
+	ui.Status("ok", fmt.Sprintf("pxi has been updated to v%s", latestVer), "restart pxi to see the latest changes", 0, os.Stdout)
 }
 
 // RunSelfUpdate implements px0 --update.
@@ -316,7 +316,7 @@ func RunSelfUpdate(currentVer string) error {
 
 	latestVer := strings.TrimPrefix(rel.TagName, "v")
 	if compareSemver(latestVer, currentVer) <= 0 {
-		ui.Status("ok", fmt.Sprintf("px0 is already up to date (v%s)", currentVer), "", 0, os.Stdout)
+		ui.Status("ok", fmt.Sprintf("pxi is already up to date (v%s)", currentVer), "", 0, os.Stdout)
 		return nil
 	}
 
@@ -341,7 +341,7 @@ func RunSelfUpdate(currentVer string) error {
 		LatestVer:   latestVer,
 	})
 
-	ui.Status("ok", fmt.Sprintf("px0 successfully updated to v%s at %s", latestVer, execPath), "", 0, os.Stdout)
+	ui.Status("ok", fmt.Sprintf("pxi successfully updated to v%s at %s", latestVer, execPath), "", 0, os.Stdout)
 	return nil
 }
 
@@ -353,7 +353,7 @@ func installUpdate(rel *githubRelease, latestVer, execPath string) error {
 	if runtime.GOOS == "windows" {
 		ext = ".exe"
 	}
-	expectedAsset := fmt.Sprintf("px0-%s-%s-%s%s", latestVer, runtime.GOOS, runtime.GOARCH, ext)
+	expectedAsset := fmt.Sprintf("pxi-%s-%s-%s%s", latestVer, runtime.GOOS, runtime.GOARCH, ext)
 
 	var downloadURL, checksumURL string
 	for _, asset := range rel.Assets {
@@ -380,7 +380,7 @@ func installUpdate(rel *githubRelease, latestVer, execPath string) error {
 	if err != nil {
 		// If directory is not writable, warn user about permissions
 		if os.IsPermission(err) {
-			return fmt.Errorf("permission denied writing to %s. Try running with 'sudo px0 --update'", dir)
+			return fmt.Errorf("permission denied writing to %s. Try running with 'sudo pxi --update'", dir)
 		}
 		// Try temp directory as fallback
 		tmpFile, err = os.CreateTemp("", "px0-update-*")
@@ -430,7 +430,7 @@ func installUpdate(rel *githubRelease, latestVer, execPath string) error {
 			// If cross-device link error, copy instead
 			if err := copyOrMove(tmpPath, execPath); err != nil {
 				if os.IsPermission(err) {
-					return fmt.Errorf("permission denied replacing %s. Try running with 'sudo px0 --update'", execPath)
+					return fmt.Errorf("permission denied replacing %s. Try running with 'sudo pxi --update'", execPath)
 				}
 				return fmt.Errorf("failed to replace binary %s: %w", execPath, err)
 			}

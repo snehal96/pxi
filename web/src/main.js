@@ -102,7 +102,7 @@ initPRScope();
   applyAgentMeta();
   initPR();
   showRightInspector(); // the right sidebar starts open, on Threads when there is a harness
-  document.title = S.meta.name + ' - px0';
+  document.title = S.meta.name + ' - pxi';
   $('#root-name').textContent = S.meta.name;
   $('#root-name').title = S.meta.root;
   if (S.meta.workbench) {
@@ -110,8 +110,8 @@ initPRScope();
     const back = document.createElement('a');
     back.className = 'mini wb-back';
     back.href = S.meta.workbench;
-    back.title = 'Back to the px0 workbench';
-    back.setAttribute('aria-label', 'Back to the px0 workbench');
+    back.title = 'Back to the pxi workbench';
+    back.setAttribute('aria-label', 'Back to the pxi workbench');
     back.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>';
     $('#root-name').before(back);
   }
@@ -121,7 +121,7 @@ initPRScope();
     const stVerEl = $('#st-ver');
     if (stVerEl) {
       stVerEl.textContent = 'v' + S.meta.version;
-      stVerEl.title = `px0 v${S.meta.version} (Click for shortcuts & help)`;
+      stVerEl.title = `pxi v${S.meta.version} (Click for shortcuts & help)`;
     }
   }
   updateStatus();

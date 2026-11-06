@@ -45,8 +45,8 @@ func main() {
 		noGit        = flag.Bool("no-git", false, "disable git awareness")
 		showVer      = flag.Bool("version", false, "print version and exit")
 		showVerShort = flag.Bool("v", false, "print version and exit (shorthand)")
-		doUpdate     = flag.Bool("update", false, "check for and install latest version of px0")
-		noUpdate     = flag.Bool("no-update", false, "do not auto-update px0 on startup")
+		doUpdate     = flag.Bool("update", false, "check for and install latest version of pxi")
+		noUpdate     = flag.Bool("no-update", false, "do not auto-update pxi on startup")
 		noColor      = flag.Bool("no-color", false, "disable colour output")
 		quiet        = flag.Bool("quiet", false, "suppress narration")
 		verbose      = flag.Bool("verbose", false, "log startup steps, requests, searches, symbols, and agent prompts to terminal")
@@ -56,13 +56,14 @@ func main() {
 		_            = flag.Bool("y", false, "answer yes to prompts (deprecated; PRs are always opened without prompt)")
 		_            = flag.Bool("yes", false, "answer yes to prompts (alias for -y)")
 		basePathFlag = flag.String("base-path", "", "base URL path prefix to serve endpoints and assets from (e.g. /rev-123/)")
-		wbChild      = flag.Bool("workbench-child", false, "internal: run as a workspace of the px0 workbench")
+		wbChild      = flag.Bool("workbench-child", false, "internal: run as a workspace of the pxi workbench")
 	)
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "px0 %s - a code navigator\n\nusage:\n  px0 [flags]                      open the workbench\n  px0 [flags] <file or directory>\n  px0 [flags] <pr-url>\n\nflags:\n", version)
+		fmt.Fprintf(os.Stderr, "pxi %s - a code navigator\n\nusage:\n  pxi [flags]                      open the workbench\n  pxi [flags] <file or directory>\n  pxi [flags] <pr-url>\n\nflags:\n", version)
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+	migrateSettingsFromPx0() // fork: fork_brand.go
 
 	if *noColor {
 		f := false
@@ -79,7 +80,7 @@ func main() {
 	}
 
 	if *showVer || *showVerShort || (flag.NArg() == 1 && flag.Arg(0) == "version") {
-		fmt.Printf("px0 %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("pxi %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
 		return
 	}
 
@@ -119,7 +120,7 @@ func main() {
 	if flag.NArg() > 0 {
 		arg0 := flag.Arg(0)
 		if arg0 == "pr" {
-			fatal(fmt.Errorf("'px0 pr' is no longer supported; open pull requests directly with: px0 <url>"))
+			fatal(fmt.Errorf("'pxi pr' is no longer supported; open pull requests directly with: pxi <url>"))
 		}
 		if provider, pt, ok := DetectPRURL(arg0); ok {
 			prProvider, prTarget, isPR = provider, pt, true
@@ -128,7 +129,7 @@ func main() {
 		}
 	}
 	if isPR && gitDisabled {
-		fatal(fmt.Errorf("px0: git is required for PR review; remove -no-git"))
+		fatal(fmt.Errorf("pxi: git is required for PR review; remove -no-git"))
 	}
 
 	var pr *prSession
@@ -153,7 +154,7 @@ func main() {
 		cancel()
 		if err != nil {
 			sp.Fail(fmt.Sprintf("Failed to prepare PR #%d: %v", prTarget.Number, err))
-			fatal(fmt.Errorf("px0: %w", err))
+			fatal(fmt.Errorf("pxi: %w", err))
 		}
 		if p.meta.Merged {
 			sp.Success(fmt.Sprintf("PR #%d checked out [merged] (%s)", prTarget.Number, p.meta.Title))
@@ -224,7 +225,7 @@ func main() {
 	}
 
 	url := viewerURL(addr, initialFile, initialLine, configuredBasePath)
-	ui.Heading("px0 "+version, nil, os.Stdout)
+	ui.Heading("pxi "+version, nil, os.Stdout)
 	if pr != nil {
 		prTitle := fmt.Sprintf("#%d %s", pr.meta.Number, pr.meta.Title)
 		if pr.meta.Merged {
@@ -335,7 +336,7 @@ func main() {
 		<-stop
 		interrupted = true
 		fmt.Print("\r")
-		ui.Status("info", "px0 stopped", "", 0, os.Stderr)
+		ui.Status("info", "pxi stopped", "", 0, os.Stderr)
 		go func() {
 			<-stop // Second interrupt forces immediate exit
 			os.Exit(130)
@@ -408,7 +409,7 @@ func runWorkbench(host string, port int, basePathFlag string, open, doAutoUpdate
 	writeWorkbenchLock(viewerURL(net.JoinHostPort("127.0.0.1", boundPort), "", 0, basePath))
 	defer removeWorkbenchLock()
 
-	ui.Heading("px0 "+version, nil, os.Stdout)
+	ui.Heading("pxi "+version, nil, os.Stdout)
 	ui.KV("workbench", ui.Accent(u, os.Stdout), 11, os.Stdout)
 	if host == "0.0.0.0" {
 		for _, networkURL := range networkURLs(addr, "", 0) {
@@ -433,7 +434,7 @@ func runWorkbench(host string, port int, basePathFlag string, open, doAutoUpdate
 		<-stop
 		interrupted = true
 		fmt.Print("\r")
-		ui.Status("info", "px0 stopped", "", 0, os.Stderr)
+		ui.Status("info", "pxi stopped", "", 0, os.Stderr)
 		go func() {
 			<-stop
 			os.Exit(130)
@@ -706,6 +707,6 @@ func isWSL() bool {
 }
 
 func fatal(err error) {
-	fmt.Fprintln(os.Stderr, "px0:", err)
+	fmt.Fprintln(os.Stderr, "pxi:", err)
 	os.Exit(1)
 }

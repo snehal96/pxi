@@ -15,8 +15,8 @@
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSSupportsAutomaticTermination</key><false/>
 	<key>NSSupportsSuddenTermination</key><false/>
-	<key>NSHumanReadableCopyright</key><string>pxi: based on px0 © Arpit Bhayani, MIT License</string>
-	<!-- px0 is served over http on the loopback address only. -->
+	<key>NSHumanReadableCopyright</key><string>Copyright © 2026 pxi. Includes px0, MIT License.</string>
+	<!-- The pxi server is reached over http on the loopback address only. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key><true/>

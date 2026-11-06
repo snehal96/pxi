@@ -1,4 +1,4 @@
-# pxi fork: merge upstream px0 (px0-ai/px0) into a branch every week, build and
+# pxi: merge upstream px0 (px0-ai/px0) into a branch every week, brand it, build and
 # test it, and open (or refresh) a pull request so the merge is one click.
 # A merge that conflicts opens an issue listing the files instead.
 name: Sync upstream px0
@@ -69,8 +69,14 @@ jobs:
         run: |
           set -uo pipefail
           git checkout -B "$SYNC_BRANCH"
+          git config merge.ours.driver true # .gitattributes: README.md stays pxi's
           if git merge --no-edit "upstream/$UPSTREAM_BRANCH"; then
             echo "conflict=false" >> "$GITHUB_OUTPUT"
+            # Brand any new user-visible px0 text that came with the merge.
+            python3 scripts/pxi-brand.py
+            if ! git diff --quiet; then
+              git commit -qam "Brand new upstream text as pxi"
+            fi
           else
             {
               echo "conflict=true"
@@ -134,7 +140,8 @@ jobs:
         run: |
           set -uo pipefail
           node ./scripts/build-web.js
-          go build -trimpath -o px0 .
+          python3 scripts/pxi-brand.py --check
+          go build -trimpath -o pxi .
           if go test ./... > test.log 2>&1; then
             echo "result=passed" >> "$GITHUB_OUTPUT"
           else
@@ -167,7 +174,7 @@ jobs:
             echo
             echo "**Build and tests: $RESULT**"
             echo
-            echo "**Security-related upstream commits** (if one fixes what \`fork_security.go\` patches, that fork code can be removed)"
+            echo "**Security-related upstream commits** (if one fixes what \`fork_security.go\` patches, pxi's copy can be removed)"
             echo "${SECURITY:-none}"
             echo
             echo "<details><summary>Test summary</summary>"

@@ -523,10 +523,10 @@ func gitSnapshotWorktree(root string) string {
 
 	env := append(os.Environ(),
 		"GIT_INDEX_FILE="+tmpIdx,
-		"GIT_AUTHOR_NAME=px0",
-		"GIT_AUTHOR_EMAIL=px0@localhost",
-		"GIT_COMMITTER_NAME=px0",
-		"GIT_COMMITTER_EMAIL=px0@localhost",
+		"GIT_AUTHOR_NAME=pxi",
+		"GIT_AUTHOR_EMAIL=pxi@localhost",
+		"GIT_COMMITTER_NAME=pxi",
+		"GIT_COMMITTER_EMAIL=pxi@localhost",
 	)
 
 	addCmd := exec.Command("git", "-C", root, "add", "-A")
@@ -546,10 +546,10 @@ func gitSnapshotWorktree(root string) string {
 		return ""
 	}
 
-	ctArgs := []string{"-C", root, "commit-tree", treeSHA, "-m", "px0 turn snapshot"}
+	ctArgs := []string{"-C", root, "commit-tree", treeSHA, "-m", "pxi turn snapshot"}
 	if headOut, err := exec.Command("git", "-C", root, "rev-parse", "--verify", "HEAD").Output(); err == nil {
 		if headSHA := strings.TrimSpace(string(headOut)); validSHA(headSHA) {
-			ctArgs = []string{"-C", root, "commit-tree", treeSHA, "-p", headSHA, "-m", "px0 turn snapshot"}
+			ctArgs = []string{"-C", root, "commit-tree", treeSHA, "-p", headSHA, "-m", "pxi turn snapshot"}
 		}
 	}
 	ctCmd := exec.Command("git", ctArgs...)

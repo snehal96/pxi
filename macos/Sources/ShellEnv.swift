@@ -3,7 +3,7 @@ import Foundation
 /// The login shell's environment.
 ///
 /// An app opened from the Dock or Finder gets a bare environment: no PATH from
-/// ~/.zshrc and no exported tokens. px0 starts git, gh, claude, codex and
+/// ~/.zshrc and no exported tokens. pxi starts git, gh, claude, codex and
 /// language servers, and reads GITHUB_TOKEN and friends, so it needs what a
 /// terminal would have. A shell that hangs (a prompt in a dotfile) is given up
 /// on after `timeout` seconds and a PATH with the usual install folders is used.

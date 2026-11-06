@@ -1,6 +1,6 @@
 # pxi for Mac
 
-A native window for px0: the same px0 binary from this repo, run by a small Swift
+A native window for pxi: the pxi server built from this repo, run by a small Swift
 app (WKWebView, the engine Safari uses). No Electron, no browser tab.
 
 ## Build and install
@@ -15,15 +15,15 @@ local use; on another Mac, right-click it and choose **Open** the first time.
 
 ## How it works
 
-- pxi starts the bundled `px0` as a workbench on `127.0.0.1:47770` with your login
+- pxi starts its bundled server as a workbench on `127.0.0.1:47770` with your login
   shell's environment, so `git`, `gh`, `claude`, `codex` and tokens such as
   `GITHUB_TOKEN` are found as in a terminal.
-- If a px0 workbench is already running (the `px0` CLI), pxi uses it and leaves it
-  running on quit. Otherwise quitting pxi stops px0 and every workspace it opened.
-- px0's own pages open in pxi windows (as tabs); outside links open in your browser.
-- Closing a window or quitting asks first when px0 has unsaved edits or an agent is
+- If a pxi workbench is already running (the `pxi` CLI), the app uses it and leaves it
+  running on quit. Otherwise quitting pxi stops the server and every workspace it opened.
+- pxi pages open in pxi windows (as tabs); outside links open in your browser.
+- Closing a window or quitting asks first when there are unsaved edits or an agent is
   still changing files.
-- Log: `~/Library/Logs/pxi/px0.log` (Help → Show px0 Log).
+- Log: `~/Library/Logs/pxi/pxi.log` (Help → Show Log).
 
 ## Opening folders
 
@@ -35,14 +35,14 @@ open -a pxi ~/code/platform
 
 ## Shortcuts
 
-Every px0 shortcut works; the page gets each key before the menu. pxi's own:
+Every in-page shortcut works; the page gets each key before the menu. The app adds:
 
 | Keys | Action |
 |---|---|
 | Cmd+O | Open folder |
 | Cmd+T | New tab |
 | Cmd+Shift+N | New window |
-| Cmd+Shift+W | Close window (Cmd+W closes px0's file tab) |
+| Cmd+Shift+W | Close window (Cmd+W closes the file tab) |
 | Cmd+Shift+H | Back to the workbench |
 | Cmd+Option+R | Reload page |
 | Cmd+= / Cmd+- / Cmd+0 | Zoom |

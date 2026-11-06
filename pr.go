@@ -106,7 +106,7 @@ func computeDiffBase(worktree, srcRepo, srcRemote string, fg forgeGit, baseRef s
 		if fetchErr != "" {
 			diffBaseWarning = fmt.Sprintf("%s (%s)", diffBaseWarning, fetchErr)
 		}
-		fmt.Fprintln(os.Stderr, "px0: warning:", diffBaseWarning)
+		fmt.Fprintln(os.Stderr, "pxi: warning:", diffBaseWarning)
 		if onProgress != nil {
 			onProgress("Warning: " + diffBaseWarning)
 		}
@@ -1184,7 +1184,7 @@ func (s *Server) handleForgeConnect(w http.ResponseWriter, r *http.Request) {
 	token, extra := strings.TrimSpace(body.Token), strings.TrimSpace(body.Extra)
 	provider, target, ok := s.forgeTarget()
 	if !ok {
-		fail(w, http.StatusBadRequest, "this workspace's remote isn't on a forge px0 knows")
+		fail(w, http.StatusBadRequest, "this workspace's remote isn't on a forge pxi knows")
 		return
 	}
 	info, setup := provider.Info(), provider.TokenSetup(target.Host)

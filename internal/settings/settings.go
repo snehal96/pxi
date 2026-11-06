@@ -51,13 +51,13 @@ var settingsMu sync.Mutex
 // it is set, otherwise fall back to ~/.px0.
 func Path() string {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "px0", "settings.json")
+		return filepath.Join(xdg, "pxi", "settings.json")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil || home == "" {
 		return ""
 	}
-	return filepath.Join(home, ".px0", "settings.json")
+	return filepath.Join(home, ".pxi", "settings.json")
 }
 
 // SchemaItem describes a configurable setting for dynamic rendering in the settings modal.
@@ -363,7 +363,7 @@ var Schema = []SchemaItem{
 	{
 		Key:         "github.token",
 		Title:       "GitHub Token",
-		Description: "Personal access token used to check out and review pull requests (px0 <url>). Takes precedence over the GITHUB_TOKEN environment variable and 'gh auth token'.",
+		Description: "Personal access token used to check out and review pull requests (pxi <url>). Takes precedence over the GITHUB_TOKEN environment variable and 'gh auth token'.",
 		Category:    "GitHub",
 		Type:        "string",
 		Default:     "",
@@ -423,7 +423,7 @@ var Schema = []SchemaItem{
 	{
 		Key:         "server.basePath",
 		Title:       "Base Path",
-		Description: "Base URL path prefix for the px0 server and web interface (e.g. /rev-123/).",
+		Description: "Base URL path prefix for the pxi server and web interface (e.g. /rev-123/).",
 		Category:    "Server",
 		Type:        "string",
 		Default:     "/",
@@ -431,7 +431,7 @@ var Schema = []SchemaItem{
 	{
 		Key:         "tips.enabled",
 		Title:       "Show Tips in Interface",
-		Description: "Controls whether px0 periodically shows helpful tips and tricks in the interface.",
+		Description: "Controls whether pxi periodically shows helpful tips and tricks in the interface.",
 		Category:    "General",
 		Type:        "boolean",
 		Default:     true,

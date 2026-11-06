@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds macos/dist/pxi.app: the Swift shell plus the px0 binary from this repo,
+# Builds macos/dist/pxi.app: the Swift shell plus the pxi server built from this repo,
 # both universal (Apple silicon + Intel), ad-hoc signed for local use.
 #   macos/build.sh            build
 #   macos/build.sh --install  build and copy to /Applications
@@ -17,11 +17,11 @@ trap 'rm -rf "$TMP"' EXIT
 echo "==> web assets"
 node "$ROOT/scripts/build-web.js" >/dev/null
 
-echo "==> px0 (universal)"
+echo "==> pxi server (universal)"
 for arch in arm64 amd64; do
-  (cd "$ROOT" && CGO_ENABLED=0 GOOS=darwin GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "$TMP/px0-$arch" .)
+  (cd "$ROOT" && CGO_ENABLED=0 GOOS=darwin GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "$TMP/pxi-server-$arch" .)
 done
-lipo -create -output "$TMP/px0" "$TMP/px0-arm64" "$TMP/px0-amd64"
+lipo -create -output "$TMP/pxi-server" "$TMP/pxi-server-arm64" "$TMP/pxi-server-amd64"
 
 echo "==> pxi shell (universal)"
 for arch in arm64 x86_64; do
@@ -37,11 +37,11 @@ echo "==> bundle"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$TMP/pxi" "$APP/Contents/MacOS/pxi"
-cp "$TMP/px0" "$APP/Contents/Resources/px0"
+cp "$TMP/pxi-server" "$APP/Contents/Resources/pxi"
 cp "$TMP/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-cp "$ROOT/LICENSE" "$APP/Contents/Resources/LICENSE-px0"
+cp "$ROOT/LICENSE" "$APP/Contents/Resources/THIRD-PARTY-LICENSE-px0"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" "$MAC/Info.plist" > "$APP/Contents/Info.plist"
-codesign --force --sign - "$APP/Contents/Resources/px0"
+codesign --force --sign - "$APP/Contents/Resources/pxi"
 codesign --force --sign - "$APP"
 
 echo "Built $APP ($(du -sh "$APP" | cut -f1))"

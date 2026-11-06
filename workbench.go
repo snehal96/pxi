@@ -79,12 +79,12 @@ type wbFile struct {
 // $XDG_STATE_HOME/px0 when set, otherwise ~/.px0, like the session files.
 func workbenchStateDir() string {
 	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
-		return filepath.Join(xdg, "px0")
+		return filepath.Join(xdg, "pxi")
 	}
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
-		return filepath.Join(home, ".px0")
+		return filepath.Join(home, ".pxi")
 	}
-	return filepath.Join(os.TempDir(), "px0")
+	return filepath.Join(os.TempDir(), "pxi")
 }
 
 func workbenchStorePath() string { return filepath.Join(workbenchStateDir(), "workbench.json") }
@@ -315,10 +315,10 @@ func (c *wbChild) failure() string {
 	c.logMu.Lock()
 	defer c.logMu.Unlock()
 	for i := len(c.log) - 1; i >= 0; i-- {
-		if strings.HasPrefix(c.log[i], "px0: ") {
+		if strings.HasPrefix(c.log[i], "pxi: ") {
 			msg := c.log[i]
-			for strings.HasPrefix(msg, "px0: ") {
-				msg = strings.TrimPrefix(msg, "px0: ")
+			for strings.HasPrefix(msg, "pxi: ") {
+				msg = strings.TrimPrefix(msg, "pxi: ")
 			}
 			return msg
 		}
@@ -328,7 +328,7 @@ func (c *wbChild) failure() string {
 			return s
 		}
 	}
-	return "px0 exited unexpectedly"
+	return "pxi exited unexpectedly"
 }
 
 type workbench struct {
@@ -420,7 +420,7 @@ func (wb *workbench) start(it wbItem, forget bool) *wbChild {
 		ctx: ctx, cancel: cancel, lastActive: time.Now()}
 	wb.children[it.ID] = c
 	if wb.closing {
-		c.state, c.err = "failed", "px0 is shutting down"
+		c.state, c.err = "failed", "pxi is shutting down"
 		cancel()
 		close(c.done)
 		return c
@@ -546,7 +546,7 @@ func (wb *workbench) run(c *wbChild, it wbItem, forget bool) {
 	case err := <-exited:
 		msg := c.failure()
 		if err == nil && msg == "" {
-			msg = "px0 exited before it was ready"
+			msg = "pxi exited before it was ready"
 		}
 		failed(msg)
 		return
@@ -687,7 +687,7 @@ func trustedGet(w http.ResponseWriter, r *http.Request) bool {
 	}
 	host = strings.Trim(host, "[]")
 	if host != "localhost" && net.ParseIP(host) == nil {
-		fail(w, http.StatusForbidden, "open px0 by IP address or localhost")
+		fail(w, http.StatusForbidden, "open pxi by IP address or localhost")
 		return false
 	}
 	return true
@@ -1059,7 +1059,7 @@ func (wb *workbench) resolveTarget(target string) (wbItem, error) {
 	}
 	if _, pt, ok := DetectPRURL(target); ok {
 		if gitDisabled {
-			return wbItem{}, errors.New("git is required for PR review; restart px0 without -no-git")
+			return wbItem{}, errors.New("git is required for PR review; restart pxi without -no-git")
 		}
 		return wbPRItem(pt), nil
 	}
@@ -1250,8 +1250,8 @@ var holdingTmpl = template.Must(template.New("holding").Parse(`<!doctype html>
 <base href="{{.Base}}">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 {{if .Starting}}<meta http-equiv="refresh" content="1; url={{.Self}}">{{end}}
-<title>{{if .Starting}}Opening…{{else}}px0{{end}}</title>
-<link rel="icon" type="image/x-icon" href="https://px0.ai/favicon.ico">
+<title>{{if .Starting}}Opening…{{else}}pxi{{end}}</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314161d'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Menlo,monospace' font-size='15' font-weight='700' fill='%23fff'%3Epx%3Ctspan fill='%235bcc8f'%3Ei%3C/tspan%3E%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="static/style.css">
 <link rel="stylesheet" href="static/themes.css">
 <link rel="stylesheet" href="static/workbench.css">
@@ -1259,8 +1259,7 @@ var holdingTmpl = template.Must(template.New("holding").Parse(`<!doctype html>
 <body class="wb">
 <main class="wb-holding">
   <div class="empty-logo">
-    <img class="logo-dark" src="https://px0.ai/logo/px0-logo-dark.png" alt="px0" width="160" height="60">
-    <img class="logo-light" src="https://px0.ai/logo/px0-logo-light.png" alt="px0" width="160" height="60">
+    <svg class="pxi-wordmark" width="160" height="60" viewBox="0 0 48 18" role="img" aria-label="pxi"><text x="1" y="14" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="700" fill="currentColor">px<tspan fill="#5bcc8f">i</tspan></text></svg>
   </div>
   {{if .Starting}}
   <p class="wb-holding-msg"><span class="wb-spin" aria-hidden="true"></span>Opening <b>{{.Title}}</b>…</p>

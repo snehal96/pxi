@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SRC="${1:-./px0}"
+SRC="${1:-./pxi}"
 
 if [ ! -f "$SRC" ]; then
     echo "Error: Source binary '$SRC' not found. Run 'go build' first." >&2
@@ -18,21 +18,21 @@ if [ -n "${INSTALL_PATH:-}" ]; then
     TARGETS+=("$INSTALL_PATH")
 fi
 
-# Scan PATH for existing px0 binaries
+# Scan PATH for existing pxi binaries
 SAVED_IFS="$IFS"
 IFS=:
 for dir in $PATH; do
     [ -z "$dir" ] && continue
-    candidate="$dir/px0"
+    candidate="$dir/pxi"
     if [ -f "$candidate" ] || [ -L "$candidate" ]; then
         TARGETS+=("$candidate")
     fi
 done
 IFS="$SAVED_IFS"
 
-# Also check ~/.local/bin/px0 as a fallback if it exists
-if [ -f "$HOME/.local/bin/px0" ] || [ -L "$HOME/.local/bin/px0" ]; then
-    TARGETS+=("$HOME/.local/bin/px0")
+# Also check ~/.local/bin/pxi as a fallback if it exists
+if [ -f "$HOME/.local/bin/pxi" ] || [ -L "$HOME/.local/bin/pxi" ]; then
+    TARGETS+=("$HOME/.local/bin/pxi")
 fi
 
 for candidate in "${TARGETS[@]}"; do
@@ -71,5 +71,5 @@ for candidate in "${TARGETS[@]}"; do
 done
 
 if [ "$REPLACED" -eq 0 ] && [ -z "${INSTALL_PATH:-}" ]; then
-    echo "ℹ No existing px0 binary found in PATH or ~/.local/bin to replace."
+    echo "ℹ No existing pxi binary found in PATH or ~/.local/bin to replace."
 fi

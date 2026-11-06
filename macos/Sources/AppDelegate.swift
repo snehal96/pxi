@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = MainMenu.build()
         let wc = newWindow()
-        wc.showStatus("Starting px0…")
+        wc.showStatus("Starting pxi…")
         startServer()
     }
 
@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 case .failure(let message):
                     self.startError = message
                     for w in self.windows {
-                        w.showStatus("px0 did not start.\n\n\(message)", isError: true, logURL: self.server.logURL)
+                        w.showStatus("pxi did not start.\n\n\(message)", isError: true, logURL: self.server.logURL)
                     }
                 }
             }
@@ -87,7 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         pendingTargets = []
         for (i, t) in targets.enumerated() {
             let wc = (i == 0 ? frontController : nil) ?? newWindow()
-            // A window still on its first load runs the request once px0 is up.
+            // A window still on its first load runs the request once the server is up.
             if wc.webView.isLoading {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { wc.openTarget(t) }
             } else {
@@ -118,7 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showAbout(_ sender: Any?) {
         let credits = NSAttributedString(
-            string: "A Mac app for px0, with worktree review for parallel agents.\n\nBased on px0 by Arpit Bhayani (MIT License).\nhttps://github.com/px0-ai/px0",
+            string: "Review what your coding agents change, across every worktree.\n\nIncludes px0 by Arpit Bhayani, used under the MIT License.",
             attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor])
         NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
     }
@@ -132,7 +132,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
             let wc = newWindow()
-            if let startError { wc.showStatus("px0 did not start.\n\n\(startError)", isError: true, logURL: server.logURL) }
+            if let startError { wc.showStatus("pxi did not start.\n\n\(startError)", isError: true, logURL: server.logURL) }
         }
         return true
     }

@@ -83,7 +83,7 @@ func TestReviewWorkflowConfigEndpoints(t *testing.T) {
 	}
 
 	// Verify on-disk write
-	p := filepath.Join(tmp, ".px0", "workflows.json")
+	p := filepath.Join(tmp, ".pxi", "workflows.json")
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		t.Fatalf("expected config file to be written at %s", p)
 	}
@@ -138,7 +138,7 @@ func TestReviewWorkflowConfigCorruptAndSaveValidation(t *testing.T) {
 	s := NewServer(ix, nil)
 
 	// Create corrupt workflows.json
-	workflowDir := filepath.Join(tmp, ".px0")
+	workflowDir := filepath.Join(tmp, ".pxi")
 	if err := os.MkdirAll(workflowDir, 0755); err != nil {
 		t.Fatalf("failed to create dir: %v", err)
 	}
