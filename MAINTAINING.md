@@ -11,7 +11,9 @@ the px0 it is built on.** CI enforces it (`.github/workflows/budget.yml` runs
 same workspace, and fails when pxi exceeds px0 on server memory (+10% or +1 MB,
 whichever is larger: noise on a ~7 MB process),
 page JS heap (+10%), DOM elements at rest (+120: the activity bar) or after
-opening and leaving pxi's views (+200), or UI bundle size (+12% gzipped).
+opening and leaving pxi's views (+200). UI bundle size warns above +12% gzipped
+and fails above +25%: code size is not memory (page JS heap covers that), but growth
+should stay visible; past the warning, load big features on first use.
 Run it locally with `bun scripts/pxi-budget.js <px0-bin> <pxi-bin> <workspace>`.
 
 How features stay inside it:

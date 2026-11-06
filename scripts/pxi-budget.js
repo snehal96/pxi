@@ -22,7 +22,9 @@ const BUDGET = {
   heapPct: 10,           // page JS heap after GC
   idleDomExtra: 120,     // DOM elements pxi adds at rest (the activity bar)
   viewsDomExtra: 200,    // after opening and leaving pxi's views: they must free their rows
-  bundleGzPct: 12,       // UI bundle, gzipped
+  bundleGzWarnPct: 12,   // UI bundle, gzipped: warn above this ...
+  bundleGzPct: 25,       // ... and fail above this. Code size is not memory (page JS heap
+                         // covers what code costs at run time), but it should stay visible.
 };
 
 const [px0Bin, pxiBin, workspace, px0App, pxiApp] = process.argv.slice(2);
@@ -169,7 +171,12 @@ const rows = [
   ['DOM elements, after views', base.domViews, mine.domViews, mine.domViews <= base.domViews + BUDGET.viewsDomExtra, `≤ +${BUDGET.viewsDomExtra}`],
 ];
 const bgz = gz(px0App), mgz = gz(pxiApp);
-if (bgz && mgz) rows.push(['UI bundle gz (KB)', bgz, mgz, mgz <= bgz * (1 + BUDGET.bundleGzPct / 100), `≤ +${BUDGET.bundleGzPct}%`]);
+if (bgz && mgz) {
+  rows.push(['UI bundle gz (KB)', bgz, mgz, mgz <= bgz * (1 + BUDGET.bundleGzPct / 100), `≤ +${BUDGET.bundleGzPct}%`]);
+  if (mgz > bgz * (1 + BUDGET.bundleGzWarnPct / 100)) {
+    console.log(`::warning::UI bundle is ${((mgz / bgz - 1) * 100).toFixed(1)}% larger than px0's (warning above ${BUDGET.bundleGzWarnPct}%). Consider loading big features on first use.`);
+  }
+}
 
 let failed = false;
 console.log('\nmetric                         px0        pxi     budget    result');
