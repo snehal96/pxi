@@ -25,7 +25,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     self.baseURL = url
                     self.startError = nil
                     if self.windows.isEmpty { _ = self.newWindow() }
-                    for w in self.windows where w.webView.url == nil { w.load(url) }
+                    // After Restart pxi: reopen what each window showed.
+                    var restore = (UserDefaults.standard.stringArray(forKey: Self.restoreKey) ?? [])
+                        .compactMap { URL(string: $0, relativeTo: url)?.absoluteURL }
+                    UserDefaults.standard.removeObject(forKey: Self.restoreKey)
+                    for w in self.windows where w.webView.url == nil {
+                        w.load(restore.isEmpty ? url : restore.removeFirst())
+                    }
+                    for extra in restore { self.newWindow().load(extra) }
                     self.flushTargets()
                 case .failure(let message):
                     self.startError = message
@@ -167,16 +174,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func finishTerminate(dirty: Bool) {
         guard dirty else { return NSApp.reply(toApplicationShouldTerminate: true) }
         let a = NSAlert()
-        a.messageText = "Quit pxi?"
-        a.informativeText = "A window has unsaved edits, or an agent is still changing files. Quitting loses the unsaved edits."
-        a.addButton(withTitle: "Quit")
+        a.messageText = restarting ? "Restart pxi?" : "Quit pxi?"
+        a.informativeText = "A window has unsaved edits, or an agent is still changing files. \(restarting ? "Restarting" : "Quitting") loses the unsaved edits."
+        a.addButton(withTitle: restarting ? "Restart" : "Quit")
         a.addButton(withTitle: "Cancel")
         a.buttons.first?.hasDestructiveAction = true
-        NSApp.reply(toApplicationShouldTerminate: a.runModal() == .alertFirstButtonReturn)
+        let ok = a.runModal() == .alertFirstButtonReturn
+        if !ok { restarting = false }
+        NSApp.reply(toApplicationShouldTerminate: ok)
+    }
+
+    // MARK: - Restart (pxi menu): a fresh app and server, same windows
+
+    static let restoreKey = "pxi.restoreWindows"
+    private var restarting = false
+
+    @objc func restartApp(_ sender: Any?) {
+        restarting = true
+        NSApp.terminate(nil) // asks first if there is unsaved work
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        if restarting {
+            // Each window's page, relative to the server, reopened after the restart.
+            let pages = windows.compactMap { w -> String? in
+                guard let u = w.webView.url, isPx0(u) else { return nil }
+                return u.path + (u.query.map { "?" + $0 } ?? "")
+            }
+            UserDefaults.standard.set(pages, forKey: Self.restoreKey)
+        }
         server.stop()
+        if restarting {
+            // Relaunch once this process has gone.
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/bin/sh")
+            p.arguments = ["-c", "sleep 0.6; /usr/bin/open \"$0\"", Bundle.main.bundlePath]
+            try? p.run()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }

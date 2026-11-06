@@ -48,6 +48,7 @@ enum MainMenu {
         m.addItem(item("Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]))
         m.addItem(item("Show All", #selector(NSApplication.unhideAllApplications(_:))))
         m.addItem(.separator())
+        m.addItem(item("Restart pxi", #selector(AppDelegate.restartApp(_:)), "r", [.command, .option, .shift], target: d))
         m.addItem(item("Quit pxi", #selector(NSApplication.terminate(_:)), "q"))
         return m
     }
@@ -81,7 +82,7 @@ enum MainMenu {
         m.addItem(item("Workbench", #selector(BrowserWindowController.showWorkbench(_:)), "h", [.command, .shift]))
         m.addItem(item("Back", #selector(BrowserWindowController.goBack(_:)), "["))
         m.addItem(item("Forward", #selector(BrowserWindowController.goForward(_:)), "]"))
-        m.addItem(item("Reload Page", #selector(BrowserWindowController.reloadPage(_:)), "r", [.command, .option]))
+        m.addItem(item("Reload Window", #selector(BrowserWindowController.reloadPage(_:)), "r", [.command, .option]))
         m.addItem(.separator())
         m.addItem(item("Actual Size", #selector(BrowserWindowController.actualSize(_:)), "0"))
         m.addItem(item("Zoom In", #selector(BrowserWindowController.zoomIn(_:)), "="))
