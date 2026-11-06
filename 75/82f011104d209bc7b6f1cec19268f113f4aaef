@@ -1,0 +1,21 @@
+MAINTAINING.md
+  s_6aae6385e41f30::t_badb7559925f1f 14-16
+scripts/pxi-budget.js
+  s_6aae6385e41f30::t_f0c3cdc1a5202d 25-27,174-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7582f011104d209bc7b6f1cec19268f113f4aaef",
+  "prompts": {},
+  "sessions": {
+    "s_6aae6385e41f30": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_6aae6385e41f30",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
