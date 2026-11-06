@@ -1,0 +1,39 @@
+FORK.md
+  s_0a026e8209ffe8::t_4b0b713d1cbe0b 9
+macos/Info.plist
+  s_0a026e8209ffe8::t_31645f08243507 1-36
+macos/README.md
+  s_0a026e8209ffe8::t_6680b18d11daff 1-53
+macos/Sources/AppDelegate.swift
+  s_0a026e8209ffe8::t_5c3aa445fa5adc 1-171
+macos/Sources/BrowserWindow.swift
+  s_0a026e8209ffe8::t_d99ffe63216e19 1-351
+macos/Sources/MainMenu.swift
+  s_0a026e8209ffe8::t_5fa35fbd6ded86 1-109
+macos/Sources/PxServer.swift
+  s_0a026e8209ffe8::t_0d0f17401d460c 1-121
+macos/Sources/ShellEnv.swift
+  s_0a026e8209ffe8::t_526284c36598f9 1-76
+macos/Sources/main.swift
+  s_0a026e8209ffe8::t_eda3bd65e45729 1-7
+macos/build.sh
+  s_0a026e8209ffe8::t_2ef16f8941b827 1-53
+macos/make-icon.swift
+  s_0a026e8209ffe8::t_706d33a86ff1d6 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b005785421ebcacfa0f1d3bf10a9b013f176c5eb",
+  "prompts": {},
+  "sessions": {
+    "s_0a026e8209ffe8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_0a026e8209ffe8",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
