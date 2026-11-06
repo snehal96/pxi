@@ -1,0 +1,49 @@
+.github/workflows/ci.yml
+  s_706bfd642c70f4::t_ba184bc0d26406 23-24,26,31
+.github/workflows/release.yml
+  s_706bfd642c70f4::t_0b017809b2f5db 34-35,37,41
+.github/workflows/sync-upstream.yml
+  s_706bfd642c70f4::t_162a1f948899e1 132,135,142
+Dockerfile
+  s_706bfd642c70f4::t_2fea140433a7d3 2,6
+MAINTAINING.md
+  s_706bfd642c70f4::t_b67eb72c8c7add 20-24
+Makefile
+  s_706bfd642c70f4::t_806298f4f13765 50,69
+README.md
+  s_706bfd642c70f4::t_89e1940edeef32 27
+macos/README.md
+  s_706bfd642c70f4::t_9ae78a3b5d5486 13
+macos/build.sh
+  s_706bfd642c70f4::t_087f2af8dae28b 18
+package.json
+  s_706bfd642c70f4::t_cc339c03f39f2b 8-10
+scripts/build-web.js
+  s_706bfd642c70f4::t_0dd6bb3a386f10 1,16-24,59,140
+scripts/check-web.js
+  s_706bfd642c70f4::t_5c8b57c4bd0372 1,11-19,32,64
+scripts/pxi-brand.py
+  s_706bfd642c70f4::t_0b3e04e0e537de 181-212,214-216,265-269,294-295
+scripts/test-bench.sh
+  s_706bfd642c70f4::t_5601ad422f2af6 85
+web/pxi/shell.css
+  s_706bfd642c70f4::t_8a968ae08e378a 150-168
+web/src/pxi-shell.js
+  s_706bfd642c70f4::t_1845bc4f185e3a 7,13,111-144,151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9bd11aa46b05ba0b8cf8f6dcc3a1bd773e287eec",
+  "prompts": {},
+  "sessions": {
+    "s_706bfd642c70f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_706bfd642c70f4",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
