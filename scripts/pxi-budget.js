@@ -6,7 +6,7 @@
  *
  *   bun scripts/pxi-budget.js <px0-binary> <pxi-binary> <workspace> [px0-app.js] [pxi-app.js]
  *
- * Measured: server RSS once idle (after its 15 s memory release), page JS heap after GC, DOM elements idle and after
+ * Measured: server memory once idle (anonymous RSS / footprint, after its 15 s release), page JS heap after GC, DOM elements idle and after
  * opening pxi's views (Worktrees, Source Control) and returning to Explorer,
  * and the gzipped UI bundle. Budgets are in BUDGET below; see MAINTAINING.md.
  */
@@ -37,9 +37,22 @@ const CHROME = process.env.CHROME || [
 ].find(p => fs.existsSync(p));
 if (!CHROME) { console.error('no Chrome found (set CHROME)'); process.exit(2); }
 
+// Memory the server allocated: anonymous resident memory on Linux, the
+// physical footprint on macOS. Plain RSS also counts pages of the program file
+// itself, which are shared and reclaimable and grow with binary size, not use.
 function rssMB(pid) {
-  const kb = Number(execFileSync('ps', ['-o', 'rss=', '-p', String(pid)]).toString().trim());
-  return kb / 1024;
+  if (process.platform === 'linux') {
+    const m = fs.readFileSync(`/proc/${pid}/status`, 'utf8').match(/^RssAnon:\s+(\d+) kB/m);
+    if (m) return Number(m[1]) / 1024;
+  }
+  if (process.platform === 'darwin') {
+    try {
+      const out = execFileSync('footprint', ['-p', String(pid), '--noCategories', '-f', 'bytes'], { stderr: 'ignore' }).toString();
+      const m = out.match(/Footprint: (\d+)/);
+      if (m) return Number(m[1]) / 1048576;
+    } catch {}
+  }
+  return Number(execFileSync('ps', ['-o', 'rss=', '-p', String(pid)]).toString().trim()) / 1024;
 }
 
 async function waitFor(url, ms = 30000) {
@@ -119,10 +132,17 @@ async function measure(bin, label) {
 
 const gz = f => (f && fs.existsSync(f) ? zlib.gzipSync(fs.readFileSync(f)).length / 1024 : null);
 
-const base = await measure(px0Bin, 'px0');
-const mine = await measure(pxiBin, 'pxi');
+// Memory varies a few MB from run to run, so each build runs twice,
+// alternating, and keeps its lowest reading of each metric.
+const RUNS = Number(process.env.PXI_BUDGET_RUNS || 2);
+const best = (a, b) => (a ? { rss: Math.min(a.rss, b.rss), heap: Math.min(a.heap, b.heap), domIdle: Math.min(a.domIdle, b.domIdle), domViews: Math.min(a.domViews, b.domViews) } : b);
+let base = null, mine = null;
+for (let i = 0; i < RUNS; i++) {
+  base = best(base, await measure(px0Bin, 'px0'));
+  mine = best(mine, await measure(pxiBin, 'pxi'));
+}
 const rows = [
-  ['server RSS (MB)', base.rss, mine.rss, mine.rss <= base.rss * (1 + BUDGET.serverRssPct / 100), `≤ +${BUDGET.serverRssPct}%`],
+  ['server memory (MB)', base.rss, mine.rss, mine.rss <= base.rss * (1 + BUDGET.serverRssPct / 100), `≤ +${BUDGET.serverRssPct}%`],
   ['page JS heap (MB)', base.heap, mine.heap, mine.heap <= base.heap * (1 + BUDGET.heapPct / 100), `≤ +${BUDGET.heapPct}%`],
   ['DOM elements, idle', base.domIdle, mine.domIdle, mine.domIdle <= base.domIdle + BUDGET.idleDomExtra, `≤ +${BUDGET.idleDomExtra}`],
   ['DOM elements, after views', base.domViews, mine.domViews, mine.domViews <= base.domViews + BUDGET.viewsDomExtra, `≤ +${BUDGET.viewsDomExtra}`],
