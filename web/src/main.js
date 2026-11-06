@@ -37,6 +37,8 @@ import { initReviewFlow } from './reviewflow.js';
 import { initShell } from './pxi-shell.js';
 // fork: pxi Mac app title bar
 import { initNative } from './pxi-native.js';
+// fork: pxi HTML preview
+import { initHtmlPreview } from './pxi-html.js';
 
 // Initialize all subsystems
 initRenderer();
@@ -133,6 +135,7 @@ initPRScope();
   await refreshTree();
   initShell(); // fork: pxi-shell.js
   initNative(); // fork: pxi-native.js
+  initHtmlPreview(); // fork: pxi-html.js
   initGitStream();
 
   // Split into helpers so the readiness poll below can redo this once the

@@ -424,3 +424,11 @@ body.pxi-palette #palette[data-pxi-mode="file"] {
 body.pxi-palette #palette[data-pxi-mode="symbol"] {
   --pxi-pal-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.3'%3E%3Cpath d='M5 2.5H4a1 1 0 0 0-1 1v3L2 8l1 1.5v3a1 1 0 0 0 1 1h1M11 2.5h1a1 1 0 0 1 1 1v3L14 8l-1 1.5v3a1 1 0 0 1-1 1h-1'/%3E%3C/svg%3E");
 }
+/* ---------- HTML preview (web/src/pxi-html.js) ---------- */
+#pxi-html-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; z-index: 6; }
+body.pxi-shell #pxi-html-btn {
+  width: 26px; height: 22px; padding: 0; display: grid; place-items: center; border-radius: 4px; color: var(--dim); background: none;
+}
+body.pxi-shell #pxi-html-btn[hidden] { display: none; }
+body.pxi-shell #pxi-html-btn:hover { background: var(--bg3); color: var(--fg); }
+body.pxi-shell #pxi-html-btn.on { background: var(--bg4); color: var(--fg); }
