@@ -17,7 +17,8 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const BUDGET = {
-  serverRssPct: 10,      // server RSS may be at most 10% over px0 (measurement noise)
+  serverRssPct: 10,      // server memory: at most 10% over px0 ...
+  serverRssMB: 1.5,      // ... or 1.5 MB, whichever is larger (a ~7 MB Go process varies ~1 MB)
   heapPct: 10,           // page JS heap after GC
   idleDomExtra: 120,     // DOM elements pxi adds at rest (the activity bar)
   viewsDomExtra: 200,    // after opening and leaving pxi's views: they must free their rows
@@ -142,7 +143,7 @@ for (let i = 0; i < RUNS; i++) {
   mine = best(mine, await measure(pxiBin, 'pxi'));
 }
 const rows = [
-  ['server memory (MB)', base.rss, mine.rss, mine.rss <= base.rss * (1 + BUDGET.serverRssPct / 100), `≤ +${BUDGET.serverRssPct}%`],
+  ['server memory (MB)', base.rss, mine.rss, mine.rss <= Math.max(base.rss * (1 + BUDGET.serverRssPct / 100), base.rss + BUDGET.serverRssMB), `≤ +${BUDGET.serverRssPct}%/${BUDGET.serverRssMB}MB`],
   ['page JS heap (MB)', base.heap, mine.heap, mine.heap <= base.heap * (1 + BUDGET.heapPct / 100), `≤ +${BUDGET.heapPct}%`],
   ['DOM elements, idle', base.domIdle, mine.domIdle, mine.domIdle <= base.domIdle + BUDGET.idleDomExtra, `≤ +${BUDGET.idleDomExtra}`],
   ['DOM elements, after views', base.domViews, mine.domViews, mine.domViews <= base.domViews + BUDGET.viewsDomExtra, `≤ +${BUDGET.viewsDomExtra}`],
@@ -155,7 +156,7 @@ console.log('\nmetric                         px0        pxi     budget    resul
 for (const [name, b, m, ok, rule] of rows) {
   failed ||= !ok;
   const f = v => (Number.isInteger(v) ? String(v) : v.toFixed(2)).padStart(9);
-  console.log(name.padEnd(27) + f(b) + '  ' + f(m) + '   ' + rule.padEnd(9) + ' ' + (ok ? 'ok' : 'OVER BUDGET'));
+  console.log(name.padEnd(27) + f(b) + '  ' + f(m) + '   ' + rule.padEnd(13) + ' ' + (ok ? 'ok' : 'OVER BUDGET'));
 }
 if (failed) {
   console.error('\npxi uses more memory than px0. Make the new feature free its memory when not in use (see MAINTAINING.md).');

@@ -499,10 +499,13 @@ func TestAgentAllowsNonOverlappingEditsInParallel(t *testing.T) {
 	if code != 200 {
 		t.Fatalf("first edit = %d, want 200", code)
 	}
-	code, _ = agentPost(t, s, "/api/agent/edit?path=keep.go&l1=2&l2=2&instruction=two")
+	code, second := agentPost(t, s, "/api/agent/edit?path=keep.go&l1=2&l2=2&instruction=two")
 	if code != 200 {
 		t.Fatalf("disjoint-range edit = %d, want 200 (should run in parallel)", code)
 	}
+	// fork: also wait for the second edit, which otherwise could still be
+	// saving its thread when the test's temp dir is removed.
+	defer waitIdleID(t, s, int64(second["id"].(float64)))
 	code, _ = agentPost(t, s, "/api/agent/edit?path=keep.go&l1=1&l2=2&instruction=three")
 	if code != http.StatusConflict {
 		t.Fatalf("edit overlapping both = %d, want 409", code)
