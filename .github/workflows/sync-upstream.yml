@@ -1,0 +1,190 @@
+# pxi fork: merge upstream px0 (px0-ai/px0) into a branch every week, build and
+# test it, and open (or refresh) a pull request so the merge is one click.
+# A merge that conflicts opens an issue listing the files instead.
+name: Sync upstream px0
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # Mondays 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: https://github.com/px0-ai/px0.git
+  UPSTREAM_BRANCH: master
+  BASE: master
+  SYNC_BRANCH: sync/upstream
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE }}
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        id: fetch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream "$UPSTREAM"
+          git fetch --no-tags upstream "$UPSTREAM_BRANCH"
+          if git merge-base --is-ancestor "upstream/$UPSTREAM_BRANCH" HEAD; then
+            echo "Already up to date with upstream."
+            echo "behind=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          n=$(git rev-list --count "HEAD..upstream/$UPSTREAM_BRANCH")
+          echo "behind=$n" >> "$GITHUB_OUTPUT"
+          {
+            echo "log<<EOF"
+            git log --no-merges --format='- %h %s (%an)' "HEAD..upstream/$UPSTREAM_BRANCH" | head -100
+            echo "EOF"
+            # Upstream commits that look security related, or touch code the
+            # fork hardens: if upstream fixed it, fork_security.go may be removable.
+            echo "security<<EOF"
+            git log --no-merges -i -E --format='- %h %s' \
+              --grep='secur|cve|csrf|rebind|symlink|traversal|origin|xss|token|sandbox' \
+              "HEAD..upstream/$UPSTREAM_BRANCH" | head -50
+            git log --no-merges --format='- %h %s (touches path/host checks)' \
+              -G'safePath|localPost|allowedRequestHost|EvalSymlinks|trustedGet' \
+              "HEAD..upstream/$UPSTREAM_BRANCH" -- '*.go' | head -50
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Merge
+        id: merge
+        if: steps.fetch.outputs.behind != '0'
+        run: |
+          set -uo pipefail
+          git checkout -B "$SYNC_BRANCH"
+          if git merge --no-edit "upstream/$UPSTREAM_BRANCH"; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "conflict=true"
+              echo "files<<EOF"
+              git diff --name-only --diff-filter=U | sed 's/^/- /'
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            git merge --abort
+          fi
+
+      - name: Report conflict
+        if: steps.merge.outputs.conflict == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEHIND: ${{ steps.fetch.outputs.behind }}
+          FILES: ${{ steps.merge.outputs.files }}
+          LOG: ${{ steps.fetch.outputs.log }}
+          SECURITY: ${{ steps.fetch.outputs.security }}
+        run: |
+          set -euo pipefail
+          title="Upstream px0 merge needs a hand"
+          {
+            echo "Merging $BEHIND upstream commits into \`$BASE\` conflicts. Resolve locally:"
+            echo
+            echo '```'
+            echo "git fetch upstream && git checkout $BASE && git merge upstream/$UPSTREAM_BRANCH"
+            echo '```'
+            echo
+            echo "**Conflicting files**"
+            echo "$FILES"
+            echo
+            echo "**Security-related upstream commits**"
+            echo "${SECURITY:-none}"
+            echo
+            echo "<details><summary>Upstream commits</summary>"
+            echo
+            echo "$LOG"
+            echo "</details>"
+          } > body.md
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file body.md
+          else
+            gh issue create --title "$title" --body-file body.md
+          fi
+
+      - uses: actions/setup-go@v5
+        if: steps.merge.outputs.conflict == 'false'
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        if: steps.merge.outputs.conflict == 'false'
+        with:
+          node-version: "20"
+
+      - name: Build and test the merge
+        id: test
+        if: steps.merge.outputs.conflict == 'false'
+        run: |
+          set -uo pipefail
+          node ./scripts/build-web.js
+          go build -trimpath -o px0 .
+          if go test ./... > test.log 2>&1; then
+            echo "result=passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=FAILED" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo "failures<<EOF"
+            grep -E '^(--- FAIL|FAIL|ok)' test.log | head -60
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push and open pull request
+        if: steps.merge.outputs.conflict == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEHIND: ${{ steps.fetch.outputs.behind }}
+          LOG: ${{ steps.fetch.outputs.log }}
+          SECURITY: ${{ steps.fetch.outputs.security }}
+          RESULT: ${{ steps.test.outputs.result }}
+          FAILURES: ${{ steps.test.outputs.failures }}
+        run: |
+          set -euo pipefail
+          if ! git push --force origin "$SYNC_BRANCH"; then
+            echo "::error::Push refused. If upstream changed .github/workflows, GITHUB_TOKEN may not push it; merge locally: git fetch upstream && git merge upstream/$UPSTREAM_BRANCH"
+            exit 1
+          fi
+          title="Sync upstream px0 ($BEHIND commits)"
+          {
+            echo "Merges $BEHIND new upstream commits from px0-ai/px0 into \`$BASE\`."
+            echo
+            echo "**Build and tests: $RESULT**"
+            echo
+            echo "**Security-related upstream commits** (if one fixes what \`fork_security.go\` patches, that fork code can be removed)"
+            echo "${SECURITY:-none}"
+            echo
+            echo "<details><summary>Test summary</summary>"
+            echo
+            echo '```'
+            echo "$FAILURES"
+            echo '```'
+            echo "</details>"
+            echo
+            echo "<details><summary>Upstream commits</summary>"
+            echo
+            echo "$LOG"
+            echo "</details>"
+          } > body.md
+          existing=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$title" --body-file body.md
+          else
+            gh pr create --base "$BASE" --head "$SYNC_BRANCH" --title "$title" --body-file body.md
+          fi
