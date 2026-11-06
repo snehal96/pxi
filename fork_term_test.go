@@ -17,6 +17,7 @@ import (
 
 func TestPxiTerminalRunsAShell(t *testing.T) {
 	t.Setenv("SHELL", "/bin/sh")
+	t.Setenv("HOME", t.TempDir()) // opening a terminal starts the IDE bridge, which writes a lock file
 	s, root := newTestServer(t)
 	srv := httptest.NewServer(hostGuard(s))
 	defer srv.Close()

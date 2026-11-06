@@ -260,6 +260,10 @@ func (s *Server) handlePxiTermOpen(w http.ResponseWriter, r *http.Request) {
 	cmd := exec.Command(shell, "-l")
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color", "COLORTERM=truecolor", "TERM_PROGRAM=pxi")
+	// `claude` started here connects to pxi as its IDE (fork_ide.go).
+	if ide, err := s.pxiIDEStart(); err == nil {
+		cmd.Env = append(cmd.Env, ide.TermEnv()...)
+	}
 	size := &pty.Winsize{Cols: uint16(clampInt(b.Cols, 20, 500, 100)), Rows: uint16(clampInt(b.Rows, 5, 300, 24))}
 	ptmx, err := pty.StartWithSize(cmd, size)
 	if err != nil {

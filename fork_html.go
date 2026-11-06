@@ -32,12 +32,12 @@ const pxiHTMLPolicy = "sandbox; default-src 'none'; style-src 'self' 'unsafe-inl
 // Types the preview serves; anything else is refused rather than guessed.
 var pxiHTMLTypes = map[string]string{
 	".html": "text/html; charset=utf-8", ".htm": "text/html; charset=utf-8",
-	".css":  "text/css; charset=utf-8",
-	".png":  "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif",
+	".css": "text/css; charset=utf-8",
+	".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif",
 	".webp": "image/webp", ".avif": "image/avif", ".ico": "image/x-icon", ".bmp": "image/bmp",
 	".svg":  "image/svg+xml",
 	".woff": "font/woff", ".woff2": "font/woff2", ".ttf": "font/ttf", ".otf": "font/otf",
-	".mp4":  "video/mp4", ".webm": "video/webm", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
+	".mp4": "video/mp4", ".webm": "video/webm", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
 }
 
 func (s *Server) registerPxiHTMLRoutes() {

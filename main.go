@@ -219,6 +219,7 @@ func main() {
 
 	srv := &http.Server{Handler: hostGuard(pxSrv)} // fork: fork_security.go
 	srv.RegisterOnShutdown(pxSrv.EndStreams)
+	srv.RegisterOnShutdown(pxiIDEStop) // fork: fork_ide.go
 	if *wbChild {
 		// The workbench reads this line for the address it proxies to.
 		fmt.Printf("%s%s\n", wbReadyPrefix, addr)

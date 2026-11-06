@@ -175,6 +175,7 @@ func pxiClaudeProjectDir(acc pxiClaudeAccount, cwd string) string {
 }
 
 var pxiClaudeIDRe = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+var pxiClaudeAnyIDRe = regexp.MustCompile(`^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|ide-[0-9]{1,6})$`)
 
 type pxiClaudeSession struct {
 	ID      string `json:"id"`
@@ -527,6 +528,7 @@ type pxiClaudeRun struct {
 	idle    *time.Timer
 	stderr  bytes.Buffer
 	reqSeq  int
+	ide     *pxiIDEClient // a terminal claude connected through the IDE bridge
 }
 
 type pxiClaudeMgr struct {
@@ -534,6 +536,8 @@ type pxiClaudeMgr struct {
 	runs map[string]*pxiClaudeRun
 	subs map[string]map[chan pxiClaudeEv]struct{} // by session
 	all  map[chan struct{}]struct{}               // pages watching the session list (badges)
+
+	pageReqs []map[string]any // requests from IDE clients for the page (open a file)
 }
 
 var pxiClaudeOnce sync.Once
@@ -970,9 +974,11 @@ func (s *Server) registerPxiClaudeRoutes() {
 	h("/api/pxi/claude/history", s.handlePxiClaudeHistory)
 	h("/api/pxi/claude/events", s.handlePxiClaudeEvents)
 	h("/api/pxi/claude/watch", s.handlePxiClaudeWatch)
+	h("/api/pxi/claude/status", s.handlePxiClaudeStatus)
 	h("/api/pxi/claude/send", s.handlePxiClaudeSend)
 	h("/api/pxi/claude/answer", s.handlePxiClaudeAnswer)
 	h("/api/pxi/claude/control", s.handlePxiClaudeControl)
+	h("/api/pxi/ide/context", s.handlePxiIDEContext)
 }
 
 func (s *Server) handlePxiClaudeAccounts(w http.ResponseWriter, r *http.Request) {
@@ -1056,13 +1062,27 @@ func (s *Server) handlePxiClaudeSessions(w http.ResponseWriter, r *http.Request)
 			}
 		}
 	}
+	var terms []pxiClaudeSession
+	for _, run := range m.runs {
+		if run.ide != nil {
+			terms = append(terms, pxiClaudeSession{ID: run.Session, Title: run.Title, Updated: time.Now().UnixMilli(), Live: true, Asking: run.Asking})
+		}
+	}
 	m.mu.Unlock()
+	if len(terms) > 0 {
+		sort.Slice(terms, func(i, j int) bool { return terms[i].ID < terms[j].ID })
+		places = append(places, place{Where: "@terminal", Name: "Claude in terminals", Sessions: terms})
+	}
 	writeJSON(w, map[string]any{"account": acc.ID, "places": places})
 }
 
 func (s *Server) handlePxiClaudeHistory(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	id := q.Get("session")
+	if strings.HasPrefix(id, "ide-") {
+		writeJSON(w, map[string]any{"events": []pxiClaudeEv{}})
+		return
+	}
 	if !pxiClaudeIDRe.MatchString(id) {
 		fail(w, http.StatusBadRequest, "bad session")
 		return
@@ -1103,7 +1123,7 @@ func pxiSSE(w http.ResponseWriter) (http.Flusher, bool) {
 // then live events. Open before the session runs, it waits for it.
 func (s *Server) handlePxiClaudeEvents(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("session")
-	if !pxiClaudeIDRe.MatchString(id) {
+	if !pxiClaudeAnyIDRe.MatchString(id) {
 		fail(w, http.StatusBadRequest, "bad session")
 		return
 	}
@@ -1169,6 +1189,22 @@ func (s *Server) handlePxiClaudeEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handlePxiClaudeStatus: whether anything runs (the page checks once on load).
+func (s *Server) handlePxiClaudeStatus(w http.ResponseWriter, r *http.Request) {
+	m := pxiClaudeGet()
+	m.mu.Lock()
+	runs, ide := 0, 0
+	for _, run := range m.runs {
+		if run.ide != nil {
+			ide++
+		} else {
+			runs++
+		}
+	}
+	m.mu.Unlock()
+	writeJSON(w, map[string]any{"runs": runs, "ide": ide})
+}
+
 // handlePxiClaudeWatch: one tick whenever a session's status changes (the
 // tab badge and session list refresh on it).
 func (s *Server) handlePxiClaudeWatch(w http.ResponseWriter, r *http.Request) {
@@ -1193,7 +1229,18 @@ func (s *Server) handlePxiClaudeWatch(w http.ResponseWriter, r *http.Request) {
 		for _, run := range m.runs {
 			list = append(list, pxiClaudeRun{Session: run.Session, Account: run.Account, Where: run.Where, Title: run.Title, Busy: run.Busy, Asking: run.Asking, Mode: run.Mode, Model: run.Model})
 		}
-		b, _ := json.Marshal(map[string]any{"runs": list})
+		ide := 0
+		for _, run := range m.runs {
+			if run.ide != nil {
+				ide++
+			}
+		}
+		out := map[string]any{"runs": list, "ide": ide}
+		if len(m.pageReqs) > 0 {
+			out["page"] = m.pageReqs
+			m.pageReqs = nil
+		}
+		b, _ := json.Marshal(out)
 		return b
 	}
 	fmt.Fprintf(w, "data: %s\n\n", status())
@@ -1321,6 +1368,16 @@ func (s *Server) handlePxiClaudeAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 	m := pxiClaudeGet()
 	m.mu.Lock()
+	if run := m.runs[b.Session]; run != nil && run.ide != nil {
+		c := run.ide
+		m.mu.Unlock()
+		if !pxiIDEAll.resolve(c, b.Req, &pxiIDEVerdict{allow: b.Allow, message: b.Message}) {
+			fail(w, http.StatusNotFound, "already answered")
+			return
+		}
+		writeJSON(w, map[string]any{"ok": true})
+		return
+	}
 	defer m.mu.Unlock()
 	run := m.runs[b.Session]
 	if run == nil {

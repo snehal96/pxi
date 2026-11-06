@@ -28,12 +28,14 @@
     file: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5h3.5"/></svg>',
     x: '<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 2l6 6M8 2l-6 6"/></svg>',
     chev: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4l4 4-4 4"/></svg>',
+    term: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6l2 2-2 2M8.5 10.5h3"/></svg>',
     side: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M6 2.5v11"/></svg>',
   };
   const TOOL_VERB = { Read: 'Read', Edit: 'Edit', MultiEdit: 'Edit', Write: 'Write', Bash: 'Run', Grep: 'Search', Glob: 'Find files', WebFetch: 'Fetch', WebSearch: 'Web search', Task: 'Agent', Agent: 'Agent', TodoWrite: 'To-dos', NotebookEdit: 'Edit notebook' };
 
   let ctx = null, root = null, els = {};
   let accounts = [], account = '', places = [];
+  let placesLoad = null; // the first session list: paths in events map through it
   // The open conversation.
   let cur = null; // { where, session, live, busy, mode, model, es }
   let tools = new Map();   // tool_use id -> row element
@@ -53,7 +55,7 @@
   };
   const placeOf = where => places.find(p => p.where === (where || '')) || null;
   const sessionsOf = p => (p && p.sessions) || [];
-  const placeName = where => (where ? where : (places[0]?.name || 'workspace'));
+  const placeName = where => (where === '@terminal' ? 'a terminal' : where ? where : (places[0]?.name || 'workspace'));
 
   // An absolute path from Claude, as a path pxi can open.
   function toPxiPath(abs) {
@@ -115,7 +117,7 @@
     els.input.addEventListener('keydown', onKey);
     els.input.addEventListener('input', onInput);
     root.addEventListener('keydown', onPaneKey);
-    loadAccounts();
+    placesLoad = loadAccounts();
     newSession('');
   }
 
@@ -136,7 +138,7 @@
       els.account.value = account;
       els.account.title = accounts.find(a => a.id === account)?.org || '';
     } catch (e) { notice(e.message, true); }
-    loadSessions();
+    return loadSessions();
   }
 
   async function loadSessions() {
@@ -153,11 +155,13 @@
     if (!els.places) return;
     els.places.innerHTML = places.map(p => {
       const sel = cur && !cur.session && cur.where === p.where;
+      const term = p.where === '@terminal';
       return '<div class="cl-place">' +
+        (term ? '<div class="cl-place-head cl-term-head" title="claude started in a terminal, connected to pxi">' + I.term + '<span class="cl-pname">' + esc(p.name) + '</span></div>' :
         '<div class="cl-place-head' + (sel ? ' sel' : '') + '" data-new="' + esc(p.where) + '" title="New session in ' + esc(p.path) + '">' +
         (p.where ? I.branch : I.repo) + '<span class="cl-pname">' + esc(p.name) + '</span>' +
         (p.branch && p.branch !== p.name ? '<span class="cl-pbranch">' + esc(p.branch) + '</span>' : '') +
-        '<span class="grow"></span><span class="cl-plus">' + I.plus + '</span></div>' +
+        '<span class="grow"></span><span class="cl-plus">' + I.plus + '</span></div>') +
         sessionsOf(p).map(s => {
           const state = s.asking ? 'asking' : s.busy ? 'busy' : s.live ? 'live' : '';
           return '<div class="cl-sess' + (cur?.session === s.id ? ' sel' : '') + '" data-sess="' + esc(s.id) + '" data-where="' + esc(p.where) + '" title="' + esc(s.title) + '">' +
@@ -174,9 +178,10 @@
     const s = cur.session && sessionsOf(placeOf(cur.where)).find(x => x.id === cur.session);
     els.title.textContent = cur.session ? (s?.title || cur.title || 'Session') : 'New session';
     const p = placeOf(cur.where);
-    els.where.innerHTML = (cur.where ? I.branch : I.repo) + '<span>' + esc(placeName(cur.where)) + '</span>';
+    els.where.innerHTML = (cur.where === '@terminal' ? I.term : cur.where ? I.branch : I.repo) + '<span>' + esc(placeName(cur.where)) + '</span>';
+    root.querySelector('.cl-compose').hidden = !!cur.ide;
     els.where.title = p?.path || '';
-    els.stop.hidden = !cur.live;
+    els.stop.hidden = !cur.live || !!cur.ide;
     els.state.textContent = cur.asking ? 'Waiting for you' : cur.busy ? 'Working…' : '';
     els.state.className = 'cl-state' + (cur.asking ? ' asking' : cur.busy ? ' busy' : '');
     els.send.hidden = !!cur.busy;
@@ -209,14 +214,16 @@
 
   async function openSession(id, where) {
     closeStream();
-    cur = { where: where || '', session: id, live: false, busy: false, asking: 0 };
+    cur = { where: where || '', session: id, live: false, busy: false, asking: 0, ide: id.startsWith('ide-') };
     resetLog();
     drawPlaces(); drawHead();
     els.log.append(h('<div class="cl-faint">Loading…</div>'));
     let hist = [];
+    try { await placesLoad; } catch {}
     try { hist = (await ctx.api('/api/pxi/claude/history', { account, session: id, where: cur.where })).events || []; } catch (e) { notice(e.message, true); }
     if (!cur || cur.session !== id) return;
     resetLog();
+    if (cur.ide) els.log.append(h('<div class="cl-notice">This is <code>claude</code> running in a terminal and connected to pxi. The edits it proposes appear here to accept or reject (or answer in the terminal); it sees the file and selection open in pxi. Talk to it in the terminal.</div>'));
     for (const ev of hist) apply(ev, true);
     finishStream();
     listen();
@@ -249,7 +256,7 @@
       case 'tool': finishStream(); addTool(ev); break;
       case 'result': toolResult(ev); break;
       case 'ask': finishStream(); addAsk(ev); cur.asking = asks.size; break;
-      case 'answered': answered(ev); cur.asking = [...asks.values()].filter(a => !a.dataset.done).length; if (ev.mode) setMode(ev.mode); break;
+      case 'answered': if (ev.elsewhere) { const c = asks.get(ev.req); if (c && !c.dataset.done) markAnswered(c, false, 'Answered in the terminal'); } answered(ev); cur.asking = [...asks.values()].filter(a => !a.dataset.done).length; if (ev.mode) setMode(ev.mode); break;
       case 'init': cur.live = true; if (ev.mode) setMode(ev.mode); break;
       case 'busy': cur.busy = !!ev.busy; cur.live = !!ev.live || cur.live; if (ev.mode) setMode(ev.mode); break;
       case 'done':
@@ -261,6 +268,7 @@
       case 'notice': notice(esc(ev.text)); break;
       case 'exit':
         finishStream(); cur.live = false; cur.busy = false;
+        if (cur.ide) notice('The terminal claude disconnected.');
         if (ev.code && ev.error) notice('claude exited: ' + esc(ev.error), true);
         for (const a of asks.values()) if (!a.dataset.done) markAnswered(a, false, 'Session ended');
         if (!history) loadSessions();
@@ -368,7 +376,7 @@
         const d = diffHTML(ev.diff || '');
         body = d ? d.html : '<div class="cl-faint">No preview available.</div>';
         if (d) title += ' <span class="cl-tstat"><span class="add">+' + d.a + '</span> <span class="del">−' + d.d + '</span></span>';
-        extra = '<button class="cl-btn" data-ans="all" title="Accept, and accept the rest of this session\'s edits without asking">Accept all edits</button>';
+        if (!cur.ide) extra = '<button class="cl-btn" data-ans="all" title="Accept, and accept the rest of this session\'s edits without asking">Accept all edits</button>';
         break;
       }
       case 'Bash':
@@ -622,7 +630,7 @@
     if (opts.session) openSession(opts.session, opts.where);
     else if (opts.where !== undefined) newSession(opts.where);
     if (opts.text) { els.input.value = opts.text; autosize(); }
-    focus();
+    if (!opts.quiet) focus();
   }
 
   function focus() {

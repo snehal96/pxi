@@ -59,17 +59,73 @@ const clCtx = {
   close: clClose,
 };
 
+let clIde = 0;            // terminal claudes connected through the IDE bridge
+let clIdeAsking = {};    // ide session -> pending diffs, to notice new ones
+
 function clStartWatch() {
   if (clWatch) return;
   clWatch = new EventSource('api/pxi/claude/watch');
   clWatch.onmessage = e => {
-    try { clRuns = JSON.parse(e.data).runs || []; } catch { clRuns = []; }
+    let j = {};
+    try { j = JSON.parse(e.data); } catch {}
+    clRuns = j.runs || [];
+    clIde = j.ide || 0;
     const asking = clRuns.reduce((n, r) => n + (r.asking || 0), 0);
     clSetBadge(asking);
     clMod?.runs?.(clRuns);
-    // Nothing running and no tab: stop listening.
-    if (!clRuns.length && !clTab) { clWatch.close(); clWatch = null; }
+    // A terminal claude proposed an edit: show it, like an editor opening a diff.
+    const now = {};
+    for (const r of clRuns) {
+      if (!r.session.startsWith('ide-')) continue;
+      now[r.session] = r.asking || 0;
+      if ((r.asking || 0) > (clIdeAsking[r.session] || 0)) openClaude({ session: r.session, where: '@terminal', quiet: true });
+    }
+    clIdeAsking = now;
+    for (const req of j.page || []) clPageRequest(req);
+    if (clIde) clSendContext();
+    // Nothing running, no terminal claude and no tab: stop listening.
+    if (!clRuns.length && !clTab && !clIde && !clTermShown) { clWatch.close(); clWatch = null; }
   };
+}
+
+// The file and selection, for terminal claudes (only while one is connected).
+let clCtxTimer = 0, clCtxSig = '';
+function clSendContext() {
+  clearTimeout(clCtxTimer);
+  clCtxTimer = setTimeout(() => {
+    const d = doc_();
+    if (!clIde || !d || d.isImage) return;
+    const sel = clLastSel && clLastSel.path === d.path ? clLastSel : null;
+    const body = { path: d.path, text: sel ? sel.text : '', l1: sel ? sel.l1 : d.cur || 1, l2: sel ? sel.l2 : d.cur || 1 };
+    const sig = JSON.stringify(body);
+    if (sig === clCtxSig) return;
+    clCtxSig = sig;
+    apiPostJson('/api/pxi/ide/context', body).catch(() => {});
+  }, 250);
+}
+
+// openFile from a terminal claude: an absolute path, maybe in a worktree.
+async function clPageRequest(req) {
+  if (!req.open) return;
+  const abs = req.open;
+  let p = null;
+  const root = clRoot();
+  if (root && abs.startsWith(root + '/')) p = abs.slice(root.length + 1);
+  if (!p) {
+    try {
+      const wt = await api('/api/worktrees');
+      for (const w of wt.worktrees || []) if (abs.startsWith(w.path + '/')) p = '@wt/' + w.name + '/' + abs.slice(w.path.length + 1);
+    } catch {}
+  }
+  if (p) { clHide(); openFile(p); }
+}
+
+let clTermShown = false; // the terminal panel is open: a claude may connect any moment
+
+// The terminal panel opened (on) or closed (off).
+export function claudeWatch(on = true) {
+  clTermShown = on;
+  if (on) clStartWatch();
 }
 
 function clSetBadge(asking) {
@@ -104,7 +160,7 @@ function clEnsureTab() {
   row.prepend(clTab);
 }
 
-function clShow() {
+function clShow(quiet) {
   if (!clActive) {
     const info = getSelectedRangeInfo();
     if (info && info.text) clLastSel = { path: info.path, l1: info.l1, l2: info.l2, text: info.text.slice(0, 20000) };
@@ -128,7 +184,7 @@ function clShow() {
       clStartWatch();
     }
     if (clPending) { clMod.open(clPending); clPending = null; }
-    clMod.focus?.();
+    if (!quiet) clMod.focus?.();
   }).catch(err => {
     if (clPane) clPane.innerHTML = '<div class="cl-loading">' + esc(err.message) + '</div>';
   });
@@ -150,13 +206,13 @@ function clClose() {
   clPane = null;
   clTab?.remove();
   clTab = null;
-  if (clWatch && !clRuns.length) { clWatch.close(); clWatch = null; }
+  if (clWatch && !clRuns.length && !clIde && !clTermShown) { clWatch.close(); clWatch = null; }
 }
 
 // Opens the Claude tab; opts: { where, session, text } (where: worktree name).
 export function openClaude(opts) {
   if (opts) clPending = opts;
-  clShow();
+  clShow(opts && opts.quiet);
   if (clMod && clPending) { clMod.open(clPending); clPending = null; }
 }
 
@@ -165,6 +221,8 @@ export function toggleClaude() {
 }
 
 export function initClaude() {
+  // Sessions or terminal claudes from before this page loaded: watch them.
+  api('/api/pxi/claude/status').then(j => { if (j.runs || j.ide) clStartWatch(); }).catch(() => {});
   // A file tab taking over hides the Claude tab (it stays open).
   on('tab:activated', clHide);
   document.addEventListener('click', e => {
@@ -172,11 +230,12 @@ export function initClaude() {
   }, true);
   // Remember the editor selection: clicking into the panel clears it.
   document.addEventListener('selectionchange', () => {
-    if (clActive || (!clTab && !clMod)) return;
+    if (clActive || (!clTab && !clMod && !clIde)) return;
     const info = getSelectedRangeInfo();
     if (info && info.text) clLastSel = { path: info.path, l1: info.l1, l2: info.l2, text: info.text.slice(0, 20000) };
+    if (clIde) clSendContext();
   });
-  on('tab:activated', () => { clLastSel = null; });
+  on('tab:activated', () => { clLastSel = null; if (clIde) clSendContext(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && e[MOD] && !e.shiftKey && !e.altKey) {
       e.preventDefault();

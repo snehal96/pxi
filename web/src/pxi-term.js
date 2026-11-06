@@ -11,6 +11,7 @@
 import { $, api, apiPostJson, esc } from './state.js';
 import { layout, render } from './renderer.js';
 import { showToast } from './ui.js';
+import { claudeWatch } from './pxi-claude.js';
 
 const TERM_HEIGHT_KEY = 'pxi.term.height';
 const TERM_SCROLLBACK = 3000;
@@ -253,6 +254,7 @@ export async function showTerminal({ cwd = null, fresh = false } = {}) {
   }
   termShown = true;
   termPanel.hidden = false;
+  claudeWatch(); // `claude` in these shells can connect to pxi (fork_ide.go)
   document.body.classList.add('pxi-panel-open');
   layout(); render();
   const count = await termSync();
@@ -264,6 +266,7 @@ export async function showTerminal({ cwd = null, fresh = false } = {}) {
 /** Hides the panel and frees its screens and the panel itself. Shells keep
  *  running on the server. */
 export function hideTerminal() {
+  claudeWatch(false);
   if (!termPanel || !termShown) return;
   termShown = false;
   termEvents?.close();
