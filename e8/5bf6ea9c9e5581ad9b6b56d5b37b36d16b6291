@@ -1,0 +1,29 @@
+.github/workflows/budget.yml
+  s_e09e631722ac66::t_b0c11e63309e5f 1-42
+CLAUDE.md
+  s_e09e631722ac66::t_edc30cd3cfecdb 1-26
+MAINTAINING.md
+  s_e09e631722ac66::t_794f5c21a09567 6-26
+scripts/pxi-budget.js
+  s_e09e631722ac66::t_4137acf920299b 1-135
+web/src/pxi-scm.js
+  s_e09e631722ac66::t_6f11b7d5fa10ab 63-65,67-72,81,87,89-98,111
+web/src/pxi-worktrees.js
+  s_e09e631722ac66::t_9902c63dd93903 20,49-51,54-60,68-70,76,78-84,91-92,128,132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e85bf6ea9c9e5581ad9b6b56d5b37b36d16b6291",
+  "prompts": {},
+  "sessions": {
+    "s_e09e631722ac66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_e09e631722ac66",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
