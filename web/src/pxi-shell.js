@@ -237,9 +237,14 @@ export function initShell() {
   });
 
   // px0's own controls (the tree header toggles, reindex) switch modes too.
-  // px0 drops back to the full tree when the last change is committed or
-  // stashed; the activity bar keeps the view the person chose.
-  on('sidebar:mode', () => markActive());
+  // px0 switches its tree between all files and changed files by itself (on
+  // load, after a reindex, when the last change is committed). The activity
+  // bar's choice wins: Explorer shows all files, Source Control the changes.
+  on('sidebar:mode', ({ mode }) => {
+    if (abCurrent === 'explorer' && mode === 'git') setSidebarMode('files');
+    else if (abCurrent === 'scm' && mode === 'files' && hasGitView()) setSidebarMode('git');
+    markActive();
+  });
 
   // VS Code's status bar runs the full width of the window, under every column.
   const status = $('#status');
@@ -277,10 +282,5 @@ export function initShell() {
 
   let saved = 'explorer';
   try { saved = localStorage.getItem(VIEW_KEY) || 'explorer'; } catch {}
-  if (saved === 'worktrees') showView('worktrees');
-  else {
-    document.body.classList.add('pxi-view-' + abCurrent);
-    setScmVisible(abCurrent === 'scm');
-    markActive();
-  }
+  showView(['explorer', 'scm', 'worktrees'].includes(saved) ? saved : 'explorer');
 }

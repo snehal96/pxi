@@ -9,6 +9,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
     private var titleObservation: NSKeyValueObservation?
     private var closeConfirmed = false
     weak var app: AppDelegate?
+    private(set) var titleBar: TitleBar!
 
     /// - configuration: WebKit's own, when it asks for a window (window.open).
     init(app: AppDelegate, configuration: WKWebViewConfiguration? = nil) {
@@ -25,7 +26,6 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
                               styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                               backing: .buffered, defer: false)
         window.title = "pxi"
-        window.titlebarAppearsTransparent = false
         // Separate windows, like VS Code: each can live on its own desktop
         // (Space), even in full screen. Only New Tab joins windows as tabs
         // (AppDelegate.newWindow(tabbedWith:) allows it for that pair).
@@ -35,6 +35,8 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
         super.init(window: window)
 
         window.delegate = self
+        titleBar = TitleBar(owner: self)
+        titleBar.install(on: window)
         webView.navigationDelegate = self
         webView.uiDelegate = self
 
@@ -54,6 +56,8 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
         titleObservation = webView.observe(\.title, options: [.new]) { [weak self] wv, _ in
             let t = (wv.title ?? "").trimmingCharacters(in: .whitespaces)
             self?.window?.title = t.isEmpty ? "pxi" : t
+            // "platform - pxi" -> "platform" in the search box
+            self?.titleBar.setName(t.components(separatedBy: " - ").first ?? "")
         }
         if !window.setFrameUsingName("pxi.main") { window.center() }
         if app.windowCount == 0 { window.setFrameAutosaveName("pxi.main") }
@@ -64,6 +68,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
     static func baseConfiguration() -> WKWebViewConfiguration {
         let c = WKWebViewConfiguration()
         c.websiteDataStore = .default() // keeps the page's localStorage across launches
+        c.userContentController.add(PxiMessageRouter.shared, name: "pxi") // web/src/pxi-native.js
         c.preferences.isElementFullscreenEnabled = true
         c.preferences.setValue(true, forKey: "developerExtrasEnabled")
         return c
@@ -96,6 +101,13 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
                       let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else { return }
                 let name = String(format: "snap-%.0f.png", Date().timeIntervalSince1970 * 1000)
                 try? png.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
+                // The window's own chrome (title bar, toolbar) too.
+                if let frame = self?.window?.contentView?.superview,
+                   let rep = frame.bitmapImageRepForCachingDisplay(in: frame.bounds) {
+                    frame.cacheDisplay(in: frame.bounds, to: rep)
+                    try? rep.representation(using: .png, properties: [:])?
+                        .write(to: URL(fileURLWithPath: dir).appendingPathComponent("win-" + name))
+                }
             }
         }
     }
@@ -246,8 +258,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
     // MARK: - Menu actions (reached through the responder chain)
 
     @objc func reloadPage(_ sender: Any?) { webView.reload() }
-    @objc func goBack(_ sender: Any?) { webView.goBack() }
-    @objc func goForward(_ sender: Any?) { webView.goForward() }
+    // Same history as the title bar's arrows: px0's code navigation in a
+    // workspace, the page's own history elsewhere.
+    @objc func goBack(_ sender: Any?) { webView.evaluateJavaScript("window.pxiNative ? window.pxiNative.back() : history.back()") }
+    @objc func goForward(_ sender: Any?) { webView.evaluateJavaScript("window.pxiNative ? window.pxiNative.forward() : history.forward()") }
 
     @objc func showWorkbench(_ sender: Any?) {
         if let url = app?.baseURL { load(url) }

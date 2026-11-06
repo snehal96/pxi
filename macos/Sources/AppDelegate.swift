@@ -60,6 +60,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     var windowCount: Int { windows.count }
 
+    func controller(for webView: WKWebView?) -> BrowserWindowController? {
+        windows.first { $0.webView === webView }
+    }
+
     // Right-click on the Dock icon: New Window, like VS Code.
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let m = NSMenu()

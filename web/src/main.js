@@ -35,6 +35,8 @@ import { initTips, startTipsAsync } from './tips.js';
 import { initReviewFlow } from './reviewflow.js';
 // fork: pxi activity bar + worktrees
 import { initShell } from './pxi-shell.js';
+// fork: pxi Mac app title bar
+import { initNative } from './pxi-native.js';
 
 // Initialize all subsystems
 initRenderer();
@@ -130,6 +132,7 @@ initPRScope();
   setAutoRevealSuppressed(true);
   await refreshTree();
   initShell(); // fork: pxi-shell.js
+  initNative(); // fork: pxi-native.js
   initGitStream();
 
   // Split into helpers so the readiness poll below can redo this once the
