@@ -14,6 +14,15 @@ BUILD="$(git -C "$ROOT" rev-list --count HEAD 2>/dev/null || echo 1)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# What a teammate's Mac needs, with the command that installs each.
+missing=0
+need() { command -v "$1" >/dev/null 2>&1 || { echo "missing: $1  ->  $2"; missing=1; }; }
+need go     "brew install go"
+need bun    "brew install oven-sh/bun/bun"
+need swiftc "xcode-select --install"
+need git    "xcode-select --install"
+[ "$missing" = 0 ] || { echo "Install the above, then run macos/build.sh again."; exit 1; }
+
 echo "==> web assets"
 bun "$ROOT/scripts/build-web.js" >/dev/null
 
@@ -50,4 +59,7 @@ if [ "${1:-}" = "--install" ]; then
   rm -rf /Applications/pxi.app
   cp -R "$APP" /Applications/pxi.app
   echo "Installed /Applications/pxi.app"
+  if pgrep -xq pxi; then
+    echo "pxi is running the old version: quit it (Cmd+Q) and open it again, or use pxi > Restart pxi."
+  fi
 fi
