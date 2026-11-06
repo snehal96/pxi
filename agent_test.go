@@ -564,11 +564,19 @@ func TestAgentCancelJob(t *testing.T) {
 		t.Fatalf("cancelled = false, want true")
 	}
 
-	// Job should be stopped
-	time.Sleep(100 * time.Millisecond)
-	code, job := get(t, s, fmt.Sprintf("/api/agent/job?id=%d", id))
-	if code != http.StatusOK {
-		t.Fatalf("job = %d, want 200", code)
+	// Job should be stopped. fork: poll instead of one 100ms sleep, which
+	// raced with the harness exiting on slow CI machines.
+	var job map[string]any
+	for deadline := time.Now().Add(3 * time.Second); ; {
+		var code int
+		code, job = get(t, s, fmt.Sprintf("/api/agent/job?id=%d", id))
+		if code != http.StatusOK {
+			t.Fatalf("job = %d, want 200", code)
+		}
+		if running, _ := job["running"].(bool); !running || time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
 	}
 	if running, _ := job["running"].(bool); running {
 		t.Fatalf("job still running after cancel")
