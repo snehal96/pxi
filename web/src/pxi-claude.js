@@ -55,6 +55,7 @@ const clCtx = {
     return d && !d.isImage ? { path: d.path, sel } : null;
   },
   setBadge: clSetBadge,
+  newWorktree: () => newWorktreeDialog(),
   watch: clStartWatch,
   close: clClose,
 };
@@ -251,6 +252,58 @@ export function openClaude(opts) {
 
 export function toggleClaude() {
   if (clActive) clHide(); else clShow();
+}
+
+// ------------------------------------------------------------ new worktree + Claude
+// A branch and worktree (under .claude/worktrees/) with a Claude session in it,
+// started on the task right away when one is given. The dialog exists only
+// while open.
+
+export function newWorktreeDialog() {
+  if ($('#pxi-newwt')) return;
+  const box = document.createElement('div');
+  box.id = 'pxi-newwt';
+  box.innerHTML = '<form class="nw-card"><div class="nw-title">New worktree with Claude</div>' +
+    '<label>Branch<input name="branch" placeholder="feat/login-rate-limit" autocomplete="off" spellcheck="false" required></label>' +
+    '<label>From<input name="base" placeholder="default branch" autocomplete="off" spellcheck="false"></label>' +
+    '<label>Task for Claude <span>optional; sent as the first message</span><textarea name="task" rows="5" placeholder="Paste the ticket or describe the change…"></textarea></label>' +
+    '<div class="nw-err" hidden></div>' +
+    '<div class="nw-bar"><button type="button" class="nw-cancel">Cancel</button><button type="submit" class="nw-ok">Create and start Claude</button></div></form>';
+  document.body.append(box);
+  const form = box.querySelector('form'), err = box.querySelector('.nw-err');
+  const close = () => box.remove();
+  box.addEventListener('mousedown', e => { if (e.target === box) close(); });
+  box.querySelector('.nw-cancel').addEventListener('click', close);
+  form.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); form.requestSubmit(); }
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const ok = form.querySelector('.nw-ok');
+    ok.disabled = true; ok.textContent = 'Creating…'; err.hidden = true;
+    try {
+      const j = await apiPostJson('/api/pxi/worktree/new', { branch: fd.get('branch'), base: fd.get('base') });
+      close();
+      const task = String(fd.get('task') || '').trim();
+      openClaude({ where: j.name, text: task, send: !!task });
+      showToast('✓', 'Worktree ' + j.name + ' created from ' + j.base);
+    } catch (e2) {
+      err.textContent = e2.message; err.hidden = false;
+      ok.disabled = false; ok.textContent = 'Create and start Claude';
+    }
+  });
+  box.querySelector('input').focus();
+}
+
+// Ship: the worktree's Claude session, asked to commit, push and open a PR.
+// Prefilled, not sent: the user reads it first.
+export function shipWorktree(name, base) {
+  openClaude({ where: name, latest: true, text:
+    'Ship this worktree: look at `git status` and the diff against ' + (base || 'the default branch') +
+    ', commit everything with a clear message (split into logical commits if that reads better), push the branch to origin, ' +
+    'and open a pull request with `gh pr create` (short title; description says what changed and why). Then show me the PR URL.' });
 }
 
 // ------------------------------------------------------------ review → Claude

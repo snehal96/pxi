@@ -128,3 +128,27 @@ func TestPxiStashesBranchesRemotes(t *testing.T) {
 		t.Errorf("cross-site branch delete: %d", rec.Code)
 	}
 }
+
+func TestPxiWorktreeNew(t *testing.T) {
+	root := nestedRepo(t)
+	s := wtServer(t, root)
+	h := hostGuard(s)
+	code, m := pxiPost(t, h, "/api/pxi/worktree/new", `{"branch":"feat/rate-limit"}`)
+	if code != 200 || m["name"] == "" || m["branch"] != "feat/rate-limit" {
+		t.Fatalf("new worktree: %d %v", code, m)
+	}
+	if _, err := os.Stat(filepath.Join(root, ".claude/worktrees/feat-rate-limit/main.go")); err != nil {
+		t.Fatal("worktree not checked out")
+	}
+	if out := gitTestRun(t, root, "status", "--porcelain"); strings.Contains(out, ".claude") {
+		t.Errorf("new worktree shows in git status: %q", out)
+	}
+	if code, _ := pxiPost(t, h, "/api/pxi/worktree/new", `{"branch":"feat/rate-limit"}`); code != http.StatusConflict {
+		t.Errorf("same folder twice: want 409, got %d", code)
+	}
+	for _, bad := range []string{`{"branch":"-x"}`, `{"branch":"a..b"}`, `{"branch":"ok","base":"--upload-pack=x"}`} {
+		if code, _ := pxiPost(t, h, "/api/pxi/worktree/new", bad); code != http.StatusBadRequest {
+			t.Errorf("%s: want 400, got %d", bad, code)
+		}
+	}
+}

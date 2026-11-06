@@ -83,6 +83,7 @@
       '<div class="cl-wrap' + (pref('side', '1') === '1' ? '' : ' cl-noside') + '">' +
       '<aside class="cl-side">' +
       '  <div class="cl-side-head"><span class="cl-title">CLAUDE</span><span class="grow"></span>' +
+      '    <button class="cl-ib" data-act="newwt" title="New worktree with a Claude session">' + I.branch + '</button>' +
       '    <button class="cl-ib" data-act="new" title="New session">' + I.plus + '</button></div>' +
       '  <label class="cl-account"><span>Account</span><select data-act="account"></select></label>' +
       '  <div class="cl-places"></div>' +
@@ -664,6 +665,7 @@
     const act = t.closest('[data-act]')?.dataset.act;
     switch (act) {
       case 'new': newSession(cur?.where || ''); break;
+      case 'newwt': ctx.newWorktree(); break;
       case 'send': send(); break;
       case 'interrupt': control('interrupt'); break;
       case 'stop': control('stop'); break;
@@ -707,6 +709,12 @@
       } else if (!(cur && !cur.session && cur.where === (opts.where || ''))) newSession(opts.where);
     } else if (opts.session) openSession(opts.session, opts.where);
     else if (opts.where !== undefined) newSession(opts.where);
+    if (opts.text && opts.send && els.input) {
+      els.input.value = opts.text;
+      attach = false;
+      send();
+      return;
+    }
     if (opts.text && els.input) {
       attach = false; // the lines are quoted in the message already
       const t = els.input;

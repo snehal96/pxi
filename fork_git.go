@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,6 +29,7 @@ func (s *Server) registerPxiGitRoutes() {
 	s.mux.HandleFunc(s.routePath("/api/pxi/branch"), s.handlePxiBranch)
 	s.mux.HandleFunc(s.routePath("/api/pxi/remotes"), s.handlePxiRemotes)
 	s.mux.HandleFunc(s.routePath("/api/pxi/fetch"), s.handlePxiFetch)
+	s.mux.HandleFunc(s.routePath("/api/pxi/worktree/new"), s.handlePxiWorktreeNew)
 }
 
 // pxiGit runs git in the workspace with no terminal prompts, so a fetch that
@@ -386,4 +388,108 @@ func (s *Server) handlePxiFetch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.pxiAfterGitChange(w, nil)
+}
+
+// ---------------------------------------------------------------- new worktree
+
+var pxiWTFolderRe = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
+
+// handlePxiWorktreeNew creates a branch and a worktree for it under
+// .claude/worktrees/ (where Claude Code puts its own; kept out of git status
+// through the repository's local exclude file), for a new Claude session.
+func (s *Server) handlePxiWorktreeNew(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		fail(w, http.StatusMethodNotAllowed, "POST only")
+		return
+	}
+	if !localPost(w, r) {
+		return
+	}
+	var b struct {
+		Branch string `json:"branch"`
+		Base   string `json:"base"`
+	}
+	if !pxiReadBody(w, r, &b) {
+		return
+	}
+	b.Branch, b.Base = strings.TrimSpace(b.Branch), strings.TrimSpace(b.Base)
+	ctx, cancel := pxiCtx(r, 60*time.Second)
+	defer cancel()
+	root := s.ix.Root()
+	if b.Branch == "" || strings.HasPrefix(b.Branch, "-") || strings.HasPrefix(b.Base, "-") {
+		fail(w, http.StatusBadRequest, "bad branch name")
+		return
+	}
+	if _, err := pxiGit(ctx, root, "check-ref-format", "--branch", b.Branch); err != nil {
+		fail(w, http.StatusBadRequest, "not a valid branch name: "+b.Branch)
+		return
+	}
+	if b.Base == "" {
+		b.Base = wtBaseRef(root)
+	}
+	if b.Base == "" {
+		b.Base = "HEAD"
+	}
+	if _, err := pxiGit(ctx, root, "rev-parse", "--verify", "--quiet", b.Base+"^{commit}"); err != nil {
+		fail(w, http.StatusBadRequest, "unknown base: "+b.Base)
+		return
+	}
+	folder := strings.Trim(pxiWTFolderRe.ReplaceAllString(strings.ReplaceAll(b.Branch, "/", "-"), "-"), "-.")
+	if folder == "" {
+		fail(w, http.StatusBadRequest, "bad branch name")
+		return
+	}
+	dir := filepath.Join(root, ".claude", "worktrees", folder)
+	if _, err := os.Stat(dir); err == nil {
+		fail(w, http.StatusConflict, "a folder already exists at .claude/worktrees/"+folder)
+		return
+	}
+	pxiExcludeLocally(ctx, root, ".claude/worktrees/")
+	args := []string{"worktree", "add", "-b", b.Branch, dir, b.Base}
+	if _, err := pxiGit(ctx, root, "rev-parse", "--verify", "--quiet", "refs/heads/"+b.Branch); err == nil {
+		args = []string{"worktree", "add", dir, b.Branch} // the branch exists: check it out
+	}
+	if _, err := pxiGit(ctx, root, args...); err != nil {
+		fail(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	name := ""
+	for _, wt := range s.worktrees().Snapshot(true) {
+		if evalPath(wt.Path) == evalPath(dir) {
+			name = wt.Name
+		}
+	}
+	writeJSON(w, map[string]any{"ok": true, "name": name, "path": dir, "branch": b.Branch, "base": b.Base})
+}
+
+// pxiExcludeLocally adds a pattern to .git/info/exclude unless git already
+// ignores it, so new worktrees do not show up as untracked files.
+func pxiExcludeLocally(ctx context.Context, root, pattern string) {
+	if _, err := pxiGit(ctx, root, "check-ignore", "-q", pattern+"x"); err == nil {
+		return
+	}
+	common, err := pxiGit(ctx, root, "rev-parse", "--git-common-dir")
+	if err != nil {
+		return
+	}
+	dir := strings.TrimSpace(common)
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(root, dir)
+	}
+	p := filepath.Join(dir, "info", "exclude")
+	old, _ := os.ReadFile(p)
+	if strings.Contains(string(old), pattern) {
+		return
+	}
+	os.MkdirAll(filepath.Dir(p), 0o755)
+	prefix := ""
+	if len(old) > 0 && !strings.HasSuffix(string(old), "\n") {
+		prefix = "\n"
+	}
+	f, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	f.WriteString(prefix + "# pxi: worktrees for Claude sessions\n" + pattern + "\n")
 }

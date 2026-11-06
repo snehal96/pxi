@@ -8,7 +8,7 @@
 import { $, esc, api } from './state.js';
 import { openFile } from './tabs.js';
 import { showTerminal } from './pxi-term.js';
-import { openClaude } from './pxi-claude.js';
+import { openClaude, newWorktreeDialog, shipWorktree } from './pxi-claude.js';
 
 const POLL_MS = 3000;
 const ROW_CAP = 300;
@@ -40,6 +40,8 @@ const ICON = {
   warn: '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3.2M8 11.6v.1" stroke-linecap="round"/></svg>',
   refresh: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg>',
   review: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>',
+  plus: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>',
+  ship: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 7l4-4 4 4"/><path d="M3 13.5h10"/></svg>',
   claude: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 2v12M2 8h12M3.8 3.8l8.4 8.4M12.2 3.8l-8.4 8.4"/></svg>',
   term: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6l2 2-2 2M8.5 10.5h3"/></svg>',
   folder: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M1.5 4.5v8h13v-7h-6.5l-1.5-1.5h-5z"/></svg>',
@@ -68,11 +70,13 @@ function wtEnsureDom() {
   wtRoot.innerHTML =
     '<header class="panel-head wt-head-bar"><span class="wt-title">Worktrees</span>' +
     '<span class="wt-base" id="wt-base"></span>' +
+    '<button class="mini" id="wt-new" title="New worktree with a Claude session">' + ICON.plus + '</button>' +
     '<button class="mini" id="wt-refresh" title="Refresh">' + ICON.refresh + '</button></header>' +
     '<div class="wt-body" id="wt-body"></div>';
   wtSide.insertBefore(wtRoot, wtSide.querySelector('.side-foot'));
   wtBody = wtRoot.querySelector('#wt-body');
   wtRoot.querySelector('#wt-refresh').addEventListener('click', () => refresh(true));
+  wtRoot.querySelector('#wt-new').addEventListener('click', newWorktreeDialog);
   wtBody.addEventListener('click', onClick);
 }
 
@@ -175,6 +179,7 @@ function renderWorktrees() {
       '<span class="grow"></span><span class="wt-meta">' + meta.join('') + '</span>' +
       '<button class="wt-act" data-wt-claude="' + esc(w.name) + '" title="Claude in ' + esc(w.name) + '">' + ICON.claude + '</button>' +
       '<button class="wt-act" data-wt-term="' + esc(w.name) + '" title="Open a terminal in ' + esc(w.name) + '">' + ICON.term + '</button>' +
+      ((w.files.length || w.ahead) ? '<button class="wt-act" data-ship="' + esc(w.name) + '" title="Ship: ask Claude to commit, push and open a PR">' + ICON.ship + '</button>' : '') +
       (w.files.length ? '<button class="wt-act" data-review="' + esc(w.name) + '" title="Review every change in ' + esc(w.name) + '">' + ICON.review + '</button>' : '') +
       '</div>';
     if (open) {
@@ -216,6 +221,13 @@ function openWorktreeFile(w, path) {
 function onClick(e) {
   if (!wtData) return;
   const find = name => wtData.worktrees.find(w => w.name === name);
+  const shipBtn = e.target.closest('[data-ship]');
+  if (shipBtn) {
+    e.stopPropagation();
+    const w = find(shipBtn.dataset.ship);
+    shipWorktree(shipBtn.dataset.ship, w?.baseRef);
+    return;
+  }
   const clBtn = e.target.closest('[data-wt-claude]');
   if (clBtn) {
     e.stopPropagation();

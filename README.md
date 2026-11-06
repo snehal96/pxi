@@ -23,12 +23,17 @@ reading, reviewing and pushing agent-written changes in one place.
   diffs to accept or reject; your open file and selection go along. `claude` typed in
   pxi's terminal connects to pxi like it does to VS Code: its edits open in the Claude
   tab to accept or reject, and it sees your selection.
+- **Processes**: what each Claude session and terminal started (dev servers, test runs),
+  with ports, CPU and memory, and Stop.
+- **New worktree with Claude** (Worktrees `+`): a branch and worktree, with Claude started
+  on the task. **Ship** on a worktree asks its Claude to commit, push and open a PR.
+- **Notifications**: a Mac notification and Dock badge when a session needs you or
+  finishes. **Chrome** switch: Claude can use your Chrome (Claude in Chrome).
 - **Review → agent** (`Alt+K`, or right-click **Send to Claude**): quote lines from any
   file or worktree diff into that worktree's Claude session with your comment.
 
 ### Coming next
 
-- See and stop the processes an agent session started.
 - A new look.
 
 ## Install (Mac app)
