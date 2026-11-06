@@ -34,7 +34,8 @@ jobs:
           base=$(git merge-base HEAD upstream/master)
           echo "px0 base: $base"
           git worktree add --detach ../px0-base "$base"
-          (cd ../px0-base && bun ./scripts/build-web.js >/dev/null && go build -trimpath -o ../px0-bin .)
+          # Upstream's build script checks syntax with `--check`, which only Node has.
+          (cd ../px0-base && node ./scripts/build-web.js >/dev/null && go build -trimpath -o ../px0-bin .)
           bun ./scripts/build-web.js >/dev/null
           go build -trimpath -o ../pxi-bin .
 
