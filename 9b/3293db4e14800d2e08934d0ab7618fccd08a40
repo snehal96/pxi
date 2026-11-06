@@ -1,0 +1,21 @@
+server.go
+  s_34f5cfa4b9329f::t_9890c4be027506 4,284
+web/src/pxi-claude.js
+  s_34f5cfa4b9329f::t_d06bccaf62766d 377-378
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b3293db4e14800d2e08934d0ab7618fccd08a40",
+  "prompts": {},
+  "sessions": {
+    "s_34f5cfa4b9329f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_34f5cfa4b9329f",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
