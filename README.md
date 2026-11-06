@@ -18,10 +18,14 @@ reading, reviewing and pushing agent-written changes in one place.
 - **Source Control**: history, branches, stashes, remotes and tags.
 - **Terminal** (`Ctrl+\``): shells in the workspace or any worktree, loaded only when
   opened.
+- **Claude** (`Cmd+Esc`): Claude Code sessions in an editor tab, for the repo and each
+  worktree, using your own `claude` login (pick the account per repo). Edits show as
+  diffs to accept or reject; your open file and selection go along.
 
 ### Coming next
 
-- Claude Code sessions inside pxi.
+- `claude` in pxi's terminal sees your selection and proposes edits as pxi diffs.
+- Send a review comment on a worktree's diff to that worktree's Claude session.
 - See and stop the processes an agent session started.
 - A new look.
 

@@ -17,6 +17,7 @@ import { SCMH_BRANCH_ICON } from './pxi-scmhead.js';
 import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
 import { initPxiPalette } from './pxi-palette.js';
 import { setTipsPermanentlyHidden } from './tips.js';
+import { initClaude, openClaude } from './pxi-claude.js';
 
 const VIEW_KEY = 'pxi.sideView';
 
@@ -31,6 +32,7 @@ const ICONS = {
   search: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
   review: '<path d="M9 5H6.5A1.5 1.5 0 0 0 5 6.5v13A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 17.5 5H15"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M8.5 12.5l1.5 1.5 3-3M8.5 17h7"/>',
   threads: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5"/>',
+  claude: '<path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6L6 18"/>',
   home: '<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
 };
@@ -40,6 +42,7 @@ const ITEMS = [
   { id: 'explorer', title: 'Explorer', view: true },
   { id: 'scm', title: 'Source Control', view: true },
   { id: 'worktrees', title: 'Worktrees', view: true },
+  { id: 'claude', title: `Claude: sessions in this repo and its worktrees (${mod}Esc)` },
   { id: 'review', title: `AI Review: run your agent through review stages (${mod}⇧V)` },
 ];
 // Right activity bar: px0's inspector panes, one icon each. The panel is closed
@@ -113,7 +116,9 @@ function onBarClick(e) {
   if (!b) return;
   const id = b.dataset.ab;
   if (ITEMS.find(i => i.id === id)?.view) return showView(id, { toggle: true });
-  if (id === 'review') {
+  if (id === 'claude') {
+    openClaude();
+  } else if (id === 'review') {
     // px0's Code/Review mode switch, which pxi hides from the toolbar.
     (reviewOn() ? $('#btn-mode-code') : $('#btn-mode-review'))?.click();
   } else if (id === 'settings') {
@@ -221,6 +226,7 @@ export function initShell() {
   pxiCompactDiffControls();
   // Closing the tip popup (X) means "stop popping up", remembered in settings.json
   // for every window and workspace. Tips stay in the right bar's Tips view.
+  initClaude();
   $('#tip-widget-close')?.addEventListener('click', () => setTipsPermanentlyHidden(true));
 
   abBar = document.createElement('nav');

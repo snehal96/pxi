@@ -47,6 +47,7 @@ Every in-page shortcut works; the page gets each key before the menu. The app ad
 | Cmd+Option+R | Reload page |
 | Cmd+= / Cmd+- / Cmd+0 | Zoom |
 | Ctrl+` / Ctrl+Shift+` | Toggle the terminal / open another one |
+| Cmd+Esc | Show or hide the Claude tab |
 
 ## Testing
 
