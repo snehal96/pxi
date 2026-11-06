@@ -71,6 +71,11 @@ async function pageMetrics(url, steps) {
     await send('Page.enable');
     await send('Page.navigate', { url });
     await sleep(5000);
+    // Same editor size for both: px0 opens its right panel on load, pxi does
+    // not, and the editor draws only the lines it can show, so a wider editor
+    // means more rows. Close it in both so only features are compared.
+    await evaluate(`document.body.classList.add('right-hidden'); dispatchEvent(new Event('resize'));`);
+    await sleep(800);
     if (steps) { await evaluate(`(async () => { ${steps} })()`); await sleep(3000); }
     await send('HeapProfiler.collectGarbage');
     await sleep(500);

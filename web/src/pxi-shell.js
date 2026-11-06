@@ -7,7 +7,7 @@
 import { $, S, MOD, doc_ } from './state.js';
 import { layout, render } from './renderer.js';
 import { setSidebarMode, hasGitView } from './tree.js';
-import { showRightInspector } from './inspector.js';
+import { showRightInspector, hideRightInspector } from './inspector.js';
 import { openSettings } from './settings.js';
 import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
@@ -20,6 +20,10 @@ const ICONS = {
   explorer: '<path d="M9 3.5H5.5a1.5 1.5 0 0 0-1.5 1.5v14a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 16 19v-1.5"/><path d="M13 3.5h3.5L20 7v9a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 11 16V5a1.5 1.5 0 0 1 1.5-1.5H13z"/><path d="M16.5 3.5V7H20"/>',
   scm: '<circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="8.5" r="2"/><path d="M6.5 7.5v9M17.5 10.5c0 4-4.5 4.5-11 6"/>',
   worktrees: '<circle cx="5" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="15" r="2"/><path d="M5 7v10M17 7c-6 0-8 1-10.2 3.5M17 15c-6 0-8-1-10.2-3.5"/>',
+  refs: '<path d="M4 6h9M4 12h6M4 18h9"/><path d="M16 9l4 3-4 3"/><path d="M20 12h-6"/>',
+  symbols: '<path d="M8 4H6.5A1.5 1.5 0 0 0 5 5.5v4L3.5 12 5 14.5v4A1.5 1.5 0 0 0 6.5 20H8M16 4h1.5A1.5 1.5 0 0 1 19 5.5v4l1.5 2.5-1.5 2.5v4a1.5 1.5 0 0 1-1.5 1.5H16"/>',
+  calls: '<rect x="3" y="4" width="7" height="5" rx="1"/><rect x="14" y="10" width="7" height="5" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/><path d="M6.5 9v10H14M6.5 12.5H14"/>',
+  tips: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
   search: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
   review: '<path d="M9 5H6.5A1.5 1.5 0 0 0 5 6.5v13A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 17.5 5H15"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M8.5 12.5l1.5 1.5 3-3M8.5 17h7"/>',
   threads: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5"/>',
@@ -32,10 +36,20 @@ const ITEMS = [
   { id: 'explorer', title: 'Explorer', view: true },
   { id: 'scm', title: 'Source Control', view: true },
   { id: 'worktrees', title: 'Worktrees', view: true },
-  { id: 'search', title: `Search (${mod}⇧F)` },
-  { id: 'threads', title: 'Threads' },
   { id: 'review', title: `AI Review: run your agent through review stages (${mod}⇧V)` },
 ];
+// Right activity bar: px0's inspector panes, one icon each. The panel is closed
+// until an icon (or a px0 shortcut such as ⇧F12 or ⌥T) opens it.
+const RIGHT_ITEMS = [
+  { id: 'threads', title: 'Threads: conversations with your coding agent (⌥T)' },
+  { id: 'refs', title: 'References (⇧F12)' },
+  { id: 'symbols', title: 'Symbols in this file' },
+  { id: 'calls', title: 'Calls: callers and callees (⌥⇧H)' },
+  { id: 'search', title: `Search across files (${mod}⇧F)` },
+];
+const RIGHT_BOTTOM = [{ id: 'tips', title: 'Tips' }];
+const RIGHT_KEY = 'pxi.rightPane';
+
 const BOTTOM = [
   { id: 'home', title: 'Workbench' },
   { id: 'settings', title: `Settings (${mod},)` },
@@ -95,12 +109,7 @@ function onBarClick(e) {
   if (!b) return;
   const id = b.dataset.ab;
   if (ITEMS.find(i => i.id === id)?.view) return showView(id, { toggle: true });
-  if (id === 'search') {
-    showRightInspector('search');
-    setTimeout(() => $('#pane-right-search input, #right-search-input, #search-q')?.focus(), 0);
-  } else if (id === 'threads') {
-    showRightInspector('threads');
-  } else if (id === 'review') {
+  if (id === 'review') {
     // px0's Code/Review mode switch, which pxi hides from the toolbar.
     (reviewOn() ? $('#btn-mode-code') : $('#btn-mode-review'))?.click();
   } else if (id === 'settings') {
@@ -152,6 +161,53 @@ function pxiCompactDiffControls() {
   sync();
 }
 
+let abRight = null;
+
+function rightPane() {
+  if (document.body.classList.contains('right-hidden')) return '';
+  return $('.inspector-tab.active')?.dataset.itab || '';
+}
+
+function markRight() {
+  if (!abRight) return;
+  const open = rightPane();
+  for (const b of abRight.querySelectorAll('.ab-item[data-rb]')) {
+    b.classList.toggle('active', b.dataset.rb === open);
+    const tab = $('.inspector-tab[data-itab="' + b.dataset.rb + '"]');
+    b.hidden = !!tab?.hidden; // Threads needs a coding harness
+  }
+  try { localStorage.setItem(RIGHT_KEY, open); } catch {}
+}
+
+function initRightBar() {
+  const app = $('#app');
+  abRight = document.createElement('nav');
+  abRight.id = 'activitybar-right';
+  abRight.setAttribute('aria-label', 'Panels');
+  const rb = it => '<button class="ab-item" data-rb="' + it.id + '" title="' + it.title + '" aria-label="' + it.title + '">' + icon(it.id) + '</button>';
+  abRight.innerHTML = '<div class="ab-top">' + RIGHT_ITEMS.map(rb).join('') + '</div><div class="ab-bottom">' + RIGHT_BOTTOM.map(rb).join('') + '</div>';
+  app.append(abRight);
+  abRight.addEventListener('click', e => {
+    const b = e.target.closest('[data-rb]');
+    if (!b) return;
+    if (rightPane() === b.dataset.rb) hideRightInspector();
+    else showRightInspector(b.dataset.rb);
+    markRight();
+  });
+  // px0 opens panes itself too (⇧F12, ⌥T, ⌘⇧F, the palette).
+  const watch = new MutationObserver(markRight);
+  watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  for (const t of document.querySelectorAll('.inspector-tab')) watch.observe(t, { attributes: true, attributeFilter: ['class', 'hidden'] });
+
+  // Closed unless it was open last time (px0 opens it on every load).
+  let saved = '';
+  try { saved = localStorage.getItem(RIGHT_KEY) || ''; } catch {}
+  const tab = saved && $('.inspector-tab[data-itab="' + saved + '"]');
+  if (tab && !tab.hidden) showRightInspector(saved);
+  else hideRightInspector();
+  markRight();
+}
+
 /** Call once the workspace metadata (S.meta) has loaded. */
 export function initShell() {
   const app = $('#app');
@@ -169,6 +225,7 @@ export function initShell() {
   abBar.addEventListener('click', onBarClick);
 
   initScm();
+  initRightBar();
   const modeBtn = $('#btn-mode-review');
   if (modeBtn) new MutationObserver(markActive).observe(modeBtn, { attributes: true, attributeFilter: ['class'] });
 

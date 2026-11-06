@@ -50,6 +50,21 @@ body.pxi-shell {
 }
 #activitybar .ab-badge.warn { background: var(--pxi-warn-); color: #1f1f1f; }
 
+/* right activity bar: one icon per inspector pane */
+#activitybar-right {
+  width: 40px; flex: none; display: flex; flex-direction: column; justify-content: space-between;
+  background: var(--pxi-activity-bg-); border-left: 1px solid var(--line); z-index: 6;
+}
+#activitybar-right .ab-top, #activitybar-right .ab-bottom { display: flex; flex-direction: column; }
+#activitybar-right .ab-item { width: 40px; height: 42px; display: grid; place-items: center; color: var(--pxi-activity-inactive-); }
+#activitybar-right .ab-item[hidden] { display: none; }
+#activitybar-right .ab-item:hover { color: var(--pxi-activity-fg-); }
+#activitybar-right .ab-item.active { color: var(--pxi-activity-fg-); box-shadow: inset -2px 0 0 var(--pxi-focus-); }
+#activitybar-right .ab-item svg { width: 20px; height: 20px; }
+/* the icons replace the inspector's tab row; the open pane's name stays as its title */
+body.pxi-shell .inspector-tab:not(.active) { display: none; }
+body.pxi-shell .inspector-tab.active { pointer-events: none; border-bottom: 0; padding-left: 8px; }
+
 /* ---------- sidebar ---------- */
 body.pxi-shell #side { background: var(--bg2); }
 body.pxi-shell .side-foot { display: none; }               /* settings and theme moved to the activity bar / palette */
@@ -262,3 +277,6 @@ body.pxi-shell #git-recent-commits { display: none; }      /* replaced by Histor
 .scm-empty { padding: 3px 12px 4px 28px; color: var(--faint); font-size: 12px; }
 .scm-files .up-file { padding-left: 40px; }
 .scm-name:has(+ .scm-dim) { flex-shrink: 0; max-width: 60%; }
+
+/* keep px0's tip card clear of the right activity bar */
+body.pxi-shell .tip-widget { right: 52px; }
