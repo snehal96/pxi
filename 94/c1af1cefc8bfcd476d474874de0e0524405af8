@@ -1,0 +1,21 @@
+README.md
+  s_e12ada668dcff5::t_6015bb28f65f36 30,33-37,40-41
+macos/build.sh
+  s_e12ada668dcff5::t_c6212c44409535 17-25,62-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94c1af1cefc8bfcd476d474874de0e0524405af8",
+  "prompts": {},
+  "sessions": {
+    "s_e12ada668dcff5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_e12ada668dcff5",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
