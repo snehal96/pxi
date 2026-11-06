@@ -1,4 +1,4 @@
-export const DEFAULT_THEME = 'catppuccin-mocha';
+export const DEFAULT_THEME = 'pxi-dark';
 
 export function chooseThemePreference(savedTheme, configuredTheme, fallbackTheme = DEFAULT_THEME) {
   const explicit = configuredTheme && configuredTheme !== fallbackTheme ? configuredTheme : null;

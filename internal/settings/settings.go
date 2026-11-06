@@ -166,9 +166,9 @@ var Schema = []SchemaItem{
 		Description: "Specifies the color theme used in the workbench.",
 		Category:    "Workbench",
 		Type:        "select",
-		Default:     "catppuccin-mocha",
+		Default:     "pxi-dark",
 		Options: []string{
-			"catppuccin-mocha", "catppuccin-latte",
+			"pxi-dark", "pxi-light", "catppuccin-mocha", "catppuccin-latte",
 			"github-dark", "dark", "light",
 			"dracula", "gruvbox-dark", "gruvbox-light",
 			"monokai", "nord", "one-dark", "rose-pine",

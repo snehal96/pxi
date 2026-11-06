@@ -155,6 +155,36 @@ def map_html_text(src: str, fn) -> str:
 TIPS_GUARD = "  const url = S.settings?.['tips.url'] || TIPS_URL;\n  if (!url) { updateTipsCountBadge(); return loadedTips; }\n"
 
 
+# pxi's own themes (web/themes/pxi-*.css) are the default and listed first.
+THEME_RULES = {
+    "internal/settings/settings.go": [
+        ('Default:     "catppuccin-mocha",', 'Default:     "pxi-dark",'),
+        ('"catppuccin-mocha", "catppuccin-latte",', '"pxi-dark", "pxi-light", "catppuccin-mocha", "catppuccin-latte",'),
+    ],
+    "internal/settings/settings_test.go": [
+        ('m["workbench.colorTheme"] != "catppuccin-mocha"', 'm["workbench.colorTheme"] != "pxi-dark"'),
+    ],
+    "web/src/settings.js": [
+        ('default: "catppuccin-mocha",', 'default: "pxi-dark",'),
+        ('"catppuccin-mocha", "catppuccin-latte",', '"pxi-dark", "pxi-light", "catppuccin-mocha", "catppuccin-latte",'),
+    ],
+    "workbench.go": [('\treturn "catppuccin-mocha"\n', '\treturn "pxi-dark"\n')],
+    "web/src/theme-preference.js": [("export const DEFAULT_THEME = 'catppuccin-mocha';", "export const DEFAULT_THEME = 'pxi-dark';")],
+    "web/index.html": [
+        ('<html lang="en" data-theme="catppuccin-mocha">', '<html lang="en" data-theme="pxi-dark">'),
+        # pxi's VS Code-style chrome (web/pxi/shell.css), after the themes it reads.
+        ('<link rel="stylesheet" href="static/themes.css">\n', '<link rel="stylesheet" href="static/themes.css">\n<link rel="stylesheet" href="static/pxi/shell.css">\n'),
+    ],
+}
+
+
+def themes(path: str, s: str) -> str:
+    for a, b in THEME_RULES.get(path, []):
+        if b not in s:
+            s = s.replace(a, b)
+    return s
+
+
 def special(path: str, s: str) -> str:
     if path == "web/src/tips-util.js":
         s = s.replace("export const TIPS_URL = 'https://px0.ai/tips.json';", "export const TIPS_URL = ''; // pxi: no remote tips")
@@ -178,21 +208,22 @@ TEST_RULES = [
 
 
 def test_file(path: str, s: str) -> str:
+    s = themes(path, s)
     for a, b in TEST_RULES:
         s = s.replace(a, b)
     return s
 
 
 def go_file(path: str, s: str) -> str:
-    return map_go_strings(s, lambda b: brand(logos(b)))
+    return map_go_strings(themes(path, s), lambda b: brand(logos(b)))
 
 
 def js_file(path: str, s: str) -> str:
-    return map_js_strings(special(path, s), brand)
+    return map_js_strings(special(path, themes(path, s)), brand)
 
 
 def html_file(path: str, s: str) -> str:
-    return map_html_text(logos(s), brand)
+    return map_html_text(logos(themes(path, s)), brand)
 
 
 def plain_file(path: str, s: str) -> str:

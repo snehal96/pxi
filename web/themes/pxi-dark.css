@@ -1,0 +1,28 @@
+/* pxi Dark: modelled on VS Code's Dark Modern, so the editor feels familiar. */
+:root[data-theme="pxi-dark"] {
+  --theme-name: "pxi Dark";
+  color-scheme: dark;
+
+  --bg: #1f1f1f; --bg2: #181818; --bg3: #2a2d2e; --bg4: #37373d;
+  --fg: #cccccc; --dim: #9d9d9d; --faint: #7a7a7a;
+  --line: #2b2b2b; --accent: #0078d4; --accent-fg: #4daafc;
+  --sel: #264f78; --mark: rgba(234, 92, 0, 0.33); --mark-active: #9e6a03; --cur: #262626;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+
+  /* syntax: Dark+ */
+  --k: #569cd6; --kt: #4ec9b0; --nf: #dcdcaa; --nc: #4ec9b0; --nb: #dcdcaa;
+  --nv: #9cdcfe; --no: #4fc1ff; --na: #9cdcfe; --nt: #569cd6; --nd: #dcdcaa;
+  --np: #9cdcfe; --s: #ce9178; --m: #b5cea8; --o: #d4d4d4; --p: #cccccc;
+  --c: #6a9955; --cp: #c586c0; --err: #f14c4c;
+
+  --gi: #81b88b; --gd: #e06c60;
+  --gi-bg: rgba(155, 185, 85, 0.2); --gd-bg: rgba(255, 0, 0, 0.2);
+
+  /* pxi chrome */
+  --pxi-activity-bg: #181818; --pxi-activity-fg: #d7d7d7; --pxi-activity-inactive: #868686;
+  --pxi-status-bg: #181818; --pxi-status-fg: #a0a0a0; --pxi-status-brand: #0078d4;
+  --pxi-tab-bg: #181818; --pxi-input-bg: #313131; --pxi-input-border: #3c3c3c;
+  --pxi-button-bg: #0078d4; --pxi-button-hover: #026ec1; --pxi-button-fg: #ffffff;
+  --pxi-list-active: #04395e; --pxi-focus: #0078d4; --pxi-badge-bg: #0078d4; --pxi-warn: #cca700;
+  --pxi-git-modified: #e2c08d; --pxi-git-added: #81b88b; --pxi-git-deleted: #c74e39; --pxi-git-untracked: #73c991;
+}

@@ -43,6 +43,7 @@ import (
 //go:embed web/index.html web/style.css web/themes web/vendor
 //go:embed web/workbench.html web/workbench.css web/workbench.js
 //go:embed web/app.js
+//go:embed web/pxi
 var embedded embed.FS
 
 // assets is the embedded web/ directory.
@@ -78,6 +79,8 @@ type Server struct {
 	// since checkout (prHeadSHA..working tree); refreshed on Pull.
 	gitWatcher *GitWatcher
 	mux        *http.ServeMux
+	wtOnce     sync.Once   // fork: worktrees.go
+	wt         *wtRegistry // fork: worktrees.go
 	basePath   string
 	session    *sessionManager
 
@@ -226,6 +229,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc(s.routePath("/api/pr/merge-message"), s.handlePRMergeMessage)
 	s.mux.HandleFunc(s.routePath("/api/forge/connect"), s.handleForgeConnect)
 	s.mux.HandleFunc(s.routePath("/api/session"), s.handleSession)
+	s.mux.HandleFunc(s.routePath("/api/worktrees"), s.handleWorktrees) // fork: worktrees.go
 }
 
 // NewServer creates and initializes a px0 Server instance, binding index and language servers,
@@ -469,7 +473,7 @@ func (s *Server) safePath(rel string) (string, string, bool) {
 	if abs != s.ix.Root() && !strings.HasPrefix(abs, s.ix.Root()+string(filepath.Separator)) {
 		return "", "", false
 	}
-	if !withinReal(s.ix.Root(), abs) { // fork: symlink escape (fork_security.go)
+	if isWTPath(rel) || !withinReal(s.ix.Root(), abs) { // fork: worktree files are read-only (worktrees.go); symlink escape (fork_security.go)
 		return "", "", false
 	}
 	return abs, filepath.ToSlash(clean), true
@@ -479,6 +483,10 @@ func (s *Server) safePath(rel string) (string, string, bool) {
 // language server named as a definition target, such as a file in the standard
 // library or the module cache. Nothing else outside the root is reachable.
 func (s *Server) resolvePath(p string) (string, string, bool) {
+	if isWTPath(p) { // fork: a file in another worktree (worktrees.go)
+		abs, virt, _, _, ok := s.worktrees().resolve(p)
+		return abs, virt, ok
+	}
 	if filepath.IsAbs(filepath.FromSlash(p)) {
 		abs := filepath.Clean(filepath.FromSlash(p))
 		if s.lsp.Allowed(abs) {
@@ -1255,6 +1263,10 @@ var imageMime = map[string]string{
 
 func (s *Server) handleFile(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
+	if isWTPath(q.Get("path")) { // fork: worktrees.go
+		s.handleWTFile(w, r)
+		return
+	}
 	abs, rel, ok := s.resolvePath(q.Get("path"))
 	if !ok {
 		fail(w, 400, "bad path")
@@ -1612,6 +1624,10 @@ func (s *Server) handleFSNew(w http.ResponseWriter, r *http.Request) {
 // the frontend can label the two apart instead of showing one blended diff
 // that looks the same whether or not the reviewer has touched anything.
 func (s *Server) handleDiff(w http.ResponseWriter, r *http.Request) {
+	if isWTPath(r.URL.Query().Get("path")) { // fork: worktrees.go
+		s.handleWTDiff(w, r)
+		return
+	}
 	_, rel, ok := s.resolvePath(r.URL.Query().Get("path"))
 	if !ok {
 		fail(w, 400, "bad path")
@@ -1670,6 +1686,10 @@ func (s *Server) handleDiff(w http.ResponseWriter, r *http.Request) {
 // a VS Code-style change gutter. available is false (200, empty arrays) when
 // git is off/absent or the file is unchanged/untracked; never 500 for those.
 func (s *Server) handleGutter(w http.ResponseWriter, r *http.Request) {
+	if isWTPath(r.URL.Query().Get("path")) { // fork: worktrees.go
+		s.handleWTGutter(w, r)
+		return
+	}
 	_, rel, ok := s.resolvePath(r.URL.Query().Get("path"))
 	if !ok {
 		fail(w, 400, "bad path")

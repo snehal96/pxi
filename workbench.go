@@ -713,7 +713,7 @@ func wbTheme() string {
 	if t := settings.Read().WorkbenchColorTheme; t != nil && *t != "" {
 		return *t
 	}
-	return "catppuccin-mocha"
+	return "pxi-dark"
 }
 
 func (wb *workbench) handlePing(w http.ResponseWriter, r *http.Request) {

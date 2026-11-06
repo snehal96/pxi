@@ -1,0 +1,29 @@
+/* pxi Light: modelled on VS Code's Light Modern. */
+:root[data-theme="pxi-light"] {
+  --theme-name: "pxi Light";
+  color-scheme: light;
+
+  --bg: #ffffff; --bg2: #f8f8f8; --bg3: #f0f0f0; --bg4: #e4e4e4;
+  --fg: #3b3b3b; --dim: #616161; --faint: #8b8b8b;
+  --line: #e5e5e5; --accent: #005fb8; --accent-fg: #005fb8;
+  --sel: #add6ff; --mark: rgba(234, 92, 0, 0.25); --mark-active: #f8c9a0; --cur: #f5f5f5;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --on-badge: #ffffff;
+
+  /* syntax: Light+ */
+  --k: #0000ff; --kt: #267f99; --nf: #795e26; --nc: #267f99; --nb: #795e26;
+  --nv: #001080; --no: #0070c1; --na: #e50000; --nt: #800000; --nd: #795e26;
+  --np: #001080; --s: #a31515; --m: #098658; --o: #000000; --p: #3b3b3b;
+  --c: #008000; --cp: #af00db; --err: #cd3131;
+
+  --gi: #587c0c; --gd: #ad0707;
+  --gi-bg: rgba(156, 204, 44, 0.25); --gd-bg: rgba(255, 0, 0, 0.18);
+
+  /* pxi chrome */
+  --pxi-activity-bg: #f8f8f8; --pxi-activity-fg: #1f1f1f; --pxi-activity-inactive: #616161;
+  --pxi-status-bg: #f8f8f8; --pxi-status-fg: #3b3b3b; --pxi-status-brand: #005fb8;
+  --pxi-tab-bg: #f8f8f8; --pxi-input-bg: #ffffff; --pxi-input-border: #cecece;
+  --pxi-button-bg: #005fb8; --pxi-button-hover: #0258a8; --pxi-button-fg: #ffffff;
+  --pxi-list-active: #e4e6f1; --pxi-focus: #005fb8; --pxi-badge-bg: #005fb8; --pxi-warn: #bf8803;
+  --pxi-git-modified: #895503; --pxi-git-added: #587c0c; --pxi-git-deleted: #ad0707; --pxi-git-untracked: #007100;
+}
