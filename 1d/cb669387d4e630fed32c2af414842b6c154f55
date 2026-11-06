@@ -1,0 +1,19 @@
+scripts/pxi-budget.js
+  s_b5d8ad978447ea::t_a2965f31920d1b 9,104-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1dcb669387d4e630fed32c2af414842b6c154f55",
+  "prompts": {},
+  "sessions": {
+    "s_b5d8ad978447ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_b5d8ad978447ea",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
