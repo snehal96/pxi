@@ -1,0 +1,25 @@
+fork_security.go
+  s_a804192ea4d92d::t_5bcfd5d9ad7603 1-129
+fork_security_test.go
+  s_a804192ea4d92d::t_ce1f80e24436fc 1-123
+main.go
+  s_a804192ea4d92d::t_5730755bded4a2 219,404
+server.go
+  s_a804192ea4d92d::t_e3736d9350b852 472-474
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b689e51f2b6f36f7dc3c33525b14891ad6331c3d",
+  "prompts": {},
+  "sessions": {
+    "s_a804192ea4d92d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_a804192ea4d92d",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
