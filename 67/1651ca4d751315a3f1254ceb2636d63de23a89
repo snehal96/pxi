@@ -1,0 +1,43 @@
+README.md
+  s_de5371d9ae7cde::t_c666d6f7855a1d 23-25
+fork_claude.go
+  s_de5371d9ae7cde::t_3014ca112de83b 178,531,539-540,977,981,1065-1070,1072-1075,1082-1085,1126,1192-1207,1232-1243,1371-1380
+fork_html.go
+  s_de5371d9ae7cde::t_2313db267a42dd 35-36,40
+fork_ide.go
+  s_de5371d9ae7cde::t_07b7f5dcd9e273 1-547
+fork_ide_test.go
+  s_de5371d9ae7cde::t_a93c030b581f13 1-144
+fork_term.go
+  s_de5371d9ae7cde::t_df549965579e24 263-266
+fork_term_test.go
+  s_de5371d9ae7cde::t_512ad6dcdf4760 20
+fork_term_windows.go
+  s_de5371d9ae7cde::t_bd4ca9d29be768 10-12
+fork_ws.go
+  s_de5371d9ae7cde::t_b1117788c6d8a0 1-148
+main.go
+  s_de5371d9ae7cde::t_e70872344f7326 222
+web/pxi/claude.js
+  s_de5371d9ae7cde::t_2df0fa9b097b9f 31,38,58,120,141,158,160,164,181-182,184,217,222,226,259,271,379,633
+web/src/pxi-claude.js
+  s_de5371d9ae7cde::t_49747230d21b6c 62-64,69-72,76-87,91-130,163,187,209,215,224-225,233,236,238
+web/src/pxi-term.js
+  s_de5371d9ae7cde::t_4709dd7d1fdc81 14,257,269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "671651ca4d751315a3f1254ceb2636d63de23a89",
+  "prompts": {},
+  "sessions": {
+    "s_de5371d9ae7cde": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_de5371d9ae7cde",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
