@@ -1409,6 +1409,9 @@ func (s *Server) handlePxiClaudeAnswer(w http.ResponseWriter, r *http.Request) {
 		}
 		resp = map[string]any{"behavior": "deny", "message": msg}
 	}
+	if ev, _ := pending["ev"].(pxiClaudeEv); b.Allow && ev["tool"] == "ExitPlanMode" {
+		run.Mode = "default" // an approved plan ends plan mode
+	}
 	if b.Allow && b.Mode != "" {
 		run.controlLocked(map[string]any{"subtype": "set_permission_mode", "mode": b.Mode})
 		run.Mode = b.Mode

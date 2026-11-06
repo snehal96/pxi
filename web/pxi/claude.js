@@ -446,7 +446,10 @@
     card.querySelectorAll('button').forEach(b => { b.disabled = true; });
     try {
       await ctx.apiPostJson('/api/pxi/claude/answer', body);
-      markAnswered(card, body.allow, how === 'all' ? 'Accepted · edits now automatic' : how === 'answer' ? 'Answered' : null);
+      const plan = card.dataset.tool === 'ExitPlanMode';
+      if (plan && body.allow) setMode('default'); // Claude leaves plan mode once the plan is approved
+      markAnswered(card, body.allow, how === 'all' ? 'Accepted · edits now automatic' : how === 'answer' ? 'Answered' :
+        plan ? (body.allow ? 'Plan approved' : 'Sent back with your notes') : null);
     } catch (e) {
       card.querySelectorAll('button').forEach(b => { b.disabled = false; });
       ctx.toast('!', e.message);

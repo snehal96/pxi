@@ -227,12 +227,14 @@ export function toggleClaude() {
 // quoted, ready for the comment. "Mention in terminal Claude" adds them to the
 // prompt of a terminal claude connected through the IDE bridge.
 
+let clGutterLine = 0, clGutterAt = 0; // the line whose gutter button opened the menu
+
 function clTarget() {
   const info = getSelectedRangeInfo();
   const d = doc_();
   if (info && info.text) return { path: info.path, l1: info.l1, l2: info.l2, text: info.text };
   if (!d || d.isImage) return null;
-  const n = d.cur || 1;
+  const n = (Date.now() - clGutterAt < 30000 && clGutterLine) || d.cur || 1;
   const line = (d.lines && d.lines[n - 1]) || '';
   // Rendered lines are highlighted HTML; DOMParser reads text without running anything.
   const html = typeof line === 'string' ? line : (line?.html || line?.text || '');
@@ -270,10 +272,13 @@ export function initClaude() {
   clMenuItems();
   // The menu is px0's (selbar.js); these two items are handled here.
   document.addEventListener('click', e => {
+    const g = e.target.closest?.('.line-btn[data-l]');
+    if (g) { clGutterLine = +g.dataset.l; clGutterAt = Date.now(); return; }
     const b = e.target.closest?.('#sel-menu [data-sel="pxi-claude"], #sel-menu [data-sel="pxi-claude-term"]');
     if (!b) return;
     e.stopPropagation();
     const t = clTarget();
+    clGutterLine = 0;
     $('#sel-menu').hidden = true;
     if (b.dataset.sel === 'pxi-claude') clReview(t); else clMention(t);
   }, true);
