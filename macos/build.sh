@@ -39,7 +39,7 @@ done
 lipo -create -output "$TMP/pxi" "$TMP/pxi-arm64" "$TMP/pxi-x86_64"
 
 echo "==> icon"
-swift "$MAC/make-icon.swift" "$TMP/AppIcon.iconset"
+swift "$MAC/make-icon.swift" "$MAC/icon/pxi.svg" "$TMP/AppIcon.iconset"
 iconutil -c icns -o "$TMP/AppIcon.icns" "$TMP/AppIcon.iconset"
 
 echo "==> bundle"

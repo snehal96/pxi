@@ -54,10 +54,14 @@ WORDMARK = (
 )
 FAVICON = (
     '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,'
-    "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
-    "%3Crect width='32' height='32' rx='7' fill='%2314161d'/%3E"
-    "%3Ctext x='16' y='22' text-anchor='middle' font-family='Menlo,monospace' font-size='15' "
-    "font-weight='700' fill='%23fff'%3Epx%3Ctspan fill='%235bcc8f'%3Ei%3C/tspan%3E%3C/text%3E%3C/svg%3E\">"
+    "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height="
+    "'32' rx='7' fill='%231c2130'/%3E%3Cg fill='none' stroke-width='2.4' stroke-linecap='round'"
+    "%3E%3Cpath d='M8 16C14 16 15.5 8 23.5 8' stroke='%234ade80'/%3E%3Cpath d='M8 16H23.5' stro"
+    "ke='%2360a5fa'/%3E%3Cpath d='M8 16C14 16 15.5 24 23.5 24' stroke='%23fbbf24'/%3E%3C/g%3E%3"
+    "Ccircle cx='8' cy='16' r='3.2' fill='%23e8ebf2'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%2"
+    "34ade80'/%3E%3Ccircle cx='24' cy='16' r='3' fill='%2360a5fa'/%3E%3Ccircle cx='24' cy='24' "
+    "r='3' fill='%23fbbf24'/%3E%3C/svg%3E"
+    '">'
 )
 
 

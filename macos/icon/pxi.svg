@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- pxi: one repo fanning out into parallel worktrees. macOS icon grid: 824 body, 100 inset. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232838"/>
+      <stop offset="1" stop-color="#0c0e14"/>
+    </linearGradient>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8ebf2"/><stop offset="1" stop-color="#4ade80"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8ebf2"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8ebf2"/><stop offset="1" stop-color="#fbbf24"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#3b4766" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3b4766" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#glow)"/>
+  <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="#ffffff" stroke-opacity="0.09" stroke-width="3"/>
+  <g fill="none" stroke-width="58" stroke-linecap="round">
+    <path d="M300 512 C 470 512, 520 300, 700 300" stroke="url(#g1)"/>
+    <path d="M300 512 L 700 512" stroke="url(#g2)"/>
+    <path d="M300 512 C 470 512, 520 724, 700 724" stroke="url(#g3)"/>
+  </g>
+  <circle cx="300" cy="512" r="74" fill="#e8ebf2"/>
+  <circle cx="300" cy="512" r="30" fill="#151926"/>
+  <g stroke="#0f121a" stroke-width="22">
+    <circle cx="712" cy="300" r="70" fill="#4ade80"/>
+    <circle cx="712" cy="512" r="70" fill="#60a5fa"/>
+    <circle cx="712" cy="724" r="70" fill="#fbbf24"/>
+  </g>
+</svg>
