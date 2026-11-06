@@ -133,10 +133,20 @@ final class PxiMessageRouter: NSObject, WKScriptMessageHandler {
     static let shared = PxiMessageRouter()
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let d = message.body as? [String: Any], d["type"] as? String == "theme",
+        guard let d = message.body as? [String: Any],
               let app = NSApp.delegate as? AppDelegate,
               let wc = app.controller(for: message.webView) else { return }
-        wc.titleBar.applyTheme(d, to: wc.window)
+        switch d["type"] as? String {
+        case "theme":
+            wc.titleBar.applyTheme(d, to: wc.window)
+        case "notify":
+            Notifier.shared.notify(title: d["title"] as? String ?? "pxi", body: d["body"] as? String ?? "",
+                                   session: d["session"] as? String ?? "", where: d["where"] as? String ?? "", from: wc)
+        case "waiting":
+            Notifier.shared.setWaiting(d["count"] as? Int ?? 0, for: wc)
+        default:
+            break
+        }
     }
 }
 

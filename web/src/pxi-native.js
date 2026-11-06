@@ -6,6 +6,7 @@
 import { S } from './state.js';
 import { go } from './history.js';
 import { openPalette } from './palette.js';
+import { openClaude } from './pxi-claude.js';
 
 export function initNative() {
   const bridge = window.webkit?.messageHandlers?.pxi;
@@ -15,6 +16,8 @@ export function initNative() {
     forward: () => go(1),
     quickOpen: () => openPalette('file'),
     commands: () => openPalette('command'),
+    // A notification was clicked.
+    openClaude: (session, where) => openClaude({ session, where }),
   };
   const nativePost = () => {
     const cs = getComputedStyle(document.body);

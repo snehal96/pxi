@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = MainMenu.build()
+        _ = Notifier.shared // its delegate must be set before a notification click launches us
         let wc = newWindow()
         wc.showStatus("Starting pxi…")
         startServer()
@@ -66,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     var windowCount: Int { windows.count }
+    var allControllers: [BrowserWindowController] { windows }
 
     func controller(for webView: WKWebView?) -> BrowserWindowController? {
         windows.first { $0.webView === webView }
@@ -82,6 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func windowClosed(_ wc: BrowserWindowController) {
         windows.removeAll { $0 === wc }
+        Notifier.shared.windowClosed(wc)
     }
 
     func isPx0(_ url: URL) -> Bool {

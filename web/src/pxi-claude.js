@@ -82,11 +82,43 @@ function clStartWatch() {
       if ((r.asking || 0) > (clIdeAsking[r.session] || 0)) openClaude({ session: r.session, where: '@terminal', quiet: true });
     }
     clIdeAsking = now;
+    clNotify(clRuns, asking);
     for (const req of j.page || []) clPageRequest(req);
     if (clIde) clSendContext();
     // Nothing running, no terminal claude and no tab: stop listening.
     if (!clRuns.length && !clTab && !clIde && !clTermShown) { clWatch.close(); clWatch = null; }
   };
+}
+
+// ------------------------------------------------------------ notifications
+// A session that starts waiting for the user, or finishes, while the user is
+// not looking at it: a Mac notification (the app) and the Dock badge. In a
+// browser, the waiting count leads the tab title.
+let clPrev = null; // session -> { busy, asking } from the previous status
+const clBaseTitle = () => document.title.replace(/^\(\d+\) /, '');
+
+function clLooking(session) {
+  return document.hasFocus() && clActive && clMod?.current?.() === session;
+}
+
+function clNotify(runs, asking) {
+  const bridge = window.webkit?.messageHandlers?.pxi;
+  if (bridge) bridge.postMessage({ type: 'waiting', count: asking });
+  else document.title = (asking ? '(' + asking + ') ' : '') + clBaseTitle();
+  const next = {};
+  for (const r of runs) {
+    next[r.session] = { busy: !!r.busy, asking: r.asking || 0 };
+    if (!clPrev) continue; // the first status after load: nothing new happened
+    const p = clPrev[r.session] || { busy: false, asking: 0 };
+    let title = '';
+    if ((r.asking || 0) > p.asking) title = 'Claude needs you';
+    else if (p.busy && !r.busy && !r.asking) title = 'Claude finished';
+    if (!title || clLooking(r.session)) continue;
+    const where = r.where === '@terminal' ? 'terminal' : (r.where || S.meta?.name || 'workspace');
+    const body = (r.title || 'Session') + ' · ' + where;
+    if (bridge) bridge.postMessage({ type: 'notify', title, body, session: r.session, where: r.where || '' });
+  }
+  clPrev = next;
 }
 
 // The file and selection, for terminal claudes (only while one is connected).

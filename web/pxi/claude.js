@@ -668,5 +668,6 @@
     if (root) loadSessions();
   }
 
-  window.pxiClaudePanel = { mount, unmount, open, focus, runs };
+  const current = () => cur?.session || '';
+  window.pxiClaudePanel = { mount, unmount, open, focus, runs, current };
 })();
