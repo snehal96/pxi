@@ -23,10 +23,11 @@ reading, reviewing and pushing agent-written changes in one place.
   diffs to accept or reject; your open file and selection go along. `claude` typed in
   pxi's terminal connects to pxi like it does to VS Code: its edits open in the Claude
   tab to accept or reject, and it sees your selection.
+- **Review → agent** (`Alt+K`, or right-click **Send to Claude**): quote lines from any
+  file or worktree diff into that worktree's Claude session with your comment.
 
 ### Coming next
 
-- Send a review comment on a worktree's diff to that worktree's Claude session.
 - See and stop the processes an agent session started.
 - A new look.
 

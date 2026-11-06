@@ -545,3 +545,25 @@ func pxiIDEMention(abs string, l1, l2 int) int {
 	}
 	return len(clients)
 }
+
+// handlePxiIDEMentionReq: "Mention in terminal Claude" on a file and lines.
+func (s *Server) handlePxiIDEMentionReq(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		fail(w, http.StatusMethodNotAllowed, "POST only")
+		return
+	}
+	var b struct {
+		Path string `json:"path"`
+		L1   int    `json:"l1"`
+		L2   int    `json:"l2"`
+	}
+	if !pxiReadBody(w, r, &b) {
+		return
+	}
+	abs, _, ok := s.resolvePath(b.Path)
+	if !ok {
+		fail(w, http.StatusBadRequest, "bad path")
+		return
+	}
+	writeJSON(w, map[string]any{"sent": pxiIDEMention(abs, b.L1, b.L2)})
+}

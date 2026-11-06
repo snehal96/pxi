@@ -284,7 +284,7 @@
 
   function addUser(text, c) {
     els.log.querySelector('.cl-empty')?.remove();
-    els.log.append(h('<div class="cl-user">' + (c ? '<div class="cl-uctx">' + I.file + esc(c) + '</div>' : '') + '<div class="cl-utext">' + esc(text) + '</div></div>'));
+    els.log.append(h('<div class="cl-user">' + (c ? '<div class="cl-uctx">' + I.file + esc(c) + '</div>' : '') + (text.includes('```') ? '<div class="cl-utext cl-text">' + ctx.md(text) + '</div>' : '<div class="cl-utext">' + esc(text) + '</div>') + '</div>'));
   }
 
   function addDelta(t) {
@@ -625,11 +625,28 @@
 
   // ------------------------------------------------------------ API
 
-  function open(opts) {
+  async function open(opts) {
     if (!root || !opts) return;
-    if (opts.session) openSession(opts.session, opts.where);
+    if (opts.latest) {
+      // The worktree's running session, else its latest, else a new one.
+      try { await placesLoad; } catch {}
+      if (!root) return;
+      const list = sessionsOf(placeOf(opts.where));
+      const pick = list.find(x => x.live) || list[0];
+      if (pick) {
+        if (!(cur && cur.session === pick.id)) await openSession(pick.id, opts.where);
+      } else if (!(cur && !cur.session && cur.where === (opts.where || ''))) newSession(opts.where);
+    } else if (opts.session) openSession(opts.session, opts.where);
     else if (opts.where !== undefined) newSession(opts.where);
-    if (opts.text) { els.input.value = opts.text; autosize(); }
+    if (opts.text && els.input) {
+      attach = false; // the lines are quoted in the message already
+      const t = els.input;
+      t.value = (t.value.trim() ? t.value.replace(/\s*$/, '\n\n') : '') + opts.text;
+      autosize();
+      drawCtx();
+      requestAnimationFrame(() => { t.focus(); t.selectionStart = t.selectionEnd = t.value.length; t.scrollTop = t.scrollHeight; });
+      return;
+    }
     if (!opts.quiet) focus();
   }
 

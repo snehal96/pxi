@@ -11,7 +11,7 @@ import { on } from './bus.js';
 import { openFile } from './tabs.js';
 import { thrMd } from './thread.js';
 import { showToast } from './ui.js';
-import { getSelectedRangeInfo } from './selbar.js';
+import { getSelectedRangeInfo, SEL_MENU_ITEMS } from './selbar.js';
 
 const CLAUDE_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>';
 
@@ -70,6 +70,7 @@ function clStartWatch() {
     try { j = JSON.parse(e.data); } catch {}
     clRuns = j.runs || [];
     clIde = j.ide || 0;
+    clMenuItems();
     const asking = clRuns.reduce((n, r) => n + (r.asking || 0), 0);
     clSetBadge(asking);
     clMod?.runs?.(clRuns);
@@ -220,7 +221,68 @@ export function toggleClaude() {
   if (clActive) clHide(); else clShow();
 }
 
+// ------------------------------------------------------------ review → Claude
+// "Send to Claude" on a selection or a gutter line: opens the Claude session of
+// the worktree the file belongs to (its latest, or a new one) with the lines
+// quoted, ready for the comment. "Mention in terminal Claude" adds them to the
+// prompt of a terminal claude connected through the IDE bridge.
+
+function clTarget() {
+  const info = getSelectedRangeInfo();
+  const d = doc_();
+  if (info && info.text) return { path: info.path, l1: info.l1, l2: info.l2, text: info.text };
+  if (!d || d.isImage) return null;
+  const n = d.cur || 1;
+  const line = (d.lines && d.lines[n - 1]) || '';
+  // Rendered lines are highlighted HTML; DOMParser reads text without running anything.
+  const html = typeof line === 'string' ? line : (line?.html || line?.text || '');
+  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
+  return { path: d.path, l1: n, l2: n, text };
+}
+
+function clReview(t) {
+  if (!t) return;
+  const m = /^@wt\/([^/]+)\/(.*)$/.exec(t.path);
+  const where = m ? m[1] : '';
+  const rel = m ? m[2] : t.path;
+  const lines = t.l1 === t.l2 ? 'line ' + t.l1 : 'lines ' + t.l1 + '-' + t.l2;
+  const ext = rel.split('.').pop() || '';
+  const quote = t.text.length > 6000 ? t.text.slice(0, 6000) + '\n…' : t.text;
+  openClaude({ where, latest: true, text: 'Review comment on `' + rel + '` ' + lines + ':\n```' + ext + '\n' + quote.replace(/\n$/, '') + '\n```\n' });
+}
+
+async function clMention(t) {
+  if (!t) return;
+  try {
+    const j = await apiPostJson('/api/pxi/ide/mention', { path: t.path, l1: t.l1, l2: t.l2 });
+    showToast('✓', j.sent ? 'Added to the terminal Claude\'s prompt' : 'No terminal Claude is connected');
+  } catch (e) { showToast('!', e.message); }
+}
+
+function clMenuItems() {
+  if (!SEL_MENU_ITEMS.some(i => i.sel === 'pxi-claude')) SEL_MENU_ITEMS.splice(1, 0, { sel: 'pxi-claude', label: 'Send to Claude', keys: 'Alt+K' });
+  const has = SEL_MENU_ITEMS.some(i => i.sel === 'pxi-claude-term');
+  if (clIde && !has) SEL_MENU_ITEMS.splice(2, 0, { sel: 'pxi-claude-term', label: 'Mention in terminal Claude' });
+  if (!clIde && has) SEL_MENU_ITEMS.splice(SEL_MENU_ITEMS.findIndex(i => i.sel === 'pxi-claude-term'), 1);
+}
+
 export function initClaude() {
+  clMenuItems();
+  // The menu is px0's (selbar.js); these two items are handled here.
+  document.addEventListener('click', e => {
+    const b = e.target.closest?.('#sel-menu [data-sel="pxi-claude"], #sel-menu [data-sel="pxi-claude-term"]');
+    if (!b) return;
+    e.stopPropagation();
+    const t = clTarget();
+    $('#sel-menu').hidden = true;
+    if (b.dataset.sel === 'pxi-claude') clReview(t); else clMention(t);
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.altKey && !e.metaKey && !e.ctrlKey && e.code === 'KeyK' && !e.target.closest?.('input, textarea, [contenteditable]')) {
+      const t = clTarget();
+      if (t && !clActive) { e.preventDefault(); clReview(t); }
+    }
+  }, true);
   // Sessions or terminal claudes from before this page loaded: watch them.
   api('/api/pxi/claude/status').then(j => { if (j.runs || j.ide) clStartWatch(); }).catch(() => {});
   // A file tab taking over hides the Claude tab (it stays open).

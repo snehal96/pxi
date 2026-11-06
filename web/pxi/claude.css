@@ -67,6 +67,8 @@ body.pxi-claude-on #main-top-bar #view-switches > :not(#btn-open-right) { visibi
 .cl-faint { color: var(--faint); }
 .cl-user { align-self: flex-end; max-width: 85%; background: var(--bg3); border: 1px solid var(--line); border-radius: 10px; padding: 7px 11px; }
 .cl-utext { white-space: pre-wrap; word-break: break-word; }
+.cl-utext.cl-text { white-space: normal; }
+.cl-user pre { margin: 6px 0; }
 .cl-uctx { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--faint); margin-bottom: 2px; }
 .cl-text { word-break: break-word; }
 .cl-text > :first-child { margin-top: 0; }

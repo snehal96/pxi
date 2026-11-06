@@ -48,6 +48,7 @@ Every in-page shortcut works; the page gets each key before the menu. The app ad
 | Cmd+= / Cmd+- / Cmd+0 | Zoom |
 | Ctrl+` / Ctrl+Shift+` | Toggle the terminal / open another one |
 | Cmd+Esc | Show or hide the Claude tab |
+| Alt+K | Send the selected lines (or the current line) to Claude with a comment |
 
 ## Testing
 

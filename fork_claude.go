@@ -979,6 +979,7 @@ func (s *Server) registerPxiClaudeRoutes() {
 	h("/api/pxi/claude/answer", s.handlePxiClaudeAnswer)
 	h("/api/pxi/claude/control", s.handlePxiClaudeControl)
 	h("/api/pxi/ide/context", s.handlePxiIDEContext)
+	h("/api/pxi/ide/mention", s.handlePxiIDEMentionReq)
 }
 
 func (s *Server) handlePxiClaudeAccounts(w http.ResponseWriter, r *http.Request) {
