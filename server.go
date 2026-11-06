@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"bufio"
 	"bytes"
 	"compress/gzip"
@@ -280,6 +281,7 @@ func (s *Server) scavenge() {
 			continue // already released since the last burst of work
 		}
 		render.Scavenge()
+		runtime.GC() // fork: a first GC moves pooled objects (gzip writers) aside; FreeOSMemory's own GC then frees them
 		debug.FreeOSMemory()
 		done = true
 	}

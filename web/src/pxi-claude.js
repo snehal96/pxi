@@ -374,7 +374,8 @@ export function initClaude() {
     }
   }, true);
   // Sessions or terminal claudes from before this page loaded: watch them.
-  api('/api/pxi/claude/status').then(j => { if (j.runs || j.ide) clStartWatch(); }).catch(() => {});
+  // After the page's own load requests: each request in flight at once keeps a gzip writer pooled.
+  setTimeout(() => api('/api/pxi/claude/status').then(j => { if (j.runs || j.ide) clStartWatch(); }).catch(() => {}), 2500);
   // A file tab taking over hides the Claude tab (it stays open).
   on('tab:activated', clHide);
   document.addEventListener('click', e => {
