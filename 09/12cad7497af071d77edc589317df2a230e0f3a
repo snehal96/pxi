@@ -1,0 +1,49 @@
+MAINTAINING.md
+  s_2258bb99c5feb8::t_757ca26c5feacf 28-32
+README.md
+  s_2258bb99c5feb8::t_51de5e87aaafad 16-20,24
+fork_term.go
+  s_2258bb99c5feb8::t_31d7f04bfbe27c 1-406
+fork_term_test.go
+  s_2258bb99c5feb8::t_8b121458e42db9 1-119
+fork_term_windows.go
+  s_2258bb99c5feb8::t_58fc7696bd1eaf 1-6
+go.mod
+  s_2258bb99c5feb8::t_f4814a1b780dfa 7
+go.sum
+  s_2258bb99c5feb8::t_e75dbb97dc739d 7-8
+macos/README.md
+  s_2258bb99c5feb8::t_71cae853b3314a 49
+server.go
+  s_2258bb99c5feb8::t_c66ae4b004ed12 234
+web/pxi/shell.css
+  s_2258bb99c5feb8::t_98bd049c9c8104 283-312
+web/pxi/vendor/LICENSE.xterm
+  s_2258bb99c5feb8::t_777e4db31fd1c4 1-21
+web/pxi/vendor/LICENSE.xterm-addon-fit
+  s_2258bb99c5feb8::t_4e0bc7efe4ca4e 1-19
+web/pxi/vendor/xterm-5.5.0.css
+  s_2258bb99c5feb8::t_cb0e8d56932a1e 1-218
+web/src/pxi-shell.js
+  s_2258bb99c5feb8::t_ae547f2ee420f2 2,16,244,246-256
+web/src/pxi-term.js
+  s_2258bb99c5feb8::t_93afc0997b0545 1-340
+web/src/pxi-worktrees.js
+  s_2258bb99c5feb8::t_db1e78a30cbb28 10,42,174,216-221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0912cad7497af071d77edc589317df2a230e0f3a",
+  "prompts": {},
+  "sessions": {
+    "s_2258bb99c5feb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_2258bb99c5feb8",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
