@@ -175,7 +175,7 @@ function renderDiff(d) {
     }
     frag.append(d.turnFiles ? reviewStrip(d) : commitStrip(d));
     const title = d.turnLabel ? d.turnLabel : ('In commit ' + d.diffRef.slice(0, 7));
-    const sub = d.turnLabel ? 'snapshot diff for this agent turn' : 'this commit only, not the working tree';
+    const sub = d.turnLabel ? (d.turnLabel.startsWith('stash@') ? 'stashed changes, not the working tree' : 'snapshot diff for this agent turn') : 'this commit only, not the working tree'; // fork: pxi stashes
     frag.append(createDiffSection(d, 'commit', title, sub,
       (bodyEl) => appendHunks(bodyEl, hunks, d.diffMode, false, false)));
     diffContent.append(frag);

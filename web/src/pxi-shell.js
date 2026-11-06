@@ -12,6 +12,7 @@ import { openSettings } from './settings.js';
 import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
 import { initWorktrees, setWorktreesVisible } from './pxi-worktrees.js';
+import { initScm, setScmVisible } from './pxi-scm.js';
 
 const VIEW_KEY = 'pxi.sideView';
 
@@ -20,6 +21,7 @@ const ICONS = {
   scm: '<circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="8.5" r="2"/><path d="M6.5 7.5v9M17.5 10.5c0 4-4.5 4.5-11 6"/>',
   worktrees: '<circle cx="5" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="15" r="2"/><path d="M5 7v10M17 7c-6 0-8 1-10.2 3.5M17 15c-6 0-8-1-10.2-3.5"/>',
   search: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
+  review: '<path d="M9 5H6.5A1.5 1.5 0 0 0 5 6.5v13A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 17.5 5H15"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M8.5 12.5l1.5 1.5 3-3M8.5 17h7"/>',
   threads: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5"/>',
   home: '<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
@@ -32,6 +34,7 @@ const ITEMS = [
   { id: 'worktrees', title: 'Worktrees', view: true },
   { id: 'search', title: `Search (${mod}⇧F)` },
   { id: 'threads', title: 'Threads' },
+  { id: 'review', title: `AI Review: run your agent through review stages (${mod}⇧V)` },
 ];
 const BOTTOM = [
   { id: 'home', title: 'Workbench' },
@@ -58,9 +61,12 @@ function setSideHidden(hidden) {
   render();
 }
 
+function reviewOn() { return !!$('#btn-mode-review')?.classList.contains('active'); }
+
 function markActive() {
   for (const b of abBar.querySelectorAll('.ab-item[data-ab]')) {
     const isView = ITEMS.find(i => i.id === b.dataset.ab)?.view;
+    if (b.dataset.ab === 'review') { b.classList.toggle('active', reviewOn()); continue; }
     b.classList.toggle('active', !!isView && !sideHidden() && b.dataset.ab === abCurrent);
   }
 }
@@ -75,6 +81,7 @@ async function showView(view, { toggle = false } = {}) {
   try { localStorage.setItem(VIEW_KEY, view); } catch {}
   for (const v of ['explorer', 'scm', 'worktrees']) document.body.classList.toggle('pxi-view-' + v, view === v);
   setWorktreesVisible(view === 'worktrees');
+  setScmVisible(view === 'scm');
   if (sideHidden()) setSideHidden(false);
   if (view === 'explorer') await setSidebarMode('files');
   if (view === 'scm') await setSidebarMode(hasGitView() ? 'git' : 'files');
@@ -93,6 +100,9 @@ function onBarClick(e) {
     setTimeout(() => $('#pane-right-search input, #right-search-input, #search-q')?.focus(), 0);
   } else if (id === 'threads') {
     showRightInspector('threads');
+  } else if (id === 'review') {
+    // px0's Code/Review mode switch, which pxi hides from the toolbar.
+    (reviewOn() ? $('#btn-mode-code') : $('#btn-mode-review'))?.click();
   } else if (id === 'settings') {
     openSettings();
   } else if (id === 'home' && S.meta?.workbench) {
@@ -158,6 +168,10 @@ export function initShell() {
   app.insertBefore(abBar, app.firstChild);
   abBar.addEventListener('click', onBarClick);
 
+  initScm();
+  const modeBtn = $('#btn-mode-review');
+  if (modeBtn) new MutationObserver(markActive).observe(modeBtn, { attributes: true, attributeFilter: ['class'] });
+
   initWorktrees(side, (count, overlaps) => {
     setBadge('worktrees', overlaps ? String(overlaps) : (count ? String(count) : ''), overlaps > 0);
     const b = abBar.querySelector('[data-ab="worktrees"]');
@@ -165,12 +179,9 @@ export function initShell() {
   });
 
   // px0's own controls (the tree header toggles, reindex) switch modes too.
-  on('sidebar:mode', ({ mode }) => {
-    if (abCurrent === 'worktrees') return;
-    abCurrent = mode === 'git' ? 'scm' : 'explorer';
-    for (const v of ['explorer', 'scm']) document.body.classList.toggle('pxi-view-' + v, abCurrent === v);
-    markActive();
-  });
+  // px0 drops back to the full tree when the last change is committed or
+  // stashed; the activity bar keeps the view the person chose.
+  on('sidebar:mode', () => markActive());
 
   // VS Code's status abBar runs the full width of the window, under every column.
   const status = $('#status');
@@ -201,6 +212,7 @@ export function initShell() {
   if (saved === 'worktrees') showView('worktrees');
   else {
     document.body.classList.add('pxi-view-' + abCurrent);
+    setScmVisible(abCurrent === 'scm');
     markActive();
   }
 }
