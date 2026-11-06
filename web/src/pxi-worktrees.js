@@ -16,20 +16,20 @@ const STATUS = {
   M: ['git-M', 'Modified'], A: ['git-A', 'Added'], D: ['git-D', 'Deleted'], U: ['git-untracked', 'Untracked'],
 };
 
-let root = null;        // #wt-view
-let body = null;        // its scrolling body
-let data = null;        // last /api/worktrees
-let lastSig = '';
-let timer = 0;
-let visible = false;
-let onCount = () => {};
-const collapsed = new Set(readCollapsed());
+let wtRoot = null;        // #wt-view
+let wtBody = null;        // its scrolling wtBody
+let wtData = null;        // last /api/worktrees
+let wtLastSig = '';
+let wtTimer = 0;
+let wtVisible = false;
+let wtOnCount = () => {};
+const wtCollapsed = new Set(readCollapsed());
 
 function readCollapsed() {
   try { return JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]'); } catch { return []; }
 }
 function saveCollapsed() {
-  try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...collapsed])); } catch {}
+  try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...wtCollapsed])); } catch {}
 }
 
 const ICON = {
@@ -42,53 +42,53 @@ const ICON = {
 };
 
 export function worktreeCount() {
-  return data ? data.worktrees.filter(w => !w.prunable).length : 0;
+  return wtData ? wtData.worktrees.filter(w => !w.prunable).length : 0;
 }
 
 /** Builds the view inside the sidebar. onCountChange(count, overlaps) feeds the activity bar badge. */
 export function initWorktrees(side, onCountChange) {
-  onCount = onCountChange || onCount;
-  root = document.createElement('section');
-  root.id = 'wt-view';
-  root.className = 'wt-view';
-  root.innerHTML =
+  wtOnCount = onCountChange || wtOnCount;
+  wtRoot = document.createElement('section');
+  wtRoot.id = 'wt-view';
+  wtRoot.className = 'wt-view';
+  wtRoot.innerHTML =
     '<header class="panel-head wt-head-bar"><span class="wt-title">Worktrees</span>' +
     '<span class="wt-base" id="wt-base"></span>' +
     '<button class="mini" id="wt-refresh" title="Refresh">' + ICON.refresh + '</button></header>' +
-    '<div class="wt-body" id="wt-body"></div>';
-  side.insertBefore(root, side.querySelector('.side-foot'));
-  body = root.querySelector('#wt-body');
+    '<div class="wt-wtBody" id="wt-wtBody"></div>';
+  side.insertBefore(wtRoot, side.querySelector('.side-foot'));
+  wtBody = wtRoot.querySelector('#wt-wtBody');
 
-  root.querySelector('#wt-refresh').addEventListener('click', () => refresh(true));
-  body.addEventListener('click', onClick);
+  wtRoot.querySelector('#wt-refresh').addEventListener('click', () => refresh(true));
+  wtBody.addEventListener('click', onClick);
   document.addEventListener('visibilitychange', schedule);
   refresh(false); // fill the badge even before the view is opened
 }
 
 export function setWorktreesVisible(on) {
-  visible = on;
+  wtVisible = on;
   if (on) refresh(false);
   schedule();
 }
 
 function schedule() {
-  clearTimeout(timer);
+  clearTimeout(wtTimer);
   if (document.hidden) return;
   // Poll fast while the view is open; slowly otherwise, just for the badge.
-  timer = setTimeout(() => refresh(false), visible ? POLL_MS : POLL_MS * 5);
+  wtTimer = setTimeout(() => refresh(false), wtVisible ? POLL_MS : POLL_MS * 5);
 }
 
 async function refresh(force) {
   try {
     const j = await api('/api/worktrees', force ? { refresh: 1 } : undefined);
-    data = { root: j.root, worktrees: j.worktrees || [] };
-    const sig = JSON.stringify(data.worktrees);
-    if (sig !== lastSig || force) {
-      lastSig = sig;
-      render();
+    wtData = { root: j.root, worktrees: j.worktrees || [] };
+    const sig = JSON.stringify(wtData.worktrees);
+    if (sig !== wtLastSig || force) {
+      wtLastSig = sig;
+      renderWorktrees();
     }
   } catch (e) {
-    if (body && visible) body.innerHTML = '<div class="wt-empty">Could not list worktrees: ' + esc(e.message || String(e)) + '</div>';
+    if (wtBody && wtVisible) wtBody.innerHTML = '<div class="wt-empty">Could not list worktrees: ' + esc(e.message || String(e)) + '</div>';
   } finally {
     schedule();
   }
@@ -110,17 +110,17 @@ function splitPath(p) {
   return i < 0 ? ['', p] : [p.slice(0, i), p.slice(i + 1)];
 }
 
-function render() {
-  if (!body || !data) return;
-  const list = data.worktrees.filter(w => !w.prunable);
+function renderWorktrees() {
+  if (!wtBody || !wtData) return;
+  const list = wtData.worktrees.filter(w => !w.prunable);
   const overlaps = overlapsOf(list);
-  onCount(list.length, overlaps.size);
+  wtOnCount(list.length, overlaps.size);
   const base = list.find(w => w.baseRef)?.baseRef;
   const baseEl = $('#wt-base');
   if (baseEl) baseEl.textContent = base ? 'vs ' + base : '';
 
   if (!list.length) {
-    body.innerHTML =
+    wtBody.innerHTML =
       '<div class="wt-empty"><p>No other worktrees in this repository.</p>' +
       '<p class="wt-faint">Worktrees made by Claude Code, another agent, or <code>git worktree add</code> show up here with the changes each one makes.</p></div>';
     return;
@@ -140,7 +140,7 @@ function render() {
   }
 
   for (const w of list) {
-    const open = !collapsed.has(w.name);
+    const open = !wtCollapsed.has(w.name);
     const ov = w.files.filter(f => f.overlap?.length).length;
     const meta = [];
     if (w.ahead) meta.push('<span title="Commits since it branched off ' + esc(w.baseRef || 'the base') + '">↑' + w.ahead + '</span>');
@@ -175,7 +175,7 @@ function render() {
     }
     html += '</div>';
   }
-  body.innerHTML = html;
+  wtBody.innerHTML = html;
 }
 
 function filesFor(w) {
@@ -183,8 +183,8 @@ function filesFor(w) {
 }
 
 function openWorktreeFile(w, path) {
-  for (const el of body.querySelectorAll('.wt-file.active')) el.classList.remove('active');
-  body.querySelector('.wt-file[data-wt="' + CSS.escape(w.name) + '"][data-path="' + CSS.escape(path) + '"]')?.classList.add('active');
+  for (const el of wtBody.querySelectorAll('.wt-file.active')) el.classList.remove('active');
+  wtBody.querySelector('.wt-file[data-wt="' + CSS.escape(w.name) + '"][data-path="' + CSS.escape(path) + '"]')?.classList.add('active');
   openFile('@wt/' + w.name + '/' + path, {
     view: 'diff',
     turnFiles: filesFor(w),
@@ -193,8 +193,8 @@ function openWorktreeFile(w, path) {
 }
 
 function onClick(e) {
-  if (!data) return;
-  const find = name => data.worktrees.find(w => w.name === name);
+  if (!wtData) return;
+  const find = name => wtData.worktrees.find(w => w.name === name);
   const rev = e.target.closest('[data-review]');
   if (rev) {
     e.stopPropagation();
@@ -211,8 +211,8 @@ function onClick(e) {
   const head = e.target.closest('[data-toggle]');
   if (head) {
     const n = head.dataset.toggle;
-    if (collapsed.has(n)) collapsed.delete(n); else collapsed.add(n);
+    if (wtCollapsed.has(n)) wtCollapsed.delete(n); else wtCollapsed.add(n);
     saveCollapsed();
-    render();
+    renderWorktrees();
   }
 }

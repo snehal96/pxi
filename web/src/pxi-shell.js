@@ -1,5 +1,5 @@
 // web/src/pxi-shell.js
-// pxi: a VS Code-style activity bar on the far left that switches the sidebar
+// pxi: a VS Code-style activity abBar on the far left that switches the sidebar
 // between Explorer, Source Control and Worktrees, and opens Search and Threads
 // in the inspector. It drives px0's own sidebar modes (tree.js) rather than
 // replacing them, so upstream changes to those keep working. Styles live in
@@ -37,8 +37,8 @@ const BOTTOM = [
   { id: 'settings', title: `Settings (${mod},)` },
 ];
 
-let bar = null;
-let current = 'explorer';
+let abBar = null;
+let abCurrent = 'explorer';
 
 function icon(id) {
   return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICONS[id] + '</svg>';
@@ -58,19 +58,19 @@ function setSideHidden(hidden) {
 }
 
 function markActive() {
-  for (const b of bar.querySelectorAll('.ab-item[data-ab]')) {
+  for (const b of abBar.querySelectorAll('.ab-item[data-ab]')) {
     const isView = ITEMS.find(i => i.id === b.dataset.ab)?.view;
-    b.classList.toggle('active', !!isView && !sideHidden() && b.dataset.ab === current);
+    b.classList.toggle('active', !!isView && !sideHidden() && b.dataset.ab === abCurrent);
   }
 }
 
 async function showView(view, { toggle = false } = {}) {
-  if (toggle && view === current && !sideHidden()) {
+  if (toggle && view === abCurrent && !sideHidden()) {
     setSideHidden(true);
     markActive();
     return;
   }
-  current = view;
+  abCurrent = view;
   try { localStorage.setItem(VIEW_KEY, view); } catch {}
   for (const v of ['explorer', 'scm', 'worktrees']) document.body.classList.toggle('pxi-view-' + v, view === v);
   setWorktreesVisible(view === 'worktrees');
@@ -100,7 +100,7 @@ function onBarClick(e) {
 }
 
 function setBadge(id, text, warn = false) {
-  const el = bar?.querySelector('[data-ab="' + id + '"] .ab-badge');
+  const el = abBar?.querySelector('[data-ab="' + id + '"] .ab-badge');
   if (!el) return;
   el.hidden = !text;
   el.textContent = text || '';
@@ -111,32 +111,32 @@ function setBadge(id, text, warn = false) {
 export function initShell() {
   const app = $('#app');
   const side = $('#side');
-  if (!app || !side || bar) return;
+  if (!app || !side || abBar) return;
   document.body.classList.add('pxi-shell');
 
-  bar = document.createElement('nav');
-  bar.id = 'activitybar';
-  bar.setAttribute('aria-label', 'Views');
-  bar.innerHTML = '<div class="ab-top">' + ITEMS.map(button).join('') + '</div>' +
+  abBar = document.createElement('nav');
+  abBar.id = 'activitybar';
+  abBar.setAttribute('aria-label', 'Views');
+  abBar.innerHTML = '<div class="ab-top">' + ITEMS.map(button).join('') + '</div>' +
     '<div class="ab-bottom">' + BOTTOM.filter(b => b.id !== 'home' || S.meta?.workbench).map(button).join('') + '</div>';
-  app.insertBefore(bar, app.firstChild);
-  bar.addEventListener('click', onBarClick);
+  app.insertBefore(abBar, app.firstChild);
+  abBar.addEventListener('click', onBarClick);
 
   initWorktrees(side, (count, overlaps) => {
     setBadge('worktrees', overlaps ? String(overlaps) : (count ? String(count) : ''), overlaps > 0);
-    const b = bar.querySelector('[data-ab="worktrees"]');
+    const b = abBar.querySelector('[data-ab="worktrees"]');
     if (b) b.title = 'Worktrees' + (count ? ` (${count})` : '') + (overlaps ? `: ${overlaps} file${overlaps > 1 ? 's' : ''} changed in more than one` : '');
   });
 
   // px0's own controls (the tree header toggles, reindex) switch modes too.
   on('sidebar:mode', ({ mode }) => {
-    if (current === 'worktrees') return;
-    current = mode === 'git' ? 'scm' : 'explorer';
-    for (const v of ['explorer', 'scm']) document.body.classList.toggle('pxi-view-' + v, current === v);
+    if (abCurrent === 'worktrees') return;
+    abCurrent = mode === 'git' ? 'scm' : 'explorer';
+    for (const v of ['explorer', 'scm']) document.body.classList.toggle('pxi-view-' + v, abCurrent === v);
     markActive();
   });
 
-  // VS Code's status bar runs the full width of the window, under every column.
+  // VS Code's status abBar runs the full width of the window, under every column.
   const status = $('#status');
   if (status) document.body.append(status);
   new MutationObserver(markActive).observe(document.body, { attributes: true, attributeFilter: ['class'] });
@@ -164,7 +164,7 @@ export function initShell() {
   try { saved = localStorage.getItem(VIEW_KEY) || 'explorer'; } catch {}
   if (saved === 'worktrees') showView('worktrees');
   else {
-    document.body.classList.add('pxi-view-' + current);
+    document.body.classList.add('pxi-view-' + abCurrent);
     markActive();
   }
 }

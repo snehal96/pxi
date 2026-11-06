@@ -87,12 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         pendingTargets = []
         for (i, t) in targets.enumerated() {
             let wc = (i == 0 ? frontController : nil) ?? newWindow()
-            // A window still on its first load runs the request once the server is up.
-            if wc.webView.isLoading {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { wc.openTarget(t) }
-            } else {
-                wc.openTarget(t)
-            }
+            wc.openTarget(t) // queued by the window until its page has loaded
             wc.window?.makeKeyAndOrderFront(nil)
         }
     }

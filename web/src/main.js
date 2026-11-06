@@ -33,7 +33,8 @@ import { initEditView } from './editview.js';
 import { initNewItem } from './newitem.js';
 import { initTips, startTipsAsync } from './tips.js';
 import { initReviewFlow } from './reviewflow.js';
-import { initShell } from './pxi-shell.js'; // fork: pxi activity bar + worktrees
+// fork: pxi activity bar + worktrees
+import { initShell } from './pxi-shell.js';
 
 // Initialize all subsystems
 initRenderer();

@@ -79,6 +79,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         loading.hide()
+        flushPendingTargets()
         snapshotForDebugging()
     }
 
@@ -261,29 +262,56 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
     }
 
     /// Opens a folder (or PR URL) as a pxi workspace in this window, through the
-    /// workbench's own API so it lands in Recent like any other.
+    /// workbench's own API so it lands in Recent like any other. Waits until a
+    /// pxi page has finished loading: the request needs the page's origin.
+    private var pendingTargets: [String] = []
+
     func openTarget(_ target: String) {
+        guard let url = webView.url, app?.isPx0(url) == true, !webView.isLoading else {
+            pendingTargets.append(target)
+            return
+        }
+        runOpen(target)
+    }
+
+    private func flushPendingTargets() {
+        guard !pendingTargets.isEmpty, let url = webView.url, app?.isPx0(url) == true else { return }
+        let targets = pendingTargets
+        pendingTargets = []
+        targets.forEach(runOpen)
+    }
+
+    private func runOpen(_ target: String) {
         let js = """
         const r = await fetch(new URL('/api/wb/open', location.origin), {
           method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({target})
         });
         const j = await r.json();
-        if (j.error) return 'error:' + j.error;
-        if (j.needClone) { location.href = new URL('/', location.origin).href; return 'needClone'; }
-        location.href = new URL(j.href, location.origin).href;
-        return 'ok';
+        if (j.error) return {error: String(j.error)};
+        if (j.needClone) return {needClone: true};
+        return {href: new URL(j.href, location.origin).href};
         """
         webView.callAsyncJavaScript(js, arguments: ["target": target], in: nil, in: .page) { [weak self] result in
+            guard let self else { return }
             var message: String?
             switch result {
-            case .success(let v): if let s = v as? String, s.hasPrefix("error:") { message = String(s.dropFirst(6)) }
-            case .failure(let e): message = e.localizedDescription
+            case .success(let v):
+                let d = v as? [String: Any] ?? [:]
+                if let href = d["href"] as? String, let url = URL(string: href) {
+                    self.load(url)
+                } else if d["needClone"] as? Bool == true, let base = self.app?.baseURL {
+                    self.load(base) // the workbench asks where the clone is
+                } else {
+                    message = d["error"] as? String ?? "The workbench did not open it."
+                }
+            case .failure(let e):
+                message = e.localizedDescription
             }
             if let message {
                 let a = NSAlert()
                 a.messageText = "Could not open \(target)"
                 a.informativeText = message
-                self?.present(a) { _ in }
+                self.present(a) { _ in }
             }
         }
     }
