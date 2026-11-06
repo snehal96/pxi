@@ -142,15 +142,24 @@ async function measure(bin, label) {
 
 const gz = f => (f && fs.existsSync(f) ? zlib.gzipSync(fs.readFileSync(f)).length / 1024 : null);
 
-// Memory varies a few MB from run to run, so each build runs twice,
-// alternating, and keeps its lowest reading of each metric.
-const RUNS = Number(process.env.PXI_BUDGET_RUNS || 2);
-const best = (a, b) => (a ? { rss: Math.min(a.rss, b.rss), heap: Math.min(a.heap, b.heap), domIdle: Math.min(a.domIdle, b.domIdle), domViews: Math.min(a.domViews, b.domViews) } : b);
-let base = null, mine = null;
+// A build's memory varies by a megabyte or more between runs (px0's server
+// measured 6.5-8.8 MB on the same CI machine), so each build runs three
+// times, alternating, and is judged on its median: one unusual run in either
+// direction cannot decide the result.
+const RUNS = Number(process.env.PXI_BUDGET_RUNS || 3);
+const median = xs => { const s = [...xs].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+const runs = { px0: [], pxi: [] };
 for (let i = 0; i < RUNS; i++) {
-  base = best(base, await measure(px0Bin, 'px0'));
-  mine = best(mine, await measure(pxiBin, 'pxi'));
+  runs.px0.push(await measure(px0Bin, 'px0'));
+  runs.pxi.push(await measure(pxiBin, 'pxi'));
 }
+const summarize = rs => ({
+  rss: median(rs.map(r => r.rss)), heap: median(rs.map(r => r.heap)),
+  domIdle: median(rs.map(r => r.domIdle)), domViews: median(rs.map(r => r.domViews)),
+});
+const base = summarize(runs.px0);
+const mine = summarize(runs.pxi);
+console.log('server memory per run (MB): px0 ' + runs.px0.map(r => r.rss.toFixed(2)).join(', ') + ' | pxi ' + runs.pxi.map(r => r.rss.toFixed(2)).join(', '));
 const rows = [
   ['server memory (MB)', base.rss, mine.rss, mine.rss <= Math.max(base.rss * (1 + BUDGET.serverRssPct / 100), base.rss + BUDGET.serverRssMB), `≤ +${BUDGET.serverRssPct}%/${BUDGET.serverRssMB}MB`],
   ['page JS heap (MB)', base.heap, mine.heap, mine.heap <= base.heap * (1 + BUDGET.heapPct / 100), `≤ +${BUDGET.heapPct}%`],
