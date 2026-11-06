@@ -3,6 +3,27 @@
 pxi is built on [px0](https://github.com/px0-ai/px0) (MIT) and takes its fixes and
 features every week. These rules keep that cheap.
 
+## Rule zero: never more memory than px0
+
+pxi exists because editors grew heavy. **No feature may make pxi use more memory than
+the px0 it is built on.** CI enforces it (`.github/workflows/budget.yml` runs
+`scripts/pxi-budget.js`): it builds px0 at the merge-base and pxi, runs both on the
+same workspace, and fails when pxi exceeds px0 on server memory (+10% noise),
+page JS heap (+10%), DOM elements at rest (+120: the activity bar) or after
+opening and leaving pxi's views (+200), or UI bundle size (+12% gzipped).
+Run it locally with `bun scripts/pxi-budget.js <px0-bin> <pxi-bin> <workspace>`.
+
+How features stay inside it:
+- **Nothing until used.** Build a view's DOM the first time it opens; load
+  heavy code on demand (like px0's Mermaid). No new always-running process.
+- **Free on close.** A closed view drops its rows (`replaceChildren()`) and its
+  caches; the next open redraws from the server.
+- **No background work for hidden views.** Poll only while visible; anything
+  else (a badge) at most once a minute. Prefer server events to polling.
+- **Server work is per request.** No new long-lived caches or indexes; reuse
+  git and px0's index. Bound every list (history 50, rows 300).
+- **New dependencies need a measured reason.** No frameworks, no new runtime.
+
 ## Rules
 
 1. **New code goes in new files or folders**: `fork_*.go`, `worktrees.go`, new

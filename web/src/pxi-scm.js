@@ -60,10 +60,16 @@ function scmActions(id) {
   return '';
 }
 
-/** Builds the sections into the Source Control panel. */
+let scmHost = null;
+
+/** Remembers where the sections go; they are built the first time Source Control opens. */
 export function initScm() {
-  const host = document.getElementById('git-panel-body');
-  if (!host || scmEl) return;
+  scmHost = document.getElementById('git-panel-body');
+  document.addEventListener('visibilitychange', scmSchedule);
+}
+
+function scmEnsureDom() {
+  if (scmEl || !scmHost) return;
   scmEl = document.createElement('div');
   scmEl.id = 'pxi-scm';
   scmEl.innerHTML = SCM_SECTIONS.map(s =>
@@ -72,16 +78,24 @@ export function initScm() {
     '<span class="scm-sec-title">' + s.title + '</span><span class="scm-sec-count" data-count="' + s.id + '"></span>' +
     '<span class="scm-grow"></span><span class="scm-hacts">' + scmActions(s.id) + '</span></header>' +
     '<div class="scm-sec-body" data-body="' + s.id + '"></div></section>').join('');
-  host.append(scmEl);
+  scmHost.append(scmEl);
   scmApplyCollapsed();
   scmEl.addEventListener('click', scmOnClick);
-  document.addEventListener('visibilitychange', scmSchedule);
 }
 
 export function setScmVisible(on) {
+  if (on === scmVisible) return;
   scmVisible = on;
-  if (on) scmRefresh();
-  else clearTimeout(scmTimer);
+  if (on) {
+    scmEnsureDom();
+    scmRefresh();
+    return;
+  }
+  clearTimeout(scmTimer);
+  // A closed view keeps no rows in memory; the next open redraws.
+  if (scmEl) for (const b of scmEl.querySelectorAll('.scm-sec-body')) b.replaceChildren();
+  scmSig = '';
+  scmFiles.clear();
 }
 
 function scmSchedule() {
@@ -94,6 +108,7 @@ function scmApplyCollapsed() {
 }
 
 async function scmRefresh() {
+  if (!scmVisible || !scmEl) return;
   try {
     const [log, branches, stashes, remotes] = await Promise.all([
       api('/api/git/log', { limit: 50 }).catch(() => ({ commits: [] })),

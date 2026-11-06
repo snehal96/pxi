@@ -17,7 +17,7 @@ const STATUS = {
 };
 
 let wtRoot = null;        // #wt-view
-let wtBody = null;        // its scrolling wtBody
+let wtBody = null;        // its scrolling body
 let wtData = null;        // last /api/worktrees
 let wtLastSig = '';
 let wtTimer = 0;
@@ -46,8 +46,18 @@ export function worktreeCount() {
 }
 
 /** Builds the view inside the sidebar. onCountChange(count, overlaps) feeds the activity bar badge. */
+let wtSide = null;
+
+/** Starts the badge; the view's DOM is built the first time it is opened. */
 export function initWorktrees(side, onCountChange) {
   wtOnCount = onCountChange || wtOnCount;
+  wtSide = side;
+  document.addEventListener('visibilitychange', schedule);
+  refresh(false); // fill the activity bar badge
+}
+
+function wtEnsureDom() {
+  if (wtRoot) return;
   wtRoot = document.createElement('section');
   wtRoot.id = 'wt-view';
   wtRoot.className = 'wt-view';
@@ -55,27 +65,31 @@ export function initWorktrees(side, onCountChange) {
     '<header class="panel-head wt-head-bar"><span class="wt-title">Worktrees</span>' +
     '<span class="wt-base" id="wt-base"></span>' +
     '<button class="mini" id="wt-refresh" title="Refresh">' + ICON.refresh + '</button></header>' +
-    '<div class="wt-wtBody" id="wt-wtBody"></div>';
-  side.insertBefore(wtRoot, side.querySelector('.side-foot'));
-  wtBody = wtRoot.querySelector('#wt-wtBody');
-
+    '<div class="wt-body" id="wt-body"></div>';
+  wtSide.insertBefore(wtRoot, wtSide.querySelector('.side-foot'));
+  wtBody = wtRoot.querySelector('#wt-body');
   wtRoot.querySelector('#wt-refresh').addEventListener('click', () => refresh(true));
   wtBody.addEventListener('click', onClick);
-  document.addEventListener('visibilitychange', schedule);
-  refresh(false); // fill the badge even before the view is opened
 }
 
 export function setWorktreesVisible(on) {
+  if (on === wtVisible) return;
   wtVisible = on;
-  if (on) refresh(false);
+  if (on) {
+    wtEnsureDom();
+    wtLastSig = ''; // draw on the next refresh
+    refresh(false);
+  } else if (wtBody) {
+    wtBody.replaceChildren(); // a closed view keeps no rows in memory
+  }
   schedule();
 }
 
 function schedule() {
   clearTimeout(wtTimer);
   if (document.hidden) return;
-  // Poll fast while the view is open; slowly otherwise, just for the badge.
-  wtTimer = setTimeout(() => refresh(false), wtVisible ? POLL_MS : POLL_MS * 5);
+  // Poll while the view is open; once a minute otherwise, just for the badge.
+  wtTimer = setTimeout(() => refresh(false), wtVisible ? POLL_MS : 60000);
 }
 
 async function refresh(force) {
@@ -111,10 +125,11 @@ function splitPath(p) {
 }
 
 function renderWorktrees() {
-  if (!wtBody || !wtData) return;
+  if (!wtData) return;
   const list = wtData.worktrees.filter(w => !w.prunable);
   const overlaps = overlapsOf(list);
   wtOnCount(list.length, overlaps.size);
+  if (!wtBody || !wtVisible) return; // closed: only the badge
   const base = list.find(w => w.baseRef)?.baseRef;
   const baseEl = $('#wt-base');
   if (baseEl) baseEl.textContent = base ? 'vs ' + base : '';

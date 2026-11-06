@@ -1,0 +1,42 @@
+# pxi: memory budget. pxi must never use more memory than the px0 it is built
+# on: this builds both (px0 at the merge-base with upstream) and runs
+# scripts/pxi-budget.js on the same workspace. See MAINTAINING.md.
+name: Memory budget
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Build pxi and the px0 it is based on
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/px0-ai/px0.git
+          git fetch --no-tags upstream master
+          base=$(git merge-base HEAD upstream/master)
+          echo "px0 base: $base"
+          git worktree add --detach ../px0-base "$base"
+          (cd ../px0-base && bun ./scripts/build-web.js >/dev/null && go build -trimpath -o ../px0-bin .)
+          bun ./scripts/build-web.js >/dev/null
+          go build -trimpath -o ../pxi-bin .
+
+      - name: Compare memory
+        run: bun scripts/pxi-budget.js ../px0-bin ../pxi-bin "$PWD" ../px0-base/web/app.js web/app.js
