@@ -1,0 +1,25 @@
+fork_nested.go
+  s_c807c941637ae7::t_bb1d11d0e17edd 1-80
+fork_nested_test.go
+  s_c807c941637ae7::t_ae66072a273dd0 1-81
+git.go
+  s_c807c941637ae7::t_8cda5f73fe69ff 153,411,421,532
+index.go
+  s_c807c941637ae7::t_351a8f1e4bd8e2 437-439
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "58af86405f5f6316d89300cf3c24457db1c83160",
+  "prompts": {},
+  "sessions": {
+    "s_c807c941637ae7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_c807c941637ae7",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
