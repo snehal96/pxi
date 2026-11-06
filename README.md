@@ -13,12 +13,15 @@ reading, reviewing and pushing agent-written changes in one place.
   Cursor Agent and others, and follow the conversation in threads.
 - **Navigation**: fuzzy file search (`Cmd+P`), symbols (`Cmd+Shift+O`), workspace
   search (`Cmd+Shift+F`), optional language servers.
+- **Worktrees**: every git worktree of a repository in one window, with what each one
+  changed and the files more than one of them touches.
+- **Source Control**: history, branches, stashes, remotes and tags.
+- **Terminal** (`Ctrl+\``): shells in the workspace or any worktree, loaded only when
+  opened.
 
 ### Coming next
 
-- Every git worktree of a repository in one window, with each one's changes, so
-  parallel agents working on different tickets are easy to review.
-- A built-in terminal and Claude Code sessions inside pxi.
+- Claude Code sessions inside pxi.
 - See and stop the processes an agent session started.
 - A new look.
 

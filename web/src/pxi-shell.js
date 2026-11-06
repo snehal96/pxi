@@ -1,5 +1,5 @@
 // web/src/pxi-shell.js
-// pxi: a VS Code-style activity abBar on the far left that switches the sidebar
+// pxi: a VS Code-style activity bar on the far left that switches the sidebar
 // between Explorer, Source Control and Worktrees, and opens Search and Threads
 // in the inspector. It drives px0's own sidebar modes (tree.js) rather than
 // replacing them, so upstream changes to those keep working. Styles live in
@@ -13,6 +13,7 @@ import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
 import { initWorktrees, setWorktreesVisible } from './pxi-worktrees.js';
 import { initScm, setScmVisible } from './pxi-scm.js';
+import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
 
 const VIEW_KEY = 'pxi.sideView';
 
@@ -240,9 +241,19 @@ export function initShell() {
   // stashed; the activity bar keeps the view the person chose.
   on('sidebar:mode', () => markActive());
 
-  // VS Code's status abBar runs the full width of the window, under every column.
+  // VS Code's status bar runs the full width of the window, under every column.
   const status = $('#status');
-  if (status) document.body.append(status);
+  if (status) {
+    document.body.append(status);
+    const tb = document.createElement('button');
+    tb.id = 'pxi-term-btn';
+    tb.className = 'footer-btn';
+    tb.title = 'Terminal (⌃`)';
+    tb.innerHTML = TERM_STATUS_ICON + '<span>Terminal</span>';
+    tb.addEventListener('click', toggleTerminal);
+    status.prepend(tb);
+  }
+  initTerminal();
   new MutationObserver(markActive).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
   // Tabs for files in other worktrees say which worktree they belong to.

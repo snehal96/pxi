@@ -7,6 +7,7 @@
 // Styles: web/pxi/shell.css. Server side: worktrees.go (/api/worktrees, @wt/<name>/<path> files).
 import { $, esc, api } from './state.js';
 import { openFile } from './tabs.js';
+import { showTerminal } from './pxi-term.js';
 
 const POLL_MS = 3000;
 const ROW_CAP = 300;
@@ -38,6 +39,7 @@ const ICON = {
   warn: '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3.2M8 11.6v.1" stroke-linecap="round"/></svg>',
   refresh: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg>',
   review: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>',
+  term: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6l2 2-2 2M8.5 10.5h3"/></svg>',
   folder: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M1.5 4.5v8h13v-7h-6.5l-1.5-1.5h-5z"/></svg>',
 };
 
@@ -169,6 +171,7 @@ function renderWorktrees() {
       '<span class="wt-name">' + esc(w.name) + '</span>' +
       (w.branch && w.branch !== w.name ? '<span class="wt-branch">' + esc(w.branch) + '</span>' : (!w.branch ? '<span class="wt-branch">detached</span>' : '')) +
       '<span class="grow"></span><span class="wt-meta">' + meta.join('') + '</span>' +
+      '<button class="wt-act" data-wt-term="' + esc(w.name) + '" title="Open a terminal in ' + esc(w.name) + '">' + ICON.term + '</button>' +
       (w.files.length ? '<button class="wt-act" data-review="' + esc(w.name) + '" title="Review every change in ' + esc(w.name) + '">' + ICON.review + '</button>' : '') +
       '</div>';
     if (open) {
@@ -210,6 +213,12 @@ function openWorktreeFile(w, path) {
 function onClick(e) {
   if (!wtData) return;
   const find = name => wtData.worktrees.find(w => w.name === name);
+  const termBtn = e.target.closest('[data-wt-term]');
+  if (termBtn) {
+    e.stopPropagation();
+    showTerminal({ cwd: '@wt/' + termBtn.dataset.wtTerm });
+    return;
+  }
   const rev = e.target.closest('[data-review]');
   if (rev) {
     e.stopPropagation();

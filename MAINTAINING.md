@@ -25,6 +25,11 @@ How features stay inside it:
   git and px0's index. Bound every list (history 50, rows 300).
 - **New dependencies need a measured reason.** No frameworks, no new runtime.
 
+Measured costs of opt-in features (page side, after use):
+- Terminal: xterm.js stays loaded after first use (~0.9 MB of script); the panel,
+  screens and event stream are freed on close (`web/src/pxi-term.js`). xterm 5.5 leaves
+  a window resize listener per terminal, which pxi removes itself.
+
 ## Rules
 
 1. **New code goes in new files or folders**: `fork_*.go`, `worktrees.go`, new
