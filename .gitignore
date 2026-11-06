@@ -29,4 +29,4 @@ web/vendor/*.min.js.gz
 px0
 
 # pxi build outputs
-pxi
+/pxi

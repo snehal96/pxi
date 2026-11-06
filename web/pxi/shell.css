@@ -1,0 +1,193 @@
+/* pxi shell: VS Code-style chrome on top of the px0 layout (web/style.css).
+   Served as static/pxi/shell.css (linked from index.html), applies only when
+   web/src/pxi-shell.js has set body.pxi-shell, and reads colours from the
+   active theme. --pxi-* tokens fall back to px0's own, so every theme works;
+   pxi-dark.css and pxi-light.css set them to VS Code's values. */
+
+body.pxi-shell {
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, "JetBrains Mono", Consolas, monospace;
+  --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --pxi-activity-bg-: var(--pxi-activity-bg, var(--bg2));
+  --pxi-activity-fg-: var(--pxi-activity-fg, var(--fg));
+  --pxi-activity-inactive-: var(--pxi-activity-inactive, var(--faint));
+  --pxi-status-bg-: var(--pxi-status-bg, var(--bg2));
+  --pxi-status-fg-: var(--pxi-status-fg, var(--dim));
+  --pxi-status-brand-: var(--pxi-status-brand, var(--accent));
+  --pxi-tab-bg-: var(--pxi-tab-bg, var(--bg2));
+  --pxi-input-bg-: var(--pxi-input-bg, var(--bg));
+  --pxi-input-border-: var(--pxi-input-border, var(--line));
+  --pxi-button-bg-: var(--pxi-button-bg, var(--accent));
+  --pxi-button-hover-: var(--pxi-button-hover, var(--accent));
+  --pxi-button-fg-: var(--pxi-button-fg, var(--on-accent));
+  --pxi-list-active-: var(--pxi-list-active, var(--sel));
+  --pxi-focus-: var(--pxi-focus, var(--accent));
+  --pxi-badge-bg-: var(--pxi-badge-bg, var(--accent));
+  --pxi-warn-: var(--pxi-warn, #cca700);
+  --pxi-git-modified-: var(--pxi-git-modified, var(--accent-fg));
+  --pxi-git-added-: var(--pxi-git-added, var(--gi));
+  --pxi-git-deleted-: var(--pxi-git-deleted, var(--gd));
+  --pxi-git-untracked-: var(--pxi-git-untracked, var(--gi));
+  font-size: 13px;
+}
+
+/* ---------- activity bar ---------- */
+#activitybar {
+  width: 48px; flex: none; display: flex; flex-direction: column; justify-content: space-between;
+  background: var(--pxi-activity-bg-); border-right: 1px solid var(--line); z-index: 6;
+}
+#activitybar .ab-top, #activitybar .ab-bottom { display: flex; flex-direction: column; }
+#activitybar .ab-item {
+  position: relative; width: 48px; height: 48px; display: grid; place-items: center;
+  color: var(--pxi-activity-inactive-); border-radius: 0;
+}
+#activitybar .ab-item:hover { color: var(--pxi-activity-fg-); }
+#activitybar .ab-item.active { color: var(--pxi-activity-fg-); box-shadow: inset 2px 0 0 var(--pxi-focus-); }
+#activitybar .ab-item svg { display: block; }
+#activitybar .ab-badge {
+  position: absolute; right: 7px; bottom: 7px; min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 8px; background: var(--pxi-badge-bg-); color: #fff;
+  font: 600 9px/16px var(--ui); text-align: center;
+}
+#activitybar .ab-badge.warn { background: var(--pxi-warn-); color: #1f1f1f; }
+
+/* ---------- sidebar ---------- */
+body.pxi-shell #side { background: var(--bg2); }
+body.pxi-shell .side-foot { display: none; }               /* settings and theme moved to the activity bar / palette */
+body.pxi-shell .sidebar-toggle { display: none; }          /* Explorer / Source Control are activity bar items */
+body.pxi-shell .panel-head {
+  height: 35px; padding: 0 8px 0 20px; font-size: 11px; font-weight: 400; letter-spacing: .02em; color: var(--fg);
+}
+body.pxi-shell .tr { height: 22px; font-size: 13px; }
+body.pxi-shell .tr:hover { background: var(--bg3); }
+body.pxi-shell .tr.sel { background: var(--pxi-list-active-); box-shadow: inset 0 0 0 1px var(--pxi-focus-); }
+body.pxi-shell .tr.git-M .nm, body.pxi-shell .tr.git-M .gs, body.pxi-shell .tr.git-R .nm, body.pxi-shell .tr.git-R .gs { color: var(--pxi-git-modified-); }
+body.pxi-shell .tr.git-A .nm, body.pxi-shell .tr.git-A .gs { color: var(--pxi-git-added-); }
+body.pxi-shell .tr.git-untracked .nm, body.pxi-shell .tr.git-untracked .gs { color: var(--pxi-git-untracked-); }
+body.pxi-shell .tr.git-D .nm, body.pxi-shell .tr.git-D .gs { color: var(--pxi-git-deleted-); }
+
+/* Explorer is just the files; commit, push and history live in Source Control. */
+body.pxi-view-explorer #git-panel, body.pxi-view-explorer #unpushed { display: none !important; }
+
+/* Files from another worktree are for reading and reviewing here. */
+body.pxi-wt-tab .diff-hunk-btn, body.pxi-wt-tab #btn-edit-mode, body.pxi-wt-tab .line-btn { display: none !important; }
+
+/* The Worktrees view replaces the rest of the sidebar while it is open. */
+body:not(.pxi-view-worktrees) #wt-view { display: none; }
+body.pxi-view-worktrees #side > :not(#wt-view) { display: none !important; }
+#wt-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#wt-view .wt-head-bar { gap: 8px; text-transform: uppercase; }
+#wt-view .wt-base { color: var(--faint); text-transform: none; letter-spacing: 0; font-family: var(--mono); font-size: 11px; }
+#wt-view .wt-head-bar .mini { margin-left: auto; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; }
+.wt-body { flex: 1; min-height: 0; overflow: auto; padding-bottom: 12px; }
+.wt-empty { padding: 12px 20px; color: var(--dim); line-height: 1.5; }
+.wt-empty p { margin: 0 0 8px; }
+.wt-faint { color: var(--faint); }
+.wt-empty code { font-family: var(--mono); font-size: 12px; }
+
+.wt-overlaps {
+  margin: 4px 8px 8px; padding: 6px 0; border: 1px solid color-mix(in srgb, var(--pxi-warn-) 45%, transparent);
+  border-radius: 4px; background: color-mix(in srgb, var(--pxi-warn-) 8%, transparent);
+}
+.wt-overlaps-head { display: flex; align-items: center; gap: 6px; padding: 0 10px 4px; color: var(--pxi-warn-); font-size: 12px; font-weight: 600; }
+.wt-overlaps-head svg { flex: none; }
+.wt-ov-row { display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px 0 29px; font-size: 12.5px; white-space: nowrap; overflow: hidden; }
+.wt-ov-names { margin-left: auto; display: flex; gap: 4px; flex: none; }
+.wt-chip { padding: 0 6px; border-radius: 9px; background: var(--bg4); color: var(--dim); font-size: 11px; line-height: 16px; }
+
+.wt-card { margin-bottom: 2px; }
+.wt-head {
+  display: flex; align-items: center; gap: 4px; height: 26px; padding: 0 6px 0 4px;
+  cursor: pointer; user-select: none; font-size: 13px; font-weight: 600; color: var(--fg);
+}
+.wt-head:hover { background: var(--bg3); }
+.wt-chev { flex: none; color: var(--dim); transition: transform .12s ease; }
+.wt-card.open .wt-chev { transform: rotate(90deg); }
+.wt-icon { display: grid; place-items: center; color: var(--dim); }
+.wt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wt-branch { font-weight: 400; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wt-head .grow, .wt-file .grow { flex: 1; min-width: 4px; }
+.wt-meta { display: flex; align-items: center; gap: 8px; flex: none; font-weight: 400; font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.wt-meta .wt-dirty { color: var(--pxi-git-modified-); }
+.wt-warn { display: inline-flex; align-items: center; gap: 2px; color: var(--pxi-warn-); flex: none; }
+.wt-act { display: none; place-items: center; width: 22px; height: 22px; border-radius: 4px; color: var(--dim); flex: none; }
+.wt-head:hover .wt-act { display: grid; }
+.wt-head:hover .wt-meta { display: none; }
+.wt-act:hover { background: var(--bg4); color: var(--fg); }
+
+.wt-files { padding-bottom: 4px; }
+.wt-file {
+  display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px 0 38px;
+  cursor: pointer; font-size: 13px; white-space: nowrap; overflow: hidden;
+}
+.wt-file:hover { background: var(--bg3); }
+.wt-file.active { background: var(--pxi-list-active-); box-shadow: inset 0 0 0 1px var(--pxi-focus-); }
+.wt-fname { flex: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; }
+.wt-fdir { color: var(--faint); font-size: 12px; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wt-st { flex: none; width: 14px; text-align: center; font-size: 12px; font-weight: 600; }
+.wt-st.git-M { color: var(--pxi-git-modified-); }
+.wt-st.git-A { color: var(--pxi-git-added-); }
+.wt-st.git-D { color: var(--pxi-git-deleted-); }
+.wt-st.git-untracked { color: var(--pxi-git-untracked-); }
+.wt-none, .wt-err { padding: 2px 10px 4px 38px; font-size: 12px; }
+
+/* ---------- editor tabs ---------- */
+body.pxi-shell #tabs { height: 35px; background: var(--pxi-tab-bg-); box-shadow: inset 0 -1px 0 var(--line); }
+body.pxi-shell .tab {
+  height: 35px; line-height: 35px; padding: 0 6px 0 12px; font-size: 13px; max-width: 240px;
+  background: var(--pxi-tab-bg-); color: var(--dim); border-right: 1px solid var(--line);
+}
+body.pxi-shell .tab:hover { background: var(--pxi-tab-bg-); color: var(--fg); }
+body.pxi-shell .tab.active { background: var(--bg); color: var(--fg); box-shadow: inset 0 1px 0 var(--pxi-focus-); font-weight: 400; }
+body.pxi-shell .tab .x { width: 20px; height: 20px; visibility: hidden; }
+body.pxi-shell .tab.active .x, body.pxi-shell .tab:hover .x { visibility: visible; }
+body.pxi-shell .tab .x svg { width: 10px; height: 10px; }
+.tab-wt { color: var(--faint); font-size: 11.5px; white-space: nowrap; }
+
+/* editor toolbar under the tabs */
+body.pxi-shell .main-top-bar { height: 30px; background: var(--bg); border-bottom: 1px solid var(--line); }
+body.pxi-shell .view-switch button { font-size: 12px; line-height: 20px; }
+
+/* ---------- inspector (right) as VS Code panel tabs ---------- */
+body.pxi-shell #right-side { background: var(--bg2); }
+body.pxi-shell .inspector-head { height: 35px; }
+body.pxi-shell .inspector-tab {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .02em; color: var(--dim);
+  padding: 8px 6px 6px; border-radius: 0; background: none; font-weight: 400;
+  border-bottom: 1px solid transparent;
+}
+body.pxi-shell .inspector-tab:hover { color: var(--fg); background: none; }
+body.pxi-shell .inspector-tab.active { color: var(--fg); background: none; border-bottom-color: var(--pxi-focus-); font-weight: 400; }
+
+/* ---------- status bar ---------- */
+body.pxi-shell #app { height: calc(100vh - 22px); }
+body.pxi-shell > #status { width: 100%; }
+body.pxi-shell #status {
+  height: 22px; padding: 0 8px 0 0; gap: 10px; background: var(--pxi-status-bg-); color: var(--pxi-status-fg-);
+  font: 12px var(--ui); border-top: 1px solid var(--line);
+}
+body.pxi-shell #status::before {
+  content: "pxi"; align-self: stretch; display: flex; align-items: center; padding: 0 10px;
+  background: var(--pxi-status-brand-); color: #fff; font: 600 12px var(--mono);
+}
+body.pxi-shell .footer-btn { font: 12px var(--ui); height: 20px; }
+body.pxi-shell .footer-btn:hover { background: color-mix(in srgb, var(--fg) 12%, transparent); color: var(--fg); }
+
+/* ---------- controls ---------- */
+body.pxi-shell .git-generate-btn {
+  background: var(--pxi-button-bg-); color: var(--pxi-button-fg-); border-radius: 2px; height: 26px; font-size: 13px;
+}
+body.pxi-shell .git-generate-btn:hover:not(:disabled) { background: var(--pxi-button-hover-); opacity: 1; }
+body.pxi-shell input[type="text"], body.pxi-shell input[type="search"], body.pxi-shell textarea, body.pxi-shell select {
+  background-color: var(--pxi-input-bg-); border: 1px solid var(--pxi-input-border-); border-radius: 2px;
+}
+body.pxi-shell input[type="text"]:focus, body.pxi-shell input[type="search"]:focus, body.pxi-shell textarea:focus, body.pxi-shell select:focus {
+  outline: 1px solid var(--pxi-focus-); outline-offset: -1px;
+}
+body.pxi-shell #resizer:hover, body.pxi-shell #resizer.drag, body.pxi-shell #right-resizer:hover, body.pxi-shell #right-resizer.drag { background: var(--pxi-focus-); }
+
+/* VS Code-like scrollbars */
+body.pxi-shell ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.pxi-shell ::-webkit-scrollbar-track { background: transparent; }
+body.pxi-shell ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--fg) 22%, transparent); border: 2px solid transparent; background-clip: padding-box; }
+body.pxi-shell ::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--fg) 35%, transparent); }
+body.pxi-shell ::-webkit-scrollbar-corner { background: transparent; }
