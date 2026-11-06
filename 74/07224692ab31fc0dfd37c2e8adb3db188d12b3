@@ -1,0 +1,23 @@
+README.md
+  s_3baaac19128c29::t_9da4ef06233874 30-31,34,37-38
+macos/build.sh
+  s_3baaac19128c29::t_74a53090ae72eb 24
+macos/install.sh
+  s_3baaac19128c29::t_7a1389e783c3e2 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7407224692ab31fc0dfd37c2e8adb3db188d12b3",
+  "prompts": {},
+  "sessions": {
+    "s_3baaac19128c29": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_3baaac19128c29",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
