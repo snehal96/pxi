@@ -1,0 +1,23 @@
+scripts/pxi-budget.js
+  s_4404c7cd631f58::t_37c52385b99396 74-78
+web/pxi/shell.css
+  s_4404c7cd631f58::t_35d41932bb1e93 53-67,280-282
+web/src/pxi-shell.js
+  s_4404c7cd631f58::t_f076cb741862ce 10,23-26,41-52,112,164-210,228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fc19d7909921b3b67e49bbb92b3baf2fa8a8b1d1",
+  "prompts": {},
+  "sessions": {
+    "s_4404c7cd631f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_4404c7cd631f58",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
