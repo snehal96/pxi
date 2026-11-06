@@ -1,0 +1,21 @@
+.gitignore
+  s_8f54e42dc43368::t_a47954a73b6fca 32
+web/pxi/shell.css
+  s_8f54e42dc43368::t_04236dccf0e43e 1-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3cf013175b3265a9d8d2ea262126fca7d83758c",
+  "prompts": {},
+  "sessions": {
+    "s_8f54e42dc43368": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_8f54e42dc43368",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
