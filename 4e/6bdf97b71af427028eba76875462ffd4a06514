@@ -1,0 +1,119 @@
+.gitattributes
+  s_635caaf29a94e4::t_59730f2abc783f 1
+.github/workflows/sync-upstream.yml
+  s_635caaf29a94e4::t_7293eb4ae82a93 1,72,75-79,143-144,177
+.gitignore
+  s_635caaf29a94e4::t_0537efd5675964 3,29
+MAINTAINING.md
+  s_635caaf29a94e4::t_dff1fd5709e8e1 1-25,27,29,31,33,35-38
+Makefile
+  s_635caaf29a94e4::t_9ab62f335a6438 31-32,34,55-58,63,112
+README.md
+  s_635caaf29a94e4::t_2cbb86c5733699 1,3-5,7-15,17,19-23,25,27,30-31,34-35,37,40-44,47,49,51-53,55,57-58
+agent.go
+  s_635caaf29a94e4::t_3684375ae8b4b7 299,1173
+agent_test.go
+  s_635caaf29a94e4::t_69700dcf35af6c 200
+forge.go
+  s_635caaf29a94e4::t_025cbf6ac35580 486,997,1611,1658,2067,2069
+fork_brand.go
+  s_635caaf29a94e4::t_7fa55972e10002 1-37
+fork_brand_test.go
+  s_635caaf29a94e4::t_b07f476e6d57e6 1-30
+fork_security.go
+  s_635caaf29a94e4::t_911efb552e2cd4 51,56
+git.go
+  s_635caaf29a94e4::t_c6e6dff4ca45a2 526-529,549,552
+internal/settings/settings.go
+  s_635caaf29a94e4::t_3ed69b91ec9394 54,60,366,426,434
+internal/settings/settings_test.go
+  s_635caaf29a94e4::t_81cad1c85ac66a 151
+internal/telemetry/telemetry.go
+  s_635caaf29a94e4::t_4abaadb72b79e7 90,101,106,178,215,281
+internal/update/update.go
+  s_635caaf29a94e4::t_383efc135f7a24 24,54,60,264,280,295,304,319,344,356,383,433
+internal/update/update_test.go
+  s_635caaf29a94e4::t_39eb33440f86d4 56,78,87,113,140,157,185,246
+lsp.go
+  s_635caaf29a94e4::t_c28f8b29f056ad 755,2913
+macos/Info.plist
+  s_635caaf29a94e4::t_8fa8c1b8f4be38 18-19
+macos/README.md
+  s_635caaf29a94e4::t_17d6a02be4b884 3,18,21-24,26,38,45
+macos/Sources/AppDelegate.swift
+  s_635caaf29a94e4::t_ba94c794d94603 14,33,90,121,135
+macos/Sources/BrowserWindow.swift
+  s_635caaf29a94e4::t_756d3280eb4d0a 4,63,110,117,140,202,205,263
+macos/Sources/MainMenu.swift
+  s_635caaf29a94e4::t_a20c9b9fe041ad 3-4,106
+macos/Sources/PxServer.swift
+  s_635caaf29a94e4::t_b030fcc712384b 3,5-6,8,25,28,55,62,67,71,74,93,97,99
+macos/Sources/ShellEnv.swift
+  s_635caaf29a94e4::t_7bf1da83b69543 6
+macos/build.sh
+  s_635caaf29a94e4::t_6d8579fcaaa20c 2,20,22,24,40,42,44
+main.go
+  s_635caaf29a94e4::t_29dcf5b94430f0 48-49,59,62,66,83,123,132,157,228,339,412,437,710
+pr.go
+  s_635caaf29a94e4::t_e21bd244e2ffae 109,1187
+px0_test.go
+  s_635caaf29a94e4::t_c4bc086aafdede 1430
+review_workflow.go
+  s_635caaf29a94e4::t_315c0c83ab0895 133
+review_workflow_test.go
+  s_635caaf29a94e4::t_f1e7c27de1f252 86,141
+scripts/pxi-brand.py
+  s_635caaf29a94e4::t_bb5974b05cc797 1-238
+scripts/replace-local.sh
+  s_635caaf29a94e4::t_65de9fd4711090 4,21,26,33-35,74
+server.go
+  s_635caaf29a94e4::t_9c8bf7dac4aea2 770,773,2748,2752,3002,3005
+web/index.html
+  s_635caaf29a94e4::t_b018af3755577c 7-8,107-108,110,112,258,725,835,915
+web/src/agent.js
+  s_635caaf29a94e4::t_0ef735079f6b63 630,633
+web/src/calls.js
+  s_635caaf29a94e4::t_011e4af49eb2e3 24
+web/src/forgeconnect.js
+  s_635caaf29a94e4::t_76d39b49a29f70 19,68,90-91,93-94
+web/src/lspsetup.js
+  s_635caaf29a94e4::t_bb281980ed907c 68,72,99
+web/src/main.js
+  s_635caaf29a94e4::t_02884ee91cbb04 105,113-114,124
+web/src/metricsview.js
+  s_635caaf29a94e4::t_f9faeae9c2baa3 36
+web/src/settings.js
+  s_635caaf29a94e4::t_fa976c43a88527 289,297,309
+web/src/status.js
+  s_635caaf29a94e4::t_984e1081671f14 76
+web/src/thread.js
+  s_635caaf29a94e4::t_4b5b6a0b9d7a71 635
+web/src/tips-util.js
+  s_635caaf29a94e4::t_fdc3b9ddf0ebe6 3,22,54,210,225,232,239,254
+web/src/tips.js
+  s_635caaf29a94e4::t_a99431f653d4b5 65,309
+web/src/workbench.js
+  s_635caaf29a94e4::t_2275beb4f81110 266
+web/workbench.html
+  s_635caaf29a94e4::t_77877eb1e9fd41 7-8,24,45,55,96-97,99,113
+workbench.go
+  s_635caaf29a94e4::t_e4dcf856518f06 82,85,87,318,320-321,331,423,549,690,1062,1253-1254,1262
+workbench_test.go
+  s_635caaf29a94e4::t_7656c142333dd7 357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e6bdf97b71af427028eba76875462ffd4a06514",
+  "prompts": {},
+  "sessions": {
+    "s_635caaf29a94e4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_635caaf29a94e4",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
