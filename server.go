@@ -469,6 +469,9 @@ func (s *Server) safePath(rel string) (string, string, bool) {
 	if abs != s.ix.Root() && !strings.HasPrefix(abs, s.ix.Root()+string(filepath.Separator)) {
 		return "", "", false
 	}
+	if !withinReal(s.ix.Root(), abs) { // fork: symlink escape (fork_security.go)
+		return "", "", false
+	}
 	return abs, filepath.ToSlash(clean), true
 }
 

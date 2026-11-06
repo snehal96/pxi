@@ -216,7 +216,7 @@ func main() {
 	}
 	initDur := time.Since(tInit)
 
-	srv := &http.Server{Handler: pxSrv}
+	srv := &http.Server{Handler: hostGuard(pxSrv)} // fork: fork_security.go
 	srv.RegisterOnShutdown(pxSrv.EndStreams)
 	if *wbChild {
 		// The workbench reads this line for the address it proxies to.
@@ -401,7 +401,7 @@ func runWorkbench(host string, port int, basePathFlag string, open, doAutoUpdate
 		fatal(err)
 	}
 	wb := newWorkbench(basePath, cwd, exe, childArgs)
-	srv := &http.Server{Handler: wb}
+	srv := &http.Server{Handler: hostGuard(wb)} // fork: fork_security.go
 
 	u := viewerURL(addr, "", 0, basePath)
 	_, boundPort, _ := net.SplitHostPort(addr)
