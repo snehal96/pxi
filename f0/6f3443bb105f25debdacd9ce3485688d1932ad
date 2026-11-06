@@ -1,0 +1,29 @@
+fork_claude.go
+  s_2412f470c1fc7e::t_e212122d7fd1c1 994-995
+fork_ide.go
+  s_2412f470c1fc7e::t_f26ee48c5421ea 53,257-264
+fork_procs.go
+  s_2412f470c1fc7e::t_4e3d182efd517a 1-267
+fork_procs_test.go
+  s_2412f470c1fc7e::t_8e3ce9e6c65572 1-18
+web/pxi/claude.css
+  s_2412f470c1fc7e::t_ecdcbd0de9cbcd 31,167-186
+web/pxi/claude.js
+  s_2412f470c1fc7e::t_b8e8dbb1780473 89-90,110,127-128,132,201-240,644-649,672
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f06f3443bb105f25debdacd9ce3485688d1932ad",
+  "prompts": {},
+  "sessions": {
+    "s_2412f470c1fc7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_2412f470c1fc7e",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
