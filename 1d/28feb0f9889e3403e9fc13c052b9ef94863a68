@@ -1,0 +1,27 @@
+macos/Sources/AppDelegate.swift
+  s_6ac16b9a0bcbca::t_67755710903fa2 90
+macos/Sources/BrowserWindow.swift
+  s_6ac16b9a0bcbca::t_f2ec584f2c0889 82,265-268,270-284,290-292,295,298-308,314
+web/src/main.js
+  s_6ac16b9a0bcbca::t_89ad979ab09866 36-37
+web/src/pxi-shell.js
+  s_6ac16b9a0bcbca::t_5f1e2fce52145d 2,40-41,61,63,68,73,103,114,117-120,122-123,127,133-135,139,167
+web/src/pxi-worktrees.js
+  s_6ac16b9a0bcbca::t_35a2ddd6c04683 19-26,32,45,50-54,58-60,62-63,69,75,78,84-88,91,113-115,117,123,143,178,186-187,196-197,214,216
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d28feb0f9889e3403e9fc13c052b9ef94863a68",
+  "prompts": {},
+  "sessions": {
+    "s_6ac16b9a0bcbca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_6ac16b9a0bcbca",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
