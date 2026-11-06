@@ -1,0 +1,19 @@
+web/src/pxi-shell.js
+  s_13d90bf375ec4c::t_17cfb9c5587e36 19,222-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "96925cebbffd5e2077efbbba14144ac5d11fcbd0",
+  "prompts": {},
+  "sessions": {
+    "s_13d90bf375ec4c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_13d90bf375ec4c",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
