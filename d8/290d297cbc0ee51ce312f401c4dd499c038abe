@@ -1,0 +1,47 @@
+internal/settings/settings.go
+  s_e3637f208b3608::t_efb9176516314e 169,171
+internal/settings/settings_test.go
+  s_e3637f208b3608::t_eb56be67e08297 24
+scripts/pxi-brand.py
+  s_e3637f208b3608::t_21b58c58c00557 158-187,211,218,222,226
+server.go
+  s_e3637f208b3608::t_6b3504f03be61f 46,82-83,232,476,486-489,1266-1269,1627-1630,1689-1692
+web/index.html
+  s_e3637f208b3608::t_3373a153adf185 2,15
+web/src/main.js
+  s_e3637f208b3608::t_1a4e7e122d3e1d 36,131
+web/src/pxi-shell.js
+  s_e3637f208b3608::t_9d9c063307795e 1-170
+web/src/pxi-worktrees.js
+  s_e3637f208b3608::t_e7479f0e9c08d6 1-218
+web/src/settings.js
+  s_e3637f208b3608::t_6d96f679f1f936 151,153
+web/src/theme-preference.js
+  s_e3637f208b3608::t_acdb839eb40ae6 1
+web/themes/pxi-dark.css
+  s_e3637f208b3608::t_f14ae21afe1d7a 1-28
+web/themes/pxi-light.css
+  s_e3637f208b3608::t_b834a71feea78a 1-29
+workbench.go
+  s_e3637f208b3608::t_aed7167eedeff7 716
+worktrees.go
+  s_e3637f208b3608::t_f91435050051d6 1-455
+worktrees_test.go
+  s_e3637f208b3608::t_0efe504d31944d 1-219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8290d297cbc0ee51ce312f401c4dd499c038abe",
+  "prompts": {},
+  "sessions": {
+    "s_e3637f208b3608": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_e3637f208b3608",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
