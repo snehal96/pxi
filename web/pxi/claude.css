@@ -28,7 +28,7 @@ body.pxi-claude-on #main-top-bar #view-switches > :not(#btn-open-right) { visibi
   font: 12px var(--ui); padding: 3px 6px; outline: none; min-width: 0;
 }
 .cl-account select:focus, .cl-bar select:focus { border-color: var(--pxi-focus-); }
-.cl-places { flex: 1; overflow: auto; padding-bottom: 12px; }
+.cl-places { flex: 1; overflow: auto; padding-bottom: 12px; min-height: 80px; }
 .cl-place { margin-bottom: 6px; }
 .cl-place-head { display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px 12px; font-size: 11.5px; font-weight: 600; color: var(--dim); cursor: pointer; }
 .cl-place-head svg { flex: none; }
@@ -164,3 +164,23 @@ button.cl-chip { padding: 1px 6px; cursor: pointer; }
 .cl-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 4px; background: none; color: var(--faint); font: 12px var(--ui); padding: 2px 6px; cursor: pointer; }
 .cl-toggle:hover { background: var(--bg3); color: var(--dim); }
 .cl-toggle.on { color: var(--fg); border-color: var(--pxi-focus-); background: var(--pxi-list-active-); }
+
+/* processes */
+.cl-procs { flex: none; max-height: 40%; overflow: auto; border-top: 1px solid var(--line); padding-bottom: 8px; }
+.cl-procs-head { display: flex; align-items: center; height: 30px; padding: 0 8px 0 16px; position: sticky; top: 0; background: var(--bg2); }
+.cl-pg-head { display: flex; align-items: center; gap: 6px; padding: 3px 8px 3px 12px; font-size: 12px; color: var(--dim); min-width: 0; }
+.cl-pg-mark { color: #d97757; }
+.cl-pg-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cl-pstop { flex: none; border: 1px solid var(--line); background: none; color: var(--dim); border-radius: 4px; font: 11px var(--ui); padding: 1px 6px; cursor: pointer; }
+.cl-pstop:hover { color: var(--err); border-color: var(--err); }
+.cl-proc { display: flex; align-items: center; gap: 6px; padding-right: 6px; font-size: 12px; height: 22px; min-width: 0; }
+.cl-proc:hover { background: var(--bg3); }
+.cl-proc.helper { opacity: .55; }
+.cl-pname2 { font-family: var(--mono); font-size: 11.5px; color: var(--fg); flex: none; }
+.cl-pargs { font-family: var(--mono); font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.cl-port { flex: none; font: 11px var(--mono); color: var(--accent-fg); background: var(--bg3); border-radius: 3px; padding: 0 4px; cursor: pointer; }
+.cl-port:hover { text-decoration: underline; }
+.cl-pstat { flex: none; font-size: 11px; color: var(--faint); }
+.cl-pkill { width: 20px; height: 20px; opacity: 0; }
+.cl-proc:hover .cl-pkill { opacity: 1; }
+.cl-pkill:hover { color: var(--err); }

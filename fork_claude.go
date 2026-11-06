@@ -991,6 +991,8 @@ func (s *Server) registerPxiClaudeRoutes() {
 	h("/api/pxi/claude/answer", s.handlePxiClaudeAnswer)
 	h("/api/pxi/claude/control", s.handlePxiClaudeControl)
 	h("/api/pxi/ide/context", s.handlePxiIDEContext)
+	h("/api/pxi/procs", s.handlePxiProcs)
+	h("/api/pxi/procs/stop", s.handlePxiProcsStop)
 	h("/api/pxi/ide/mention", s.handlePxiIDEMentionReq)
 }
 

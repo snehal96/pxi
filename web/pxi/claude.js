@@ -86,6 +86,8 @@
       '    <button class="cl-ib" data-act="new" title="New session">' + I.plus + '</button></div>' +
       '  <label class="cl-account"><span>Account</span><select data-act="account"></select></label>' +
       '  <div class="cl-places"></div>' +
+      '  <div class="cl-procs"><div class="cl-procs-head"><span class="cl-title">PROCESSES</span><span class="grow"></span>' +
+      '    <button class="cl-ib" data-act="helpers" title="Show Claude Code\'s own helpers (MCP servers)">' + I.chev + '</button></div><div class="cl-procs-list"></div></div>' +
       '</aside>' +
       '<section class="cl-main">' +
       '  <header class="cl-head"><button class="cl-ib" data-act="side" title="Show or hide sessions">' + I.side + '</button>' +
@@ -105,7 +107,7 @@
       '</section></div>';
     const q = s => root.querySelector(s);
     els = {
-      wrap: q('.cl-wrap'), places: q('.cl-places'), account: q('[data-act="account"]'), log: q('.cl-log'),
+      wrap: q('.cl-wrap'), places: q('.cl-places'), procs: q('.cl-procs-list'), account: q('[data-act="account"]'), log: q('.cl-log'),
       title: q('.cl-htitle'), where: q('.cl-where'), state: q('.cl-state'), stop: q('[data-act="stop"]'),
       input: q('textarea'), ctx: q('.cl-ctx'), mention: q('.cl-mention'), mode: q('[data-act="mode"]'),
       model: q('[data-act="model"]'), chrome: q('[data-act="chrome"]'), send: q('[data-act="send"]'), interrupt: q('[data-act="interrupt"]'), hint: q('.cl-hint'),
@@ -122,9 +124,12 @@
     root.addEventListener('keydown', onPaneKey);
     placesLoad = loadAccounts();
     newSession('');
+    procTimer = setInterval(loadProcs, 3000);
+    loadProcs();
   }
 
   function unmount() {
+    clearInterval(procTimer);
     closeStream();
     root?.replaceChildren();
     root = null; els = {}; tools.clear(); asks.clear(); places = []; cur = null; stream = null;
@@ -191,6 +196,46 @@
     els.interrupt.hidden = !cur.busy;
     els.hint.textContent = cur.busy ? 'Esc to stop' : '';
     drawCtx();
+  }
+
+  // ------------------------------------------------------------ processes
+  // What sessions and terminals started, read only while this tab is on screen.
+  let procTimer = 0, procSig = '', showHelpers = false;
+
+  async function loadProcs() {
+    if (!root || root.closest('#pxi-claude')?.hidden || document.hidden) return;
+    let groups = [];
+    try { groups = (await ctx.api('/api/pxi/procs')).groups || []; } catch { return; }
+    if (!root) return;
+    const sig = JSON.stringify([groups, showHelpers]);
+    if (sig === procSig) return;
+    procSig = sig;
+    const rows = [];
+    for (const g of groups) {
+      const procs = g.procs.filter(p => showHelpers || !p.helper);
+      if (!procs.length) continue;
+      const where = g.where === '@terminal' ? 'terminal' : g.where;
+      rows.push('<div class="cl-pg"><div class="cl-pg-head" title="' + esc(g.title) + '">' + (g.kind === 'terminal' ? I.term : '<span class="cl-pg-mark">✳</span>') +
+        '<span class="cl-pg-t">' + esc(g.kind === 'terminal' ? g.title : (g.title || 'Claude session')) + '</span>' + (where && g.kind !== 'terminal' ? '<span class="cl-pbranch">' + esc(where) + '</span>' : '') +
+        '<span class="grow"></span><button class="cl-pstop" data-stopgroup="' + esc(g.id) + '" title="Stop everything this started">Stop all</button></div>' +
+        procs.map(p => {
+          const args = (p.label || p.cmd).split(' ');
+          const name = p.label ? '$' : args[0].split('/').pop();
+          const rest = args.slice(1).join(' ');
+          return '<div class="cl-proc' + (p.helper ? ' helper' : '') + '" style="padding-left:' + (22 + Math.min(p.depth, 4) * 10) + 'px" title="' + esc(p.cmd) + '">' +
+            '<span class="cl-pname2">' + esc(name) + '</span><span class="cl-pargs">' + esc(rest) + '</span>' +
+            (p.ports || []).map(port => '<a class="cl-port" data-port="' + port + '" title="Open http://localhost:' + port + '">:' + port + '</a>').join('') +
+            '<span class="cl-pstat">' + (p.cpu >= 1 ? Math.round(p.cpu) + '% · ' : '') + Math.round(p.rss / 1024) + ' MB</span>' +
+            '<button class="cl-ib cl-pkill" data-kill="' + p.pid + '" title="Stop (pid ' + p.pid + ')">' + I.stop + '</button></div>';
+        }).join('') + '</div>');
+    }
+    els.procs.innerHTML = rows.join('') || '<div class="cl-none">Nothing running</div>';
+  }
+
+  async function stopProc(body) {
+    try { await ctx.apiPostJson('/api/pxi/procs/stop', body); } catch (e) { ctx.toast('!', e.message); }
+    setTimeout(loadProcs, 400);
+    setTimeout(loadProcs, 3500);
   }
 
   // ------------------------------------------------------------ sessions
@@ -596,6 +641,12 @@
       opt.classList.toggle('on');
       return;
     }
+    const kill = t.closest('[data-kill]');
+    if (kill) { stopProc({ pid: +kill.dataset.kill }); return; }
+    const sg = t.closest('[data-stopgroup]');
+    if (sg) { stopProc({ group: sg.dataset.stopgroup }); return; }
+    const port = t.closest('[data-port]');
+    if (port) { window.open('http://localhost:' + port.dataset.port + '/', '_blank'); return; }
     const mi = t.closest('[data-mi]');
     if (mi) { pickMention(+mi.dataset.mi); return; }
     const path = t.closest('.cl-path[data-path]');
@@ -618,6 +669,7 @@
       case 'stop': control('stop'); break;
       case 'detach': attach = false; drawCtx(); break;
       case 'attach': attach = true; drawCtx(); break;
+      case 'helpers': showHelpers = !showHelpers; procSig = ''; loadProcs(); break;
       case 'chrome': els.chrome.classList.toggle('on'); setPref('chrome', els.chrome.classList.contains('on') ? '1' : '0'); break;
       case 'side': els.wrap.classList.toggle('cl-noside'); setPref('side', els.wrap.classList.contains('cl-noside') ? '0' : '1'); break;
     }

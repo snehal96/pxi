@@ -50,6 +50,7 @@ type pxiIDEClient struct {
 	id      int
 	ws      *pxiWS
 	name    string // the client's name and version from initialize
+	pid     int    // the claude process (ide_connected), for the process list
 	pending map[string]chan pxiIDEVerdict
 }
 
@@ -253,6 +254,14 @@ func (ide *pxiIDE) handle(c *pxiIDEClient, raw []byte) {
 			"capabilities":    map[string]any{"tools": map[string]any{"listChanged": false}, "logging": map[string]any{}},
 			"serverInfo":      map[string]any{"name": "pxi", "version": version},
 		}, nil)
+	case "ide_connected":
+		var p struct {
+			Pid int `json:"pid"`
+		}
+		json.Unmarshal(m.Params, &p)
+		ide.mu.Lock()
+		c.pid = p.Pid
+		ide.mu.Unlock()
 	case "notifications/initialized", "notifications/cancelled":
 	case "ping":
 		c.reply(m.ID, map[string]any{}, nil)
