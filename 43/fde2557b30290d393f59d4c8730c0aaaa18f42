@@ -1,0 +1,19 @@
+agent_test.go
+  s_c57e84c8db46ca::t_2a4980ce4262bc 567-579
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "43fde2557b30290d393f59d4c8730c0aaaa18f42",
+  "prompts": {},
+  "sessions": {
+    "s_c57e84c8db46ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_c57e84c8db46ca",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
