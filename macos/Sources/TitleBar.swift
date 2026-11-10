@@ -142,6 +142,8 @@ final class PxiMessageRouter: NSObject, WKScriptMessageHandler {
         case "notify":
             Notifier.shared.notify(title: d["title"] as? String ?? "pxi", body: d["body"] as? String ?? "",
                                    session: d["session"] as? String ?? "", where: d["where"] as? String ?? "", from: wc)
+        case "restart":
+            app.restartApp(nil)
         case "openFolder":
             wc.chooseFolder()
         case "waiting":

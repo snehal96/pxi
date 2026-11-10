@@ -5,6 +5,7 @@
 // result list when the palette closes, so no rows stay in the page.
 // Styles: web/pxi/shell.css. Top-level names are prefixed pal (Node fallback bundler).
 import { $ } from './state.js';
+import { COMMANDS } from './palette.js';
 
 const PAL_PLACEHOLDER = {
   File: 'Search files by name (append : to go to line or @ to go to symbol)',
@@ -38,7 +39,16 @@ function palKeys(list, box) {
   }
 }
 
+// Reload Window reloads the page (keeps the server and its terminals); Restart,
+// in the Mac app only, restarts the app and its server and reopens the windows.
+function palAddWindowCommands() {
+  const native = window.webkit?.messageHandlers?.pxi;
+  COMMANDS.push({ name: 'Developer: Reload Window' + (native ? ' (⌥⌘R)' : ''), run: () => location.reload() });
+  if (native) COMMANDS.push({ name: 'Developer: Restart pxi (⇧⌥⌘R)', run: () => native.postMessage({ type: 'restart' }) });
+}
+
 export function initPxiPalette() {
+  palAddWindowCommands();
   const overlay = $('#overlay');
   const box = $('#palette');
   const input = $('#pal');
