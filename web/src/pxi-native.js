@@ -28,10 +28,12 @@ export function initNative() {
       fg: v('--fg'),
       dim: v('--dim'),
       field: v('--pxi-input-bg') || v('--bg'),
-      scheme: getComputedStyle(document.documentElement).colorScheme || 'dark',
+      // "auto": the window follows the system, so the page can too (pxi-theme.js).
+      scheme: document.documentElement.hasAttribute('data-pxi-theme-auto') ? 'auto'
+        : getComputedStyle(document.documentElement).colorScheme || 'dark',
       name: S.meta?.name || '',
     });
   };
   nativePost();
-  new MutationObserver(nativePost).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(nativePost).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-pxi-theme-auto'] });
 }

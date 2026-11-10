@@ -106,8 +106,10 @@ final class TitleBar: NSObject, NSToolbarDelegate {
         if let bar = (d["bar"] as? String).flatMap(NSColor.init(css:)) { window.backgroundColor = bar }
         if let c = (d["dim"] as? String).flatMap(NSColor.init(css:)) { dim = c }
         if let c = (d["field"] as? String).flatMap(NSColor.init(css:)) { field = c }
-        let dark = (d["scheme"] as? String ?? "dark").contains("dark")
-        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        // "auto": the theme follows the system, so the window must too, or the
+        // page would see the theme's own scheme as the system's.
+        let scheme = d["scheme"] as? String ?? "dark"
+        window.appearance = scheme == "auto" ? nil : NSAppearance(named: scheme.contains("dark") ? .darkAqua : .aqua)
         if let n = d["name"] as? String, !n.isEmpty { name = n }
         drawSearch()
     }

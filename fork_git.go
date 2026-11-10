@@ -31,6 +31,7 @@ func (s *Server) registerPxiGitRoutes() {
 	s.mux.HandleFunc(s.routePath("/api/pxi/fetch"), s.handlePxiFetch)
 	s.mux.HandleFunc(s.routePath("/api/pxi/worktree/new"), s.handlePxiWorktreeNew)
 	s.mux.HandleFunc(s.routePath("/api/pxi/worktree/remove"), s.handlePxiWorktreeRemove)
+	s.mux.HandleFunc(s.routePath("/api/pxi/checkpoint"), s.handlePxiCheckpoint) // fork_checkpoint.go
 }
 
 // pxiGit runs git in the workspace with no terminal prompts, so a fetch that

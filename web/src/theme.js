@@ -7,6 +7,8 @@ import { showToast } from './ui.js';
 import { apiPostJson } from './state.js';
 import { DEFAULT_THEME, chooseThemePreference } from './theme-preference.js';
 import { emit } from './bus.js';
+// fork: pxi theme follows macOS
+import { pxiThemeChosen, pxiThemeInit } from './pxi-theme.js';
 
 const KEY = 'px0.theme';
 const THEME_SELECTOR = /^(?::root|html)?\[data-theme=["']?([\w-]+)["']?\]$/;
@@ -52,6 +54,7 @@ export function setTheme(id, persist = true) {
   const changed = currentTheme() !== id;
   document.documentElement.dataset.theme = id;
   if (persist) {
+    pxiThemeChosen(); // fork: pxi-theme.js, a hand-picked theme ends auto
     try { localStorage.setItem(KEY, id); } catch {}
     void apiPostJson('api/settings', { 'workbench.colorTheme': id }).catch(() => {});
   }
@@ -68,6 +71,7 @@ export function cycleTheme() {
 }
 
 export function initTheme() {
+  if (pxiThemeInit()) return; // fork: pxi-theme.js
   const saved = getStoredTheme();
   const preferred = chooseThemePreference(saved, null);
   if (preferred && setTheme(preferred, false)) return;

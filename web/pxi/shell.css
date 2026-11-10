@@ -484,3 +484,27 @@ body.pxi-shell.in-review-mode .review-view { height: calc(100vh - 30px - 22px); 
    -12px back over the chevron column, +2.5px to center the 7px dot, and 2.5px
    after it so the 5px row gap lands the name where a folder's name starts. */
 body.pxi-shell .tr.file > .ic { margin-left: -9.5px; margin-right: 2.5px; }
+
+/* Explorer indent guides (px0 #24): a line under each open folder's chevron,
+   down the length of its contents. Rows are indented by inline padding, so the
+   offset is carried down the nesting in custom properties: each level's
+   folder contents sit 12px right of the level above. CSS only, no extra nodes. */
+body.pxi-shell #tree { --pxi-gx: 1.5px; }
+body.pxi-shell #tree .kids { position: relative; --pxi-gk: calc(var(--pxi-gx) + 12px); }
+body.pxi-shell #tree .kids > .tw { --pxi-gx: var(--pxi-gk); }
+body.pxi-shell #tree .kids.open::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: var(--pxi-gk); width: 1px;
+  background: var(--line); pointer-events: none; transition: background .12s;
+}
+body.pxi-shell #tree:hover .kids.open::before { background: color-mix(in srgb, var(--dim) 45%, transparent); }
+
+/* Review checkpoint (pxi-checkpoint.js): a dot after the name of a file added
+   (green) or changed (blue) since the checkpoint, and after a folder holding one
+   unless px0 already dots it for git changes. */
+body.pxi-shell .tr.file[data-ck] > .nm::after,
+body.pxi-shell .tr.dir.pxi-ck-dir:not(.dirty) > .nm::after {
+  content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  margin: 0 0 1px 6px; vertical-align: middle; background: var(--accent-fg, var(--accent));
+}
+body.pxi-shell .tr.file[data-ck="A"] > .nm::after { background: var(--gi); }
+#pxi-ck-btn .pxi-ck-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-fg, var(--accent)); margin-right: 5px; }

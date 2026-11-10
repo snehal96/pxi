@@ -89,6 +89,7 @@ export function applyKeyLabels(root = document) {
 }
 
 export const LH = 20, CHUNK = 1000, OVERSCAN = 24;
+export const RECENT_SHOWN = 5;
 
 /**
  * @typedef {Object} LSPState
@@ -200,6 +201,7 @@ export const S = {
   tabs: [],
   active: -1,
   hist: [], histIdx: -1,
+  recent: [],         // paths opened or switched to, newest first (Quick Open)
   find: null,         // {q, ci, hits:[{line,n}], active}
   occ: null,          // word to highlight everywhere
   selAll: null,       // doc whose whole text is selected (Ctrl+A)

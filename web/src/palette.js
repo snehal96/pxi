@@ -1,5 +1,5 @@
 // web/src/palette.js
-import { $, esc, S, doc_, api, debounce, withKeys } from './state.js';
+import { $, esc, S, doc_, api, debounce, withKeys, RECENT_SHOWN } from './state.js';
 import { render, toggleWordWrap } from './renderer.js';
 import { openFile, centerLine, closeTab, closeAllTabs, reopenClosedTab } from './tabs.js';
 import { updateStatus, openLspMenu } from './status.js';
@@ -184,24 +184,52 @@ export const refreshPalette = debounce(async () => {
     try { j = await api('/api/find', { q, limit: 120 }); } catch { return; }
     if (seq !== palSeq || !pal) return;
     pal.indexing = !!j.indexing;
-    pal.items = (j.results || []).map(r => {
-      const cut = r.path.length - r.name.length;
-      return {
-        kind: 'file', path: r.path,
-        label: fuzzyHTML(r.path.slice(cut), (r.pos || []).filter(p => p >= cut).map(p => p - cut)),
-        sub: fuzzyHTML(r.path.slice(0, Math.max(0, cut - 1)), (r.pos || []).filter(p => p < cut)),
-        raw: true,
-      };
-    });
+    // An empty query leads with the active file and the last few opened; a typed
+    // one keeps the active file on top only if it matches. The fuzzy list comes
+    // next without repeating them, and a pinned match keeps its highlight.
+    const results = j.results || [];
+    const byPath = new Map(results.map(r => [r.path, r]));
+    const pinned = pinnedFiles(q ? 0 : RECENT_SHOWN)
+      .filter(it => !q || byPath.has(it.path))
+      .map(it => byPath.has(it.path) ? { ...fileItem(byPath.get(it.path)), right: it.right } : it);
+    const seen = new Set(pinned.map(it => it.path));
+    pal.items = pinned.concat(results.filter(r => !seen.has(r.path)).map(fileItem));
     if (pal.indexing && pal.mode === 'file') {
       setTimeout(() => {
         if (pal && pal.mode === 'file' && pal.indexing) refreshPalette();
       }, 300);
     }
   }
-  pal.sel = mode === 'theme' ? Math.max(0, pal.items.findIndex(it => it.id === currentTheme())) : 0;
+  // While typing, Enter should take the best match, not reopen the active file.
+  pal.sel = mode === 'theme' ? Math.max(0, pal.items.findIndex(it => it.id === currentTheme()))
+    : mode === 'file' && q ? Math.max(0, pal.items.findIndex(it => it.right !== 'current'))
+    : 0;
   drawPalette();
 }, 40);
+
+// The active file, then up to count others from the recently opened list.
+function pinnedFiles(count) {
+  const cur = doc_()?.path;
+  const paths = S.recent.filter(p => p !== cur).slice(0, count);
+  if (cur) paths.unshift(cur);
+  return paths.map(p => {
+    const i = p.lastIndexOf('/');
+    return {
+      kind: 'file', path: p, label: p.slice(i + 1), sub: p.slice(0, Math.max(0, i)),
+      right: p === cur ? 'current' : 'recent',
+    };
+  });
+}
+
+function fileItem(r) {
+  const cut = r.path.length - r.name.length;
+  return {
+    kind: 'file', path: r.path,
+    label: fuzzyHTML(r.path.slice(cut), (r.pos || []).filter(p => p >= cut).map(p => p - cut)),
+    sub: fuzzyHTML(r.path.slice(0, Math.max(0, cut - 1)), (r.pos || []).filter(p => p < cut)),
+    raw: true,
+  };
+}
 
 export function fuzzyHTML(text, pos) {
   if (!pos || !pos.length) return esc(text);
