@@ -1,0 +1,19 @@
+web/pxi/shell.css
+  s_223ce1fe4cc7a7::t_4b892c86d18015 480-486
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "795bd7d4b1c22c699f4ac2fdb788944144268d7f",
+  "prompts": {},
+  "sessions": {
+    "s_223ce1fe4cc7a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_223ce1fe4cc7a7",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
