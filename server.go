@@ -1368,7 +1368,7 @@ func (s *Server) handleFile(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := map[string]any{
 		"path": rel, "lang": d.Lang, "total": d.Total, "maxCols": d.MaxCols,
-		"start": start, "lines": lines, "size": st.Size(),
+		"start": start, "lines": lines, "size": st.Size(), "mtime": strconv.FormatInt(st.ModTime().UnixNano(), 10),
 		"exact": exact, "refine": !exact && coming,
 		"markdown":      render.IsMarkdown(rel),
 		"table":         table.IsTable(rel),
@@ -2687,10 +2687,10 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		writeJSON(w, map[string]any{
-			"settings": settings.ReadMergedMap(),
+			"settings": pxiMaskSettings(settings.ReadMergedMap()), // fork: fork_secrets.go, tokens stay on the server
 			"defaults": settings.DefaultMap(),
 			"schema":   settings.Schema,
-			"raw":      settings.ReadRawJSON(),
+			"raw":      pxiMaskRaw(settings.ReadRawJSON()), // fork: fork_secrets.go
 			"path":     settings.Path(),
 		})
 	case http.MethodPost:
@@ -2718,12 +2718,13 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if rawStr, ok := payload["raw"].(string); ok {
+			rawStr = pxiUnmaskRaw(rawStr) // fork: fork_secrets.go, a masked token keeps its stored value
 			if err := settings.SaveRawJSON([]byte(rawStr)); err != nil {
 				fail(w, 400, "invalid JSON in settings: "+err.Error())
 				return
 			}
 		} else {
-			if err := settings.UpdateMap(payload); err != nil {
+			if err := settings.UpdateMap(pxiUnmaskPayload(payload)); err != nil { // fork: fork_secrets.go
 				fail(w, 500, err.Error())
 				return
 			}
@@ -2737,8 +2738,8 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeJSON(w, map[string]any{
-			"settings": settings.ReadMergedMap(),
-			"raw":      settings.ReadRawJSON(),
+			"settings": pxiMaskSettings(settings.ReadMergedMap()), // fork: fork_secrets.go
+			"raw":      pxiMaskRaw(settings.ReadRawJSON()),        // fork: fork_secrets.go
 			"path":     settings.Path(),
 			"ok":       true,
 		})

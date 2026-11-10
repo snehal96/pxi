@@ -812,6 +812,7 @@ var mdConverter = goldmark.New(
 
 func RenderMarkdown(src []byte) (string, error) {
 	src = bytes.ReplaceAll(src, []byte("\r\n"), []byte("\n"))
+	src = pxiFrontmatter(src) // fork: fork_frontmatter.go
 	var buf bytes.Buffer
 	buf.Grow(len(src) * 2)
 	ctx := parser.NewContext(parser.WithIDs(&headingIDs{seen: map[string]bool{}}))

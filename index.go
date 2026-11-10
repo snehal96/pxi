@@ -53,6 +53,7 @@ type Index struct {
 	gitStatusMap     map[string]string
 	gitStagedMap     map[string]bool
 	gitPartialMap    map[string]bool
+	gitStamps        map[string]string // listed path -> fileStamp, as of the last status read
 	gitYourStatusMap map[string]string
 	diffBase         string
 	prHead           string
@@ -528,6 +529,7 @@ func (ix *Index) Build() {
 	injectDeletedNodes(children, gs, staged, partial, yourStatuses, dirtyDirs, yourDirtyDirs)
 
 	sort.Slice(files, func(i, j int) bool { return files[i].Path < files[j].Path })
+	stamps := fileStamps(ix.root, gs)
 
 	ix.mu.Lock()
 	ix.gitChanges = len(gitFiles)
@@ -535,6 +537,7 @@ func (ix *Index) Build() {
 	ix.gitStatusMap = gs
 	ix.gitStagedMap = staged
 	ix.gitPartialMap = partial
+	ix.gitStamps = stamps
 	ix.gitYourStatusMap = yourStatuses
 	ix.files, ix.children = files, children
 	ix.builtAt, ix.buildMS = time.Now(), time.Since(start).Milliseconds()
@@ -701,6 +704,9 @@ func (ix *Index) UpdateGitStatus() (count int, files []string, changed bool, sta
 	if pt == nil {
 		pt = map[string]bool{}
 	}
+	// A second edit to an already modified or untracked file leaves its status
+	// code unchanged, so only its size and mtime show it happened.
+	stamps := fileStamps(ix.root, gs)
 	if head != "" && ys == nil {
 		ys = map[string]string{}
 	}
@@ -713,7 +719,7 @@ func (ix *Index) UpdateGitStatus() (count int, files []string, changed bool, sta
 	same := len(gs) == len(ix.gitStatusMap) && len(sg) == len(ix.gitStagedMap) && len(pt) == len(ix.gitPartialMap) && len(ys) == len(ix.gitYourStatusMap)
 	if same {
 		for k, v := range gs {
-			if ix.gitStatusMap[k] != v {
+			if ix.gitStatusMap[k] != v || ix.gitStamps[k] != stamps[k] {
 				same = false
 				break
 			}
@@ -788,6 +794,7 @@ func (ix *Index) UpdateGitStatus() (count int, files []string, changed bool, sta
 	ix.gitStatusMap = gs
 	ix.gitStagedMap = sg
 	ix.gitPartialMap = pt
+	ix.gitStamps = stamps
 	ix.gitYourStatusMap = ys
 
 	resFiles := make([]string, len(ix.gitFiles))

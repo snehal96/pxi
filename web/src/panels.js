@@ -3,7 +3,7 @@ import { $, $$, S, api } from './state.js';
 import { layout, render } from './renderer.js';
 import { updateStatus } from './status.js';
 import { loadOutline } from './outline.js';
-import { treeEl, refreshTree, setSidebarMode, hasGitView } from './tree.js';
+import { treeEl, refreshTree, setSidebarMode, hasGitView, updateSidebarToggleState } from './tree.js';
 import { reloadOpenTabs } from './tabs.js';
 import { showToast } from './ui.js';
 import { refreshUnpushed } from './unpushed.js';
@@ -28,9 +28,11 @@ export async function reindexWorkspace() {
     if (j.gitFiles !== undefined) S.meta.gitFiles = j.gitFiles;
     // A refresh re-reads the unpushed list too: commits may have been made,
     // amended or pushed from a terminal since the last git-status tick, and
-    // hasGitView() below counts them.
+    // the sidebar toggle counts them.
     await refreshUnpushed();
-    await setSidebarMode(hasGitView() ? 'git' : 'files');
+    // Re-index refreshes data quietly; it must not flip the sidebar between
+    // the file explorer and the git-changes view out from under the user.
+    updateSidebarToggleState();
     await refreshTree();
     await reloadOpenTabs();
     updateStatus();

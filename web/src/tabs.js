@@ -6,7 +6,7 @@ import { render, layout, refineChunk, getLH, lineTopY } from './renderer.js';
 import { updateStatus, setStatusNote, refreshMetrics } from './status.js';
 import { pushHistory } from './history.js';
 import { warmLSP } from './lsp.js';
-import { loadOutline } from './outline.js';
+import { loadOutline, symbolsShown } from './outline.js';
 import { showPanel } from './panels.js';
 import { revealDir, treeEl } from './tree.js';
 import { clearLink } from './hover.js';
@@ -133,7 +133,7 @@ export async function openFile(path, opts = {}) {
     const d = {
       path, name: path.split('/').pop(), lang: isImg ? 'image' : j.lang,
       total: isImg ? 0 : j.total, maxCols: isImg ? 0 : j.maxCols,
-      size: j.size, lines: isImg ? [] : new Array(j.total),
+      size: j.size, mtime: j.mtime, lines: isImg ? [] : new Array(j.total),
       chunks: new Set(isImg ? [] : [start / CHUNK]),
       pending: new Set(), refining: new Set(), scrollTop: 0, cur: line || 1,
       outline: null, gen: 0, markdown: !isImg && !!j.markdown, table: !isImg && !!j.table, isImage: isImg,
@@ -210,7 +210,7 @@ export async function openFile(path, opts = {}) {
   }
   render();
   updateStatus();
-  if ($('#panel-outline')?.classList.contains('active')) loadOutline();
+  if (symbolsShown()) loadOutline();
   if (push) pushHistory(path, line || d.cur);
   emit('tab:activated', { doc: d, prevDoc: prev });
 }
@@ -312,7 +312,7 @@ export async function reloadOpenTabs({ onlyIfChanged = false } = {}) {
     const diagCount = (j.diagnostics || []).length;
     const keepDiagCount = (keep.diagnostics || []).length;
     if (onlyIfChanged && linesSame && diagCount === keepDiagCount &&
-        keep.size === j.size && keep.total === j.total &&
+        keep.size === j.size && keep.mtime === j.mtime && keep.total === j.total &&
         !!keep.diffAvailable === hasDiff && !!keep.deleted === !!j.deleted) continue;
     anyChanged = true;
     const newCur = Math.max(1, Math.min(keep.cur || 1, j.total || 1));
@@ -329,6 +329,7 @@ export async function reloadOpenTabs({ onlyIfChanged = false } = {}) {
       total: j.total,
       maxCols: j.maxCols,
       size: j.size,
+      mtime: j.mtime,
       lines: new Array(j.total),
       chunks: new Set([tgt.start / CHUNK]),
       pending: new Set(),
@@ -387,7 +388,7 @@ export async function reloadOpenTabs({ onlyIfChanged = false } = {}) {
     layout();
     vp.scrollTop = d.scrollTop;
     render();
-    if ($('#panel-outline')?.classList.contains('active')) loadOutline();
+    if (symbolsShown()) loadOutline();
   }
 
   drawTabs();
@@ -575,7 +576,7 @@ export function switchTab(i) {
   drawTabs(); drawCrumbs(); layout();
   vp.scrollTop = S.tabs[i].scrollTop;
   render(); updateStatus();
-  if ($('#panel-outline')?.classList.contains('active')) loadOutline();
+  if (symbolsShown()) loadOutline();
   pushHistory(S.tabs[i].path, S.tabs[i].cur);
   emit('tab:activated', { doc: S.tabs[i], prevDoc: prev });
 }
