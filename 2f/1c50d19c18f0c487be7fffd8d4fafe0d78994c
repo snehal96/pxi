@@ -1,0 +1,27 @@
+macos/Sources/AppDelegate.swift
+  s_264e1f90ce543b::t_a5adbe359a9fda 123-126
+macos/Sources/BrowserWindow.swift
+  s_264e1f90ce543b::t_0b2490eaae3bdd 210-225
+macos/Sources/TitleBar.swift
+  s_264e1f90ce543b::t_873b5b3a6de4a0 145-146
+web/src/pxi-workbench.js
+  s_264e1f90ce543b::t_f713b503be7800 1-27
+web/src/workbench.js
+  s_264e1f90ce543b::t_5df27b491ba87b 9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2f1c50d19c18f0c487be7fffd8d4fafe0d78994c",
+  "prompts": {},
+  "sessions": {
+    "s_264e1f90ce543b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_264e1f90ce543b",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
