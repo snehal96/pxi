@@ -6,6 +6,8 @@
 import { $, esc } from './state.js';
 import { listThemes, currentTheme, setTheme, getStoredTheme, chooseThemePreference } from './theme.js';
 import { showMetrics, initMetricsMenu } from './metricsview.js';
+// fork: pxi-workbench.js adds the Finder folder picker in the Mac app
+import './pxi-workbench.js';
 
 const req = async (path, body) => {
   const opts = body === undefined ? {} : {

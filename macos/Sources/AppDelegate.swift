@@ -120,6 +120,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openFolder(_ sender: Any?) {
+        if baseURL != nil, let wc = frontController, wc.window?.isVisible == true {
+            wc.chooseFolder()
+            return
+        }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false

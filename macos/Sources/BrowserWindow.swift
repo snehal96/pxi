@@ -207,6 +207,22 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate, WKNav
         panel.beginSheetModal(for: window) { completionHandler($0 == .OK ? panel.urls : nil) }
     }
 
+    /// The Finder folder picker, as a sheet on this window: the workbench's
+    /// "Open Folder…" button and File > Open Folder… (⌘O).
+    func chooseFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Open"
+        panel.message = "Choose a folder or repository to open in pxi"
+        guard let window else { return }
+        panel.beginSheetModal(for: window) { [weak self] r in
+            guard r == .OK, let url = panel.url else { return }
+            self?.openTarget(url.path)
+        }
+    }
+
     private func present(_ alert: NSAlert, _ done: @escaping (NSApplication.ModalResponse) -> Void) {
         if let window, window.isVisible {
             alert.beginSheetModal(for: window, completionHandler: done)
