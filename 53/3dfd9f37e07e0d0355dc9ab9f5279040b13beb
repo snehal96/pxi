@@ -1,0 +1,29 @@
+fork_git.go
+  s_269e76d5022bcd::t_a0bf9b2a950194 33,497-559
+fork_git_test.go
+  s_269e76d5022bcd::t_f932a7a58c7ce3 155-190
+web/pxi/shell.css
+  s_269e76d5022bcd::t_c67242ac830776 456-468
+web/src/pxi-worktrees.js
+  s_269e76d5022bcd::t_add4ae185feb05 8-9,31-41,64,94,105,121,123,136-138,142,157-161,167-168,189-199,201,209,211,235,243-321,340-344
+worktrees.go
+  s_269e76d5022bcd::t_630b729854ca7b 59,63,66-67,93-94,98-100,173-176,178,182,187,192,194-197,228-231,234,244,256-257,374-375,377-386
+worktrees_test.go
+  s_269e76d5022bcd::t_ab32819e004a27 80-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "533dfd9f37e07e0d0355dc9ab9f5279040b13beb",
+  "prompts": {},
+  "sessions": {
+    "s_269e76d5022bcd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_269e76d5022bcd",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
