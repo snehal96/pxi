@@ -1,0 +1,31 @@
+agent.go
+  s_e8b52560256c95::t_743ec3653e5dcf 465,1594
+fork_claude.go
+  s_e8b52560256c95::t_466c28eeb8852b 997
+fork_claude_harness.go
+  s_e8b52560256c95::t_2d84ed3385a83b 1-308
+fork_claude_harness_test.go
+  s_e8b52560256c95::t_6ef67c64f0bdfa 1-77
+fork_term_windows.go
+  s_e8b52560256c95::t_ee4b9fff573aee 15
+web/src/agent.js
+  s_e8b52560256c95::t_9f31d51c6a6adf 11,84
+web/src/pxi-harness.js
+  s_e8b52560256c95::t_c2988c5e92f393 1-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c8f3f5ee2f82fbbf2042e007a8b3bd6c5a2d57a8",
+  "prompts": {},
+  "sessions": {
+    "s_e8b52560256c95": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_e8b52560256c95",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
