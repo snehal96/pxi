@@ -30,6 +30,7 @@ func (s *Server) registerPxiGitRoutes() {
 	s.mux.HandleFunc(s.routePath("/api/pxi/remotes"), s.handlePxiRemotes)
 	s.mux.HandleFunc(s.routePath("/api/pxi/fetch"), s.handlePxiFetch)
 	s.mux.HandleFunc(s.routePath("/api/pxi/worktree/new"), s.handlePxiWorktreeNew)
+	s.mux.HandleFunc(s.routePath("/api/pxi/worktree/remove"), s.handlePxiWorktreeRemove)
 }
 
 // pxiGit runs git in the workspace with no terminal prompts, so a fetch that
@@ -492,4 +493,67 @@ func pxiExcludeLocally(ctx context.Context, root, pattern string) {
 	}
 	defer f.Close()
 	f.WriteString(prefix + "# pxi: worktrees for Claude sessions\n" + pattern + "\n")
+}
+
+// handlePxiWorktreeRemove deletes another worktree of the repository
+// ({name, force}): `git worktree remove`, which deletes its folder and keeps
+// its branch. Without force, git refuses a worktree with uncommitted or
+// untracked files; the answer then says so (409, "dirty": true) and the page
+// asks before sending force. A worktree whose folder is already gone is pruned.
+// Never the served checkout, never a locked worktree.
+func (s *Server) handlePxiWorktreeRemove(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		fail(w, http.StatusMethodNotAllowed, "POST only")
+		return
+	}
+	if !localPost(w, r) {
+		return
+	}
+	var b struct {
+		Name  string `json:"name"`
+		Force bool   `json:"force"`
+	}
+	if !pxiReadBody(w, r, &b) {
+		return
+	}
+	reg := s.worktrees()
+	wt := reg.lookup(b.Name)
+	if wt == nil {
+		fail(w, http.StatusNotFound, "no worktree named "+b.Name)
+		return
+	}
+	if wt.Main {
+		fail(w, http.StatusBadRequest, "the checkout pxi has open cannot be removed here")
+		return
+	}
+	if wt.Locked {
+		fail(w, http.StatusConflict, wt.Name+" is locked (git worktree unlock to allow removing it)")
+		return
+	}
+	ctx, cancel := pxiCtx(r, 120*time.Second)
+	defer cancel()
+	root := s.ix.Root()
+	if wt.Prunable {
+		if _, err := pxiGit(ctx, root, "worktree", "prune"); err != nil {
+			fail(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	} else {
+		args := []string{"worktree", "remove"}
+		if b.Force {
+			args = append(args, "--force")
+		}
+		if _, err := pxiGit(ctx, root, append(args, "--", wt.Path)...); err != nil {
+			if !b.Force && strings.Contains(err.Error(), "--force") {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusConflict)
+				json.NewEncoder(w).Encode(map[string]any{"error": err.Error(), "dirty": true})
+				return
+			}
+			fail(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+	reg.Snapshot(true)
+	writeJSON(w, map[string]any{"removed": wt.Name, "branch": wt.Branch})
 }

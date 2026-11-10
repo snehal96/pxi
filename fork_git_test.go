@@ -152,3 +152,39 @@ func TestPxiWorktreeNew(t *testing.T) {
 		}
 	}
 }
+
+func TestPxiWorktreeRemove(t *testing.T) {
+	root, a, b := wtRepo(t) // wt-a: clean except an untracked file; wt-b: uncommitted edits
+	s := wtServer(t, root)
+	h := hostGuard(s)
+	if code, _ := pxiPost(t, h, "/api/pxi/worktree/remove", `{"name":"platform"}`); code != http.StatusBadRequest {
+		t.Errorf("main checkout: want 400, got %d", code)
+	}
+	code, m := pxiPost(t, h, "/api/pxi/worktree/remove", `{"name":"wt-b"}`)
+	if code != http.StatusConflict || m["dirty"] != true {
+		t.Fatalf("dirty without force: want 409 dirty, got %d %v", code, m)
+	}
+	if _, err := os.Stat(b); err != nil {
+		t.Fatal("refused removal deleted the folder")
+	}
+	if code, m := pxiPost(t, h, "/api/pxi/worktree/remove", `{"name":"wt-b","force":true}`); code != 200 || m["branch"] != "feat-b" {
+		t.Fatalf("force: %d %v", code, m)
+	}
+	if _, err := os.Stat(b); !os.IsNotExist(err) {
+		t.Error("folder still there")
+	}
+	if out := gitTestRun(t, root, "branch", "--list", "feat-b"); !strings.Contains(out, "feat-b") {
+		t.Error("branch was deleted")
+	}
+	os.RemoveAll(a) // a folder deleted by hand: pruned
+	if code, m := pxiPost(t, h, "/api/pxi/worktree/remove", `{"name":"wt-a"}`); code != 200 {
+		t.Fatalf("prunable: %d %v", code, m)
+	}
+	if out := gitTestRun(t, root, "worktree", "list"); strings.Contains(out, "wt-a") || strings.Contains(out, "wt-b") {
+		t.Errorf("still listed: %s", out)
+	}
+	rec := serve(h, "POST", "/api/pxi/worktree/remove", "127.0.0.1:7777", "http://evil.example", `{"name":"wt-a","force":true}`)
+	if rec.Code != http.StatusForbidden {
+		t.Errorf("cross-site: %d", rec.Code)
+	}
+}

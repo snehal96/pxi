@@ -5,7 +5,8 @@
 // one worktree changes. Clicking a file opens its diff with the worktree's
 // other files queued in the review strip ([f / ]f, ✓ Viewed).
 // Styles: web/pxi/shell.css. Server side: worktrees.go (/api/worktrees, @wt/<name>/<path> files).
-import { $, esc, api } from './state.js';
+import { $, esc, api, apiPostJson } from './state.js';
+import { showToast } from './ui.js';
 import { openFile } from './tabs.js';
 import { showTerminal } from './pxi-term.js';
 import { openClaude, newWorktreeDialog, shipWorktree } from './pxi-claude.js';
@@ -27,6 +28,17 @@ let wtTimer = 0;
 let wtVisible = false;
 let wtOnCount = () => {};
 const wtCollapsed = new Set(readCollapsed());
+let wtHidden = new Set();   // worktrees the user hid in this repository (per root, in this browser)
+let wtShowHidden = false;
+let wtMenu = null;          // the right-click menu while open
+
+const wtHiddenKey = () => 'pxi.wt.hidden:' + (wtData?.root || '');
+function wtLoadHidden() {
+  try { wtHidden = new Set(JSON.parse(localStorage.getItem(wtHiddenKey()) || '[]')); } catch { wtHidden = new Set(); }
+}
+function wtSaveHidden() {
+  try { localStorage.setItem(wtHiddenKey(), JSON.stringify([...wtHidden])); } catch {}
+}
 
 function readCollapsed() {
   try { return JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]'); } catch { return []; }
@@ -49,7 +61,7 @@ const ICON = {
 };
 
 export function worktreeCount() {
-  return wtData ? wtData.worktrees.filter(w => !w.prunable).length : 0;
+  return wtData ? wtData.worktrees.filter(w => !w.prunable && !w.main && !wtHidden.has(w.name)).length : 0;
 }
 
 /** Builds the view inside the sidebar. onCountChange(count, overlaps) feeds the activity bar badge. */
@@ -79,6 +91,7 @@ function wtEnsureDom() {
   wtRoot.querySelector('#wt-refresh').addEventListener('click', () => refresh(true));
   wtRoot.querySelector('#wt-new').addEventListener('click', newWorktreeDialog);
   wtBody.addEventListener('click', onClick);
+  wtBody.addEventListener('contextmenu', wtContextMenu);
 }
 
 export function setWorktreesVisible(on) {
@@ -89,6 +102,7 @@ export function setWorktreesVisible(on) {
     wtLastSig = ''; // draw on the next refresh
     refresh(false);
   } else if (wtBody) {
+    wtCloseMenu();
     wtBody.replaceChildren(); // a closed view keeps no rows in memory
   }
   schedule();
@@ -104,7 +118,9 @@ function schedule() {
 async function refresh(force) {
   try {
     const j = await api('/api/worktrees', force ? { refresh: 1 } : undefined);
+    const rootChanged = wtData?.root !== j.root;
     wtData = { root: j.root, worktrees: j.worktrees || [] };
+    if (rootChanged) wtLoadHidden();
     const sig = JSON.stringify(wtData.worktrees);
     if (sig !== wtLastSig || force) {
       wtLastSig = sig;
@@ -117,10 +133,13 @@ async function refresh(force) {
   }
 }
 
+// A file's other worktrees, leaving out hidden ones.
+const wtOverlapOf = f => (f.overlap || []).filter(n => !wtHidden.has(n));
+
 function overlapsOf(list) {
   const map = new Map();
   for (const w of list) for (const f of w.files) {
-    if (f.overlap?.length) {
+    if (wtOverlapOf(f).length) {
       if (!map.has(f.path)) map.set(f.path, new Set());
       map.get(f.path).add(w.name);
     }
@@ -135,16 +154,18 @@ function splitPath(p) {
 
 function renderWorktrees() {
   if (!wtData) return;
-  const list = wtData.worktrees.filter(w => !w.prunable);
-  const overlaps = overlapsOf(list);
-  wtOnCount(list.length, overlaps.size);
+  const shown = wtData.worktrees.filter(w => !w.prunable && !wtHidden.has(w.name));
+  const hidden = wtData.worktrees.filter(w => wtHidden.has(w.name));
+  const overlaps = overlapsOf(shown);
+  wtOnCount(shown.filter(w => !w.main).length, overlaps.size);
+  const list = wtShowHidden ? shown.concat(hidden) : shown;
   if (!wtBody || !wtVisible) return; // closed: only the badge
   const base = list.find(w => w.baseRef)?.baseRef;
   const baseEl = $('#wt-base');
   if (baseEl) baseEl.textContent = base ? 'vs ' + base : '';
 
-  if (!list.length) {
-    wtBody.innerHTML =
+  if (!list.some(w => !w.main) && !hidden.length) {
+    wtBody.innerHTML = (list[0] ? wtCard(list[0], overlaps) : '') +
       '<div class="wt-empty"><p>No other worktrees in this repository.</p>' +
       '<p class="wt-faint">Worktrees made by Claude Code, another agent, or <code>git worktree add</code> show up here with the changes each one makes.</p></div>';
     return;
@@ -165,9 +186,19 @@ function renderWorktrees() {
     html += '</div>';
   }
 
-  for (const w of list) {
+  for (const w of list) html += wtCard(w);
+  if (hidden.length) {
+    html += '<div class="wt-faint wt-hidden-foot"><button class="wt-link" data-show-hidden>' +
+      (wtShowHidden ? 'Hide' : 'Show') + ' ' + hidden.length + ' hidden worktree' + (hidden.length > 1 ? 's' : '') + '</button></div>';
+  }
+  wtBody.innerHTML = html;
+}
+
+function wtCard(w) {
+  let html = '';
+  {
     const open = !wtCollapsed.has(w.name);
-    const ov = w.files.filter(f => f.overlap?.length).length;
+    const ov = w.files.filter(f => wtOverlapOf(f).length).length;
     const meta = [];
     if (w.missing) meta.push('<span class="wt-warn" title="' + w.missing + ' of its ' + w.tracked + ' tracked files are gone from its folder">folder emptied</span>');
     if (w.ahead) meta.push('<span title="Commits since it branched off ' + esc(w.baseRef || 'the base') + '">↑' + w.ahead + '</span>');
@@ -175,9 +206,9 @@ function renderWorktrees() {
     if (w.dirty && !w.missing) meta.push('<span class="wt-dirty" title="Uncommitted files">●' + w.dirty + '</span>');
     if (ov) meta.push('<span class="wt-warn" title="Files another worktree also changes">' + ICON.warn + ov + '</span>');
 
-    html += '<div class="wt-card' + (open ? ' open' : '') + '" data-wt="' + esc(w.name) + '">' +
+    html += '<div class="wt-card' + (open ? ' open' : '') + (wtHidden.has(w.name) ? ' wt-is-hidden' : '') + '" data-wt="' + esc(w.name) + '">' +
       '<div class="wt-head" data-toggle="' + esc(w.name) + '" title="' + esc(w.path) + '">' + ICON.chevron +
-      '<span class="wt-icon">' + ICON.branch + '</span>' +
+      (w.main ? '<span class="wt-icon" title="The folder pxi has open">' + ICON.folder + '</span>' : '<span class="wt-icon">' + ICON.branch + '</span>') +
       '<span class="wt-name">' + esc(w.name) + '</span>' +
       (w.branch && w.branch !== w.name ? '<span class="wt-branch">' + esc(w.branch) + '</span>' : (!w.branch ? '<span class="wt-branch">detached</span>' : '')) +
       '<span class="grow"></span><span class="wt-meta">' + meta.join('') + '</span>' +
@@ -201,7 +232,7 @@ function renderWorktrees() {
           '<span class="wt-fname">' + esc(name) + '</span>' +
           (dir ? '<span class="wt-fdir">' + esc(dir) + '</span>' : '') +
           '<span class="grow"></span>' +
-          (f.overlap?.length ? '<span class="wt-warn" title="Also changed in ' + esc(f.overlap.join(', ')) + '">' + ICON.warn + '</span>' : '') +
+          (wtOverlapOf(f).length ? '<span class="wt-warn" title="Also changed in ' + esc(wtOverlapOf(f).join(', ')) + '">' + ICON.warn + '</span>' : '') +
           '<span class="wt-st ' + cls + '">' + esc(f.status) + '</span></div>';
       }
       if (w.files.length > ROW_CAP) html += '<div class="wt-faint wt-none">' + (w.files.length - ROW_CAP) + ' more files: use Review to step through all of them</div>';
@@ -209,7 +240,85 @@ function renderWorktrees() {
     }
     html += '</div>';
   }
-  wtBody.innerHTML = html;
+  return html;
+}
+
+/* ---------- right-click: hide, unhide, delete ---------- */
+
+function wtCloseMenu() {
+  if (!wtMenu) return;
+  wtMenu.remove();
+  wtMenu = null;
+  document.removeEventListener('pointerdown', wtMenuOutside, true);
+  document.removeEventListener('keydown', wtMenuKey, true);
+}
+function wtMenuOutside(e) { if (wtMenu && !wtMenu.contains(e.target)) wtCloseMenu(); }
+function wtMenuKey(e) { if (e.key === 'Escape') { e.preventDefault(); wtCloseMenu(); } }
+
+function wtContextMenu(e) {
+  const head = e.target.closest('.wt-head');
+  const w = head && wtData?.worktrees.find(x => x.name === head.dataset.toggle);
+  if (!w) return;
+  e.preventDefault();
+  wtCloseMenu();
+  const items = [];
+  if (wtHidden.has(w.name)) items.push(['unhide', 'Show again']);
+  else if (!w.main) items.push(['hide', 'Hide (stop tracking here)']);
+  items.push(['copy', 'Copy Path']);
+  if (!w.main) items.push(['delete', 'Delete Worktree…']);
+  wtMenu = document.createElement('div');
+  wtMenu.id = 'wt-menu';
+  wtMenu.setAttribute('role', 'menu');
+  for (const [act, label] of items) {
+    const b = document.createElement('button');
+    b.className = 'sel-menu-item' + (act === 'delete' ? ' wt-danger' : '');
+    b.setAttribute('role', 'menuitem');
+    b.textContent = label;
+    b.addEventListener('click', () => { wtCloseMenu(); wtMenuAct(act, w); });
+    wtMenu.append(b);
+  }
+  document.body.append(wtMenu);
+  const mw = wtMenu.offsetWidth, mh = wtMenu.offsetHeight;
+  wtMenu.style.left = Math.max(4, e.clientX + mw > innerWidth - 4 ? e.clientX - mw : e.clientX) + 'px';
+  wtMenu.style.top = Math.max(4, e.clientY + mh > innerHeight - 4 ? e.clientY - mh : e.clientY) + 'px';
+  document.addEventListener('pointerdown', wtMenuOutside, true);
+  document.addEventListener('keydown', wtMenuKey, true);
+}
+
+async function wtMenuAct(act, w) {
+  if (act === 'hide' || act === 'unhide') {
+    if (act === 'hide') wtHidden.add(w.name); else wtHidden.delete(w.name);
+    wtSaveHidden();
+    renderWorktrees();
+    if (act === 'hide') showToast('', 'Hid ' + w.name + '. "Show hidden worktrees" at the bottom brings it back.');
+    return;
+  }
+  if (act === 'copy') {
+    try { await navigator.clipboard.writeText(w.path); showToast('', 'Copied ' + w.path); } catch { showToast('', w.path); }
+    return;
+  }
+  if (act !== 'delete') return;
+  const what = w.branch ? 'Its branch ' + w.branch + ' is kept.' : 'It has no branch (detached): commits only it has may be lost.';
+  if (!confirm('Delete worktree ' + w.name + '?\n\nThis deletes the folder ' + w.path + '. ' + what)) return;
+  let r = await wtRemove(w.name, false);
+  if (r.dirty) {
+    const n = w.missing ? w.missing + ' files are already gone from it' : (w.dirty || 'some') + ' uncommitted or untracked files';
+    if (!confirm(w.name + ' has changes that are not committed (' + n + ').\n\nDelete it anyway? Those changes are lost.')) return;
+    r = await wtRemove(w.name, true);
+  }
+  if (r.error) { showToast('', 'Could not delete ' + w.name + ': ' + r.error); return; }
+  wtHidden.delete(w.name);
+  wtSaveHidden();
+  showToast('', 'Deleted worktree ' + w.name + (r.branch ? ' (branch ' + r.branch + ' kept)' : ''));
+  refresh(true);
+}
+
+async function wtRemove(name, force) {
+  try {
+    return await apiPostJson('/api/pxi/worktree/remove', { name, force }, { timeout: 120000 });
+  } catch (e) {
+    return e.body || { error: e.message || String(e) };
+  }
 }
 
 function filesFor(w) {
@@ -228,6 +337,11 @@ function openWorktreeFile(w, path) {
 
 function onClick(e) {
   if (!wtData) return;
+  if (e.target.closest('[data-show-hidden]')) {
+    wtShowHidden = !wtShowHidden;
+    renderWorktrees();
+    return;
+  }
   const find = name => wtData.worktrees.find(w => w.name === name);
   const shipBtn = e.target.closest('[data-ship]');
   if (shipBtn) {

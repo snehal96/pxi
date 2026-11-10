@@ -453,3 +453,16 @@ body.pxi-shell #pxi-html-btn.on { background: var(--bg4); color: var(--fg); }
 
 .wt-emptied { white-space: normal; line-height: 1.45; height: auto; padding-top: 2px; padding-bottom: 4px; }
 .wt-emptied code { font-family: var(--mono); font-size: 11px; word-break: break-all; user-select: text; }
+
+/* Worktree right-click menu (pxi-worktrees.js), styled like px0's tree menu. */
+#wt-menu {
+  position: fixed; z-index: 70; min-width: 190px;
+  display: flex; flex-direction: column; gap: 1px; padding: 4px;
+  background: var(--bg3); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow);
+  user-select: none;
+}
+#wt-menu .wt-danger:hover { color: var(--gd); }
+.wt-card.wt-is-hidden { opacity: .55; }
+.wt-hidden-foot { padding: 6px 10px 10px 28px; font-size: 12px; }
+.wt-link { color: var(--accent-fg); font-size: 12px; }
+.wt-link:hover { text-decoration: underline; }

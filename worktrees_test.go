@@ -77,8 +77,8 @@ func TestWorktreesListsOthersWithChangesAndOverlaps(t *testing.T) {
 		t.Fatalf("status %d: %v", code, m)
 	}
 	list, _ := m["worktrees"].([]any)
-	if len(list) != 2 {
-		t.Fatalf("want 2 worktrees (main checkout excluded), got %d: %v", len(list), m)
+	if len(list) != 3 || list[0].(map[string]any)["main"] != true || list[0].(map[string]any)["path"] != root {
+		t.Fatalf("want the main checkout first, then 2 worktrees, got %d: %v", len(list), m)
 	}
 	byName := map[string]map[string]any{}
 	for _, x := range list {

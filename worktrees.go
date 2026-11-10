@@ -56,13 +56,15 @@ type worktree struct {
 	Tracked  int      `json:"tracked,omitempty"`  // tracked files, set with Missing
 	Files    []wtFile `json:"files"`
 	Error    string   `json:"error,omitempty"`
+	Main     bool     `json:"main,omitempty"` // the served checkout itself
 }
 
 type wtRegistry struct {
-	root string // the served root; its own worktree is not listed
+	root string // the served root: listed apart, as main
 
 	mu      sync.Mutex
-	list    []*worktree
+	list    []*worktree // the other worktrees
+	main    *worktree   // the served checkout, with its changes; nil outside git
 	byName  map[string]*worktree
 	fetched time.Time
 }
@@ -88,10 +90,13 @@ func (r *wtRegistry) Snapshot(force bool) []*worktree {
 	if !force && r.list != nil && time.Since(r.fetched) < wtTTL {
 		return r.list
 	}
-	r.list = listWorktrees(r.root)
-	r.byName = make(map[string]*worktree, len(r.list))
+	r.main, r.list = listWorktrees(r.root)
+	r.byName = make(map[string]*worktree, len(r.list)+1)
 	for _, w := range r.list {
 		r.byName[w.Name] = w
+	}
+	if r.main != nil {
+		r.byName[r.main.Name] = r.main
 	}
 	r.fetched = time.Now()
 	return r.list
@@ -165,27 +170,31 @@ func wtBaseRef(top string) string {
 	return ""
 }
 
-// listWorktrees lists every worktree of root's repository except root's own,
-// with each one's changes measured in parallel.
-func listWorktrees(root string) []*worktree {
+// listWorktrees returns root's own checkout (main) and every other worktree
+// of its repository, with each one's changes measured in parallel. Overlaps
+// count main too: an edit in the main checkout collides like any other.
+func listWorktrees(root string) (*worktree, []*worktree) {
 	if !gitAvailable(root) {
-		return []*worktree{}
+		return nil, []*worktree{}
 	}
 	topOut, err := gitOut(root, "rev-parse", "--show-toplevel")
 	if err != nil {
-		return []*worktree{}
+		return nil, []*worktree{}
 	}
 	self := evalPath(strings.TrimSpace(topOut))
 	out, err := gitOut(root, "worktree", "list", "--porcelain")
 	if err != nil {
-		return []*worktree{}
+		return nil, []*worktree{}
 	}
 	baseRef := wtBaseRef(root)
 
 	var list []*worktree
-	var cur *worktree
+	var main, cur *worktree
 	flush := func() {
-		if cur != nil && evalPath(cur.Path) != self {
+		if cur != nil && evalPath(cur.Path) == self {
+			cur.Main = true
+			main = cur
+		} else if cur != nil {
 			list = append(list, cur)
 		}
 		cur = nil
@@ -216,9 +225,13 @@ func listWorktrees(root string) []*worktree {
 	}
 	flush()
 
+	all := list
+	if main != nil {
+		all = append([]*worktree{main}, list...) // main names first: it keeps its folder's name
+	}
 	// Names: the folder's base name, made unique.
 	seen := map[string]int{}
-	for _, w := range list {
+	for _, w := range all {
 		n := filepath.Base(w.Path)
 		seen[n]++
 		if seen[n] > 1 {
@@ -228,7 +241,7 @@ func listWorktrees(root string) []*worktree {
 	}
 
 	var wg sync.WaitGroup
-	for _, w := range list {
+	for _, w := range all {
 		if w.Prunable {
 			continue
 		}
@@ -240,8 +253,8 @@ func listWorktrees(root string) []*worktree {
 		}(w)
 	}
 	wg.Wait()
-	markOverlaps(list)
-	return list
+	markOverlaps(all)
+	return main, list
 }
 
 func evalPath(p string) string {
@@ -358,13 +371,19 @@ func wtDiff(w *worktree, inner string) string {
 
 // ---------------------------------------------------------------- HTTP
 
-// handleWorktrees lists the repository's other worktrees and their changes.
-// ?refresh=1 skips the short cache.
+// handleWorktrees lists the served checkout (first, "main": true) and the
+// repository's other worktrees, with their changes. ?refresh=1 skips the cache.
 func (s *Server) handleWorktrees(w http.ResponseWriter, r *http.Request) {
-	list := s.worktrees().Snapshot(r.URL.Query().Get("refresh") == "1")
-	if list == nil {
-		list = []*worktree{}
+	reg := s.worktrees()
+	others := reg.Snapshot(r.URL.Query().Get("refresh") == "1")
+	reg.mu.Lock()
+	main := reg.main
+	reg.mu.Unlock()
+	list := make([]*worktree, 0, len(others)+1)
+	if main != nil {
+		list = append(list, main)
 	}
+	list = append(list, others...)
 	writeJSON(w, map[string]any{"root": s.ix.Root(), "worktrees": list})
 }
 
