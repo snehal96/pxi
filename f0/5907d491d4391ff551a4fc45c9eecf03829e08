@@ -1,0 +1,49 @@
+VERSION
+  s_7c0919758d6b27::t_e332fb4a8ebd7e 1
+review_workflow.go
+  s_7c0919758d6b27::t_5892e4b85a442b 10,12-13,17-18,690-1039
+review_workflow_test.go
+  s_7c0919758d6b27::t_2c18c57ad66fd0 14-15,387-479
+server.go
+  s_7c0919758d6b27::t_d4d6845e001d91 219
+web/index.html
+  s_7c0919758d6b27::t_341f51ef4caddc 17,201-209,337-394,487,709-745,774-782,784-802,804-807,809-813,816
+web/pxi/shell.css
+  s_7c0919758d6b27::t_4a04ec383acbac 469-471
+web/src/inspector.js
+  s_7c0919758d6b27::t_b1a5e050313d2d 14,18-19,21,30,145-151
+web/src/main.js
+  s_7c0919758d6b27::t_409f3d46abc7ec 12
+web/src/palette.js
+  s_7c0919758d6b27::t_6102b306b89f23 19,103
+web/src/pxi-shell.js
+  s_7c0919758d6b27::t_1a0f283f8d8124 11,176-179,181,192,208-209,216,222-223
+web/src/reviewflow.js
+  s_7c0919758d6b27::t_30662792ea5a2e 8,142-145,182
+web/src/reviewflow.test.js
+  s_7c0919758d6b27::t_8845b56edd20c0 24-25
+web/src/reviewwalkthrough.js
+  s_7c0919758d6b27::t_9cb5065880a48d 1-635
+web/src/shortcuts.js
+  s_7c0919758d6b27::t_0363f519256c58 12,134
+web/src/thread.js
+  s_7c0919758d6b27::t_da16c19050f4c7 7-8,370-394,410-413,631,669,743-758,863,866-870,877,883
+web/style.css
+  s_7c0919758d6b27::t_6769aca1aa69b4 724,726-727,736-752,791,809-820,824,827-829,3893-3902,3909,3916-4517
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f05907d491d4391ff551a4fc45c9eecf03829e08",
+  "prompts": {},
+  "sessions": {
+    "s_7c0919758d6b27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_7c0919758d6b27",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
