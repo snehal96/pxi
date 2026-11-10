@@ -10,6 +10,7 @@ import { showToast } from './ui.js';
 import { openFile } from './tabs.js';
 import { showTerminal } from './pxi-term.js';
 import { openClaude, newWorktreeDialog, shipWorktree } from './pxi-claude.js';
+import { openWorktreeWalkthrough } from './pxi-walkthrough.js';
 
 const POLL_MS = 3000;
 const ROW_CAP = 300;
@@ -57,6 +58,7 @@ const ICON = {
   ship: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M4 7l4-4 4 4"/><path d="M3 13.5h10"/></svg>',
   claude: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 2v12M2 8h12M3.8 3.8l8.4 8.4M12.2 3.8l-8.4 8.4"/></svg>',
   term: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6l2 2-2 2M8.5 10.5h3"/></svg>',
+  walk: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5L3.5 9H8l-1 5.5L12.5 7H8z"/></svg>',
   folder: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M1.5 4.5v8h13v-7h-6.5l-1.5-1.5h-5z"/></svg>',
 };
 
@@ -216,6 +218,7 @@ function wtCard(w) {
       '<button class="wt-act" data-wt-term="' + esc(w.name) + '" title="Open a terminal in ' + esc(w.name) + '">' + ICON.term + '</button>' +
       ((w.files.length || w.ahead) ? '<button class="wt-act" data-ship="' + esc(w.name) + '" title="Ship: ask Claude to commit, push and open a PR">' + ICON.ship + '</button>' : '') +
       (w.files.length ? '<button class="wt-act" data-review="' + esc(w.name) + '" title="Review every change in ' + esc(w.name) + '">' + ICON.review + '</button>' : '') +
+      (w.files.length ? '<button class="wt-act" data-walk="' + esc(w.name) + '" title="Walkthrough: early exits, error paths and removed checks in ' + esc(w.name) + '">' + ICON.walk + '</button>' : '') +
       '</div>';
     if (open) {
       html += '<div class="wt-files">';
@@ -360,6 +363,12 @@ function onClick(e) {
   if (termBtn) {
     e.stopPropagation();
     showTerminal({ cwd: '@wt/' + termBtn.dataset.wtTerm });
+    return;
+  }
+  const walkBtn = e.target.closest('[data-walk]');
+  if (walkBtn) {
+    e.stopPropagation();
+    openWorktreeWalkthrough(walkBtn.dataset.walk);
     return;
   }
   const rev = e.target.closest('[data-review]');

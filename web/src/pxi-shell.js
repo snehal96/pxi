@@ -9,6 +9,7 @@ import { layout, render } from './renderer.js';
 import { setSidebarMode, hasGitView } from './tree.js';
 import { showRightInspector, hideRightInspector } from './inspector.js';
 import { showThreadsSidebar, toggleThreadsSidebar } from './thread.js';
+import { initPxiWalkthrough } from './pxi-walkthrough.js';
 import { openSettings } from './settings.js';
 import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
@@ -235,6 +236,7 @@ export function initShell() {
   // Closing the tip popup (X) means "stop popping up", remembered in settings.json
   // for every window and workspace. Tips stay in the right bar's Tips view.
   initClaude();
+  initPxiWalkthrough();
   $('#tip-widget-close')?.addEventListener('click', () => setTipsPermanentlyHidden(true));
 
   abBar = document.createElement('nav');

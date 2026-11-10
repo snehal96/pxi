@@ -759,6 +759,9 @@ func pluralS(n int) string {
 
 // extractCodeUnderstanding parses diff hunks to surface guard bailouts, edge cases, and core logic.
 func extractCodeUnderstanding(rel string, hunks []render.DiffHunk) *ReviewUnderstanding {
+	if u := pxiExtractUnderstanding(rel, hunks); u != nil { // fork: fork_understanding.go
+		return u
+	}
 	und := &ReviewUnderstanding{
 		FastReturns: []CodeInsightItem{},
 		EdgeCases:   []CodeInsightItem{},
@@ -929,6 +932,10 @@ func extractCodeUnderstanding(rel string, hunks []render.DiffHunk) *ReviewUnders
 func (s *Server) handleReviewWalkthrough(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		fail(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	if name := r.URL.Query().Get("wt"); name != "" { // fork: fork_understanding.go, one worktree's changes
+		s.handlePxiWorktreeWalkthrough(w, name)
 		return
 	}
 

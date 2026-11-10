@@ -1,6 +1,7 @@
 // web/src/reviewwalkthrough.js
 import { $, $$, esc, api } from './state.js';
 import { showToast } from './ui.js';
+import { pxiWalkthroughParams } from './pxi-walkthrough.js';
 
 let walkthroughData = null;
 let activeFilter = 'all'; // 'all' | 'fastReturns' | 'edgeCases' | 'coreLogic'
@@ -9,6 +10,8 @@ let viewedFiles = new Set();
 let observer = null;
 let isProgrammaticScroll = false;
 let scrollTimeout = null;
+
+export function pxiDropWalkthrough() { walkthroughData = null; } // fork: pxi-walkthrough.js frees it when the review closes
 
 export function getWalkthroughSubTab() {
   return activeSubTab;
@@ -95,7 +98,7 @@ export async function loadReviewWalkthrough(showFeedback = false) {
   }
 
   try {
-    const data = await api('/api/review/walkthrough');
+    const data = await api('/api/review/walkthrough', pxiWalkthroughParams()); // fork: pxi-walkthrough.js (a worktree's changes)
     walkthroughData = data;
     renderWalkthroughView(data);
     if (showFeedback && showToast) {
