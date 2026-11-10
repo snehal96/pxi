@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -215,5 +216,45 @@ func TestWorktreeFilesAreReadOnly(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(a, "new2.go")); err == nil {
 		t.Fatal("file created in worktree")
+	}
+}
+
+// A worktree whose folder lost most of its files (an agent's cleaned-up scratch
+// copy) is listed as emptied, without its "deleted" files and out of overlaps.
+func TestWorktreeEmptiedFolderIsNotAnOverlap(t *testing.T) {
+	root, _, _ := wtRepo(t)
+	dir := filepath.Dir(root)
+	for i := 0; i < wtEmptiedMin; i++ {
+		os.WriteFile(filepath.Join(root, "f"+strconv.Itoa(i)+".txt"), []byte("x\n"), 0o644)
+	}
+	gitTestRun(t, root, "add", "-A")
+	gitTestRun(t, root, "commit", "-qm", "many")
+	scratch := filepath.Join(dir, "scratch")
+	gitTestRun(t, root, "worktree", "add", "-q", "--detach", scratch)
+	ents, _ := os.ReadDir(scratch)
+	for _, e := range ents {
+		if e.Name() != ".git" {
+			os.RemoveAll(filepath.Join(scratch, e.Name()))
+		}
+	}
+	s := wtServer(t, root)
+	_, m := wtGet(t, s, "/api/worktrees", url.Values{})
+	for _, x := range m["worktrees"].([]any) {
+		w := x.(map[string]any)
+		switch w["name"] {
+		case "scratch":
+			if w["missing"] == nil || len(w["files"].([]any)) != 0 {
+				t.Errorf("scratch: want emptied with no files, got missing=%v files=%d", w["missing"], len(w["files"].([]any)))
+			}
+		case "wt-a", "wt-b":
+			for _, f := range w["files"].([]any) {
+				ov, _ := f.(map[string]any)["overlap"].([]any)
+				for _, n := range ov {
+					if n == "scratch" {
+						t.Errorf("%v overlaps the emptied worktree: %v", w["name"], f)
+					}
+				}
+			}
+		}
 	}
 }

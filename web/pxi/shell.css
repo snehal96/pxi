@@ -106,7 +106,10 @@ body.pxi-view-worktrees #side > :not(#wt-view) { display: none !important; }
   margin: 4px 8px 8px; padding: 6px 0; border: 1px solid color-mix(in srgb, var(--pxi-warn-) 45%, transparent);
   border-radius: 4px; background: color-mix(in srgb, var(--pxi-warn-) 8%, transparent);
 }
-.wt-overlaps-head { display: flex; align-items: center; gap: 6px; padding: 0 10px 4px; color: var(--pxi-warn-); font-size: 12px; font-weight: 600; }
+.wt-overlaps-head { display: flex; align-items: center; gap: 6px; padding: 0 10px 0 6px; color: var(--pxi-warn-); font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+.wt-overlaps.open .wt-overlaps-head { padding-bottom: 4px; }
+.wt-overlaps .wt-chev { color: var(--pxi-warn-); }
+.wt-overlaps.open .wt-chev { transform: rotate(90deg); }
 .wt-overlaps-head svg { flex: none; }
 .wt-ov-row { display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px 0 29px; font-size: 12.5px; white-space: nowrap; overflow: hidden; }
 .wt-ov-names { margin-left: auto; display: flex; gap: 4px; flex: none; }
@@ -121,7 +124,7 @@ body.pxi-view-worktrees #side > :not(#wt-view) { display: none !important; }
 .wt-chev { flex: none; color: var(--dim); transition: transform .12s ease; }
 .wt-card.open .wt-chev { transform: rotate(90deg); }
 .wt-icon { display: grid; place-items: center; color: var(--dim); }
-.wt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-shrink: 0; max-width: 60%; } /* the branch gives way first */
 .wt-branch { font-weight: 400; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .wt-head .grow, .wt-file .grow { flex: 1; min-width: 4px; }
 .wt-meta { display: flex; align-items: center; gap: 8px; flex: none; font-weight: 400; font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
@@ -447,3 +450,6 @@ body.pxi-shell #pxi-html-btn.on { background: var(--bg4); color: var(--fg); }
 #pxi-newwt button { border: 1px solid var(--line); border-radius: 4px; padding: 5px 12px; font: 12.5px var(--ui); cursor: pointer; background: var(--bg3); color: var(--fg); }
 #pxi-newwt .nw-ok { background: var(--pxi-button-bg-); color: var(--pxi-button-fg-); border-color: transparent; }
 #pxi-newwt .nw-ok:disabled { opacity: .6; }
+
+.wt-emptied { white-space: normal; line-height: 1.45; height: auto; padding-top: 2px; padding-bottom: 4px; }
+.wt-emptied code { font-family: var(--mono); font-size: 11px; word-break: break-all; user-select: text; }

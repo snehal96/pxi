@@ -13,6 +13,7 @@ import { openClaude, newWorktreeDialog, shipWorktree } from './pxi-claude.js';
 const POLL_MS = 3000;
 const ROW_CAP = 300;
 const COLLAPSED_KEY = 'pxi.wt.collapsed';
+const OVERLAPS_KEY = '/overlaps'; // in the collapsed set; no worktree name has a '/'
 
 const STATUS = {
   M: ['git-M', 'Modified'], A: ['git-A', 'Added'], D: ['git-D', 'Deleted'], U: ['git-untracked', 'Untracked'],
@@ -151,9 +152,11 @@ function renderWorktrees() {
 
   let html = '';
   if (overlaps.size) {
-    html += '<div class="wt-overlaps"><div class="wt-overlaps-head">' + ICON.warn +
+    const ovOpen = !wtCollapsed.has(OVERLAPS_KEY);
+    html += '<div class="wt-overlaps' + (ovOpen ? ' open' : '') + '"><div class="wt-overlaps-head" data-toggle="' + OVERLAPS_KEY + '" title="' + (ovOpen ? 'Hide' : 'Show') + ' the files">' +
+      ICON.chevron + ICON.warn +
       '<span>' + overlaps.size + ' file' + (overlaps.size > 1 ? 's' : '') + ' changed in more than one worktree</span></div>';
-    for (const [path, names] of overlaps) {
+    if (ovOpen) for (const [path, names] of overlaps) {
       const [dir, name] = splitPath(path);
       html += '<div class="wt-ov-row" title="' + esc(path) + '"><span class="wt-fname">' + esc(name) + '</span>' +
         (dir ? '<span class="wt-fdir">' + esc(dir) + '</span>' : '') +
@@ -166,9 +169,10 @@ function renderWorktrees() {
     const open = !wtCollapsed.has(w.name);
     const ov = w.files.filter(f => f.overlap?.length).length;
     const meta = [];
+    if (w.missing) meta.push('<span class="wt-warn" title="' + w.missing + ' of its ' + w.tracked + ' tracked files are gone from its folder">folder emptied</span>');
     if (w.ahead) meta.push('<span title="Commits since it branched off ' + esc(w.baseRef || 'the base') + '">↑' + w.ahead + '</span>');
-    meta.push('<span title="Files changed since it branched off">' + w.files.length + ' file' + (w.files.length === 1 ? '' : 's') + '</span>');
-    if (w.dirty) meta.push('<span class="wt-dirty" title="Uncommitted files">●' + w.dirty + '</span>');
+    if (!w.missing) meta.push('<span title="Files changed since it branched off">' + w.files.length + ' file' + (w.files.length === 1 ? '' : 's') + '</span>');
+    if (w.dirty && !w.missing) meta.push('<span class="wt-dirty" title="Uncommitted files">●' + w.dirty + '</span>');
     if (ov) meta.push('<span class="wt-warn" title="Files another worktree also changes">' + ICON.warn + ov + '</span>');
 
     html += '<div class="wt-card' + (open ? ' open' : '') + '" data-wt="' + esc(w.name) + '">' +
@@ -185,7 +189,11 @@ function renderWorktrees() {
     if (open) {
       html += '<div class="wt-files">';
       if (w.error) html += '<div class="wt-faint wt-err">' + esc(w.error) + '</div>';
-      if (!w.files.length) html += '<div class="wt-faint wt-none">No changes yet</div>';
+      if (w.missing) {
+        html += '<div class="wt-faint wt-none wt-emptied">Its folder is missing ' + w.missing + ' of ' + w.tracked +
+          ' tracked files, so pxi does not list them as changes or count them as overlaps. Often a scratch copy an agent cleaned up. ' +
+          'If you no longer need it: <code>git worktree remove --force ' + esc(w.path) + '</code></div>';
+      } else if (!w.files.length) html += '<div class="wt-faint wt-none">No changes yet</div>';
       for (const f of w.files.slice(0, ROW_CAP)) {
         const [dir, name] = splitPath(f.path);
         const [cls, label] = STATUS[f.status] || STATUS.M;

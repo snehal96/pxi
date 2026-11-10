@@ -52,6 +52,8 @@ type worktree struct {
 	Dirty    int      `json:"dirty"` // uncommitted files (staged, unstaged, untracked)
 	Locked   bool     `json:"locked,omitempty"`
 	Prunable bool     `json:"prunable,omitempty"` // folder is gone; `git worktree prune` would drop it
+	Missing  int      `json:"missing,omitempty"`  // tracked files gone from the folder, when that is most of them
+	Tracked  int      `json:"tracked,omitempty"`  // tracked files, set with Missing
 	Files    []wtFile `json:"files"`
 	Error    string   `json:"error,omitempty"`
 }
@@ -69,6 +71,10 @@ type wtRegistry struct {
 // Agents change files continuously; two seconds keeps a 10-worktree repo at a
 // handful of git calls per second at most.
 const wtTTL = 2 * time.Second
+
+// wtEmptiedMin: deleted files from which a worktree may count as emptied (and
+// then only when they are at least half of its tracked files).
+const wtEmptiedMin = 50
 
 func (s *Server) worktrees() *wtRegistry {
 	s.wtOnce.Do(func() { s.wt = &wtRegistry{root: s.ix.Root()} })
@@ -275,10 +281,27 @@ func fillWorktreeChanges(w *worktree) {
 			}
 		}
 	}
+	missing := 0
 	if out, err := gitOut(w.Path, "status", "--porcelain", "-z"); err == nil {
 		for _, e := range strings.Split(out, "\x00") {
 			if len(e) > 3 {
 				w.Dirty++
+				if e[1] == 'D' {
+					missing++
+				}
+			}
+		}
+	}
+	// A folder that lost most of its files (an agent's scratch worktree that was
+	// cleaned up, a half-deleted copy) is not a change anyone made: list it
+	// without its thousands of "deleted" files, and keep it out of overlaps.
+	if missing >= wtEmptiedMin {
+		if out, err := gitOut(w.Path, "ls-files", "-z"); err == nil {
+			tracked := strings.Count(out, "\x00")
+			if missing*2 >= tracked {
+				w.Missing, w.Tracked = missing, tracked
+				w.Files = []wtFile{}
+				return
 			}
 		}
 	}
