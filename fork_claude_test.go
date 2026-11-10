@@ -172,3 +172,25 @@ func TestPxiClaudeTranscript(t *testing.T) {
 		t.Errorf("project dir: %s", got)
 	}
 }
+
+// Threads and edits that run the `claude` harness use the repo's Claude account.
+func TestPxiHarnessEnvUsesRepoAccount(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	os.WriteFile(filepath.Join(home, ".claude.json"), []byte(`{"oauthAccount":{"emailAddress":"me@home"}}`), 0o600)
+	os.MkdirAll(filepath.Join(home, ".claude-work"), 0o700)
+	os.WriteFile(filepath.Join(home, ".claude-work", ".claude.json"), []byte(`{"oauthAccount":{"emailAddress":"me@work"}}`), 0o600)
+	root := t.TempDir()
+	if env := pxiHarnessEnv("claude", root); env != nil {
+		t.Errorf("no choice yet: the default account, got %v", env)
+	}
+	if err := pxiClaudeChoose(root, ".claude-work"); err != nil {
+		t.Fatal(err)
+	}
+	if env := pxiHarnessEnv("claude", root); len(env) != 1 || env[0] != "CLAUDE_CONFIG_DIR="+filepath.Join(home, ".claude-work") {
+		t.Errorf("chosen account: %v", env)
+	}
+	if env := pxiHarnessEnv("codex", root); env != nil {
+		t.Errorf("other harnesses untouched: %v", env)
+	}
+}

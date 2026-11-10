@@ -462,6 +462,7 @@ func (m *agentManager) run(ctx context.Context, cancel context.CancelFunc, job *
 
 	res := harness.Run(ctx, harness.Command{Name: job.Harness, Args: template}, prompt, harness.Options{
 		Dir:      m.root,
+		Env:      pxiHarnessEnv(job.Harness, m.root), // fork: fork_claude.go, the repo's Claude account
 		Timeout:  agentTimeout,
 		LogBytes: agentLogBytes,
 		Stdout:   stdoutStreamer,
@@ -1590,6 +1591,7 @@ func (tm *threadManager) runTurn(ctx context.Context, cancel context.CancelFunc,
 
 	res := harness.Run(ctx, harness.Command{Name: r.name, Args: argv, Model: r.model}, prompt, harness.Options{
 		Dir:      tm.root,
+		Env:      pxiHarnessEnv(r.name, tm.root), // fork: fork_claude.go, the repo's Claude account
 		Timeout:  threadTurnTimeout,
 		LogBytes: agentLogBytes,
 		Stdout:   sink,

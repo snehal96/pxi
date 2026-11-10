@@ -10,3 +10,6 @@ func (s *Server) registerPxiClaudeRoutes() {}
 
 // No IDE bridge without the Claude panel.
 func pxiIDEStop() {}
+
+// pxiHarnessEnv: Claude accounts are not looked up on Windows.
+func pxiHarnessEnv(name, root string) []string { return nil }
