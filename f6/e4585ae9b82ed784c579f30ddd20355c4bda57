@@ -1,0 +1,49 @@
+agent.go
+  s_432ff278a157b8::t_366fca159137b5 602-603,609-627
+docs/internals/file-reload-and-updates.md
+  s_432ff278a157b8::t_f3740c5a2983a3 204,214
+docs/internals/git-integration.md
+  s_432ff278a157b8::t_06c351e2e7d206 149-150
+fork_secrets.go
+  s_432ff278a157b8::t_f0798e3210bf53 1-84
+fork_secrets_test.go
+  s_432ff278a157b8::t_53d62c76a46bca 1-51
+git_test.go
+  s_432ff278a157b8::t_17b5fcf9bd259d 409-445
+index.go
+  s_432ff278a157b8::t_bfe11ff7651640 56,532,540,707-709,722,797
+internal/render/fork_frontmatter.go
+  s_432ff278a157b8::t_897ddde200261c 1-48
+internal/render/fork_frontmatter_test.go
+  s_432ff278a157b8::t_e324cf53742dc2 1-30
+internal/render/render.go
+  s_432ff278a157b8::t_b737eaeb8acb9f 815
+server.go
+  s_432ff278a157b8::t_3ec867d5fcf004 1371,2690,2693,2721,2727,2741-2742
+web/src/gitpanel.js
+  s_432ff278a157b8::t_746ef19e6ac3a5 829-830
+web/src/gitstream.js
+  s_432ff278a157b8::t_05bf37e42aec8e 189-190,193
+web/src/outline.js
+  s_432ff278a157b8::t_924197cf7d8387 8-14,39
+web/src/panels.js
+  s_432ff278a157b8::t_a1a1aec741a6ac 6,31,33-35
+web/src/tabs.js
+  s_432ff278a157b8::t_f45679c89dc317 9,136,213,315,332,391,579
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6e4585ae9b82ed784c579f30ddd20355c4bda57",
+  "prompts": {},
+  "sessions": {
+    "s_432ff278a157b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_432ff278a157b8",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
