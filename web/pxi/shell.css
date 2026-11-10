@@ -466,3 +466,6 @@ body.pxi-shell #pxi-html-btn.on { background: var(--bg4); color: var(--fg); }
 .wt-hidden-foot { padding: 6px 10px 10px 28px; font-size: 12px; }
 .wt-link { color: var(--accent-fg); font-size: 12px; }
 .wt-link:hover { text-decoration: underline; }
+
+/* px0's top-bar Threads button: pxi has it in the right activity bar. */
+body.pxi-shell #btn-top-threads { display: none; }

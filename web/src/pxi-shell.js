@@ -8,6 +8,7 @@ import { $, S, MOD, doc_ } from './state.js';
 import { layout, render } from './renderer.js';
 import { setSidebarMode, hasGitView } from './tree.js';
 import { showRightInspector, hideRightInspector } from './inspector.js';
+import { showThreadsSidebar, toggleThreadsSidebar } from './thread.js';
 import { openSettings } from './settings.js';
 import { on } from './bus.js';
 import { setDiffMode, layoutPref } from './diff.js';
@@ -172,7 +173,12 @@ function pxiCompactDiffControls() {
 
 let abRight = null;
 
+// Threads has its own sidebar (px0's #threads-side); the rest are inspector panes.
+const threadsOpen = () => !document.body.classList.contains('threads-hidden');
+const threadsAvailable = () => !$('#btn-top-threads')?.hasAttribute('hidden');
+
 function rightPane() {
+  if (threadsOpen()) return 'threads';
   if (document.body.classList.contains('right-hidden')) return '';
   return $('.inspector-tab.active')?.dataset.itab || '';
 }
@@ -183,7 +189,7 @@ function markRight() {
   for (const b of abRight.querySelectorAll('.ab-item[data-rb]')) {
     b.classList.toggle('active', b.dataset.rb === open);
     const tab = $('.inspector-tab[data-itab="' + b.dataset.rb + '"]');
-    b.hidden = !!tab?.hidden; // Threads needs a coding harness
+    b.hidden = b.dataset.rb === 'threads' ? !threadsAvailable() : !!tab?.hidden; // Threads needs a coding harness
   }
   try { localStorage.setItem(RIGHT_KEY, open); } catch {}
 }
@@ -199,20 +205,22 @@ function initRightBar() {
   abRight.addEventListener('click', e => {
     const b = e.target.closest('[data-rb]');
     if (!b) return;
-    if (rightPane() === b.dataset.rb) hideRightInspector();
+    if (b.dataset.rb === 'threads') toggleThreadsSidebar();
+    else if (rightPane() === b.dataset.rb) hideRightInspector();
     else showRightInspector(b.dataset.rb);
     markRight();
   });
   // px0 opens panes itself too (⇧F12, ⌥T, ⌘⇧F, the palette).
   const watch = new MutationObserver(markRight);
   watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  for (const t of document.querySelectorAll('.inspector-tab')) watch.observe(t, { attributes: true, attributeFilter: ['class', 'hidden'] });
+  for (const t of document.querySelectorAll('.inspector-tab, #btn-top-threads')) watch.observe(t, { attributes: true, attributeFilter: ['class', 'hidden'] });
 
   // Closed unless it was open last time (px0 opens it on every load).
   let saved = '';
   try { saved = localStorage.getItem(RIGHT_KEY) || ''; } catch {}
   const tab = saved && $('.inspector-tab[data-itab="' + saved + '"]');
-  if (tab && !tab.hidden) showRightInspector(saved);
+  if (saved === 'threads' && threadsAvailable()) showThreadsSidebar();
+  else if (tab && !tab.hidden) showRightInspector(saved);
   else hideRightInspector();
   markRight();
 }
