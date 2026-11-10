@@ -8,6 +8,7 @@ import { setAgentHandler, hideSelectionBar } from './selbar.js';
 import { render } from './renderer.js';
 import { syncDiffAgentTargets } from './diff.js';
 import { emit } from './bus.js';
+import { pxiClaudeAccountOptions } from './pxi-harness.js';
 
 /* px0 does not author edits. Each box composes an instruction and the range it
    is anchored to, hands both to a coding harness on this machine, and reloads
@@ -80,6 +81,7 @@ export function applyAgentMeta() {
   for (const picker of extraPickers) updateSessionMeta(picker);
   syncBatchMeta();
   syncGitPanelHarnessMeta();
+  pxiClaudeAccountOptions(); // fork: pxi-harness.js, one entry per Claude account
 }
 
 function updateSessionMeta(session) {

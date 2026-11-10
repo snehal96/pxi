@@ -12,4 +12,4 @@ func (s *Server) registerPxiClaudeRoutes() {}
 func pxiIDEStop() {}
 
 // pxiHarnessEnv: Claude accounts are not looked up on Windows.
-func pxiHarnessEnv(name, root string) []string { return nil }
+func pxiHarnessEnv(name, root, tid string) []string { return nil }

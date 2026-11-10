@@ -609,21 +609,6 @@ func pxiClaudeEnv(acc pxiClaudeAccount) []string {
 	return env
 }
 
-// pxiHarnessEnv: px0's agent harnesses (Threads, inline and batch edits) run
-// `claude` as the Claude account chosen for this repository in the Claude tab,
-// so a thread uses the same subscription as the Claude tab and not whichever
-// account ~/.claude happens to hold. Other harnesses are left alone.
-func pxiHarnessEnv(name, root string) []string {
-	if name != "claude" {
-		return nil
-	}
-	acc, ok := pxiClaudeAccountFor(root, "")
-	if !ok || acc.ID == ".claude" {
-		return nil
-	}
-	return []string{"CLAUDE_CONFIG_DIR=" + acc.dir}
-}
-
 var pxiClaudeModes = map[string]bool{"default": true, "acceptEdits": true, "plan": true, "auto": true}
 var pxiClaudeModelRe = regexp.MustCompile(`^[a-zA-Z0-9._\-\[\]]{0,64}$`)
 
@@ -1009,6 +994,7 @@ func (s *Server) registerPxiClaudeRoutes() {
 	h("/api/pxi/procs", s.handlePxiProcs)
 	h("/api/pxi/procs/stop", s.handlePxiProcsStop)
 	h("/api/pxi/ide/mention", s.handlePxiIDEMentionReq)
+	h("/api/pxi/claude/harness-accounts", s.handlePxiHarnessAccounts) // fork_claude_harness.go
 }
 
 func (s *Server) handlePxiClaudeAccounts(w http.ResponseWriter, r *http.Request) {
