@@ -1,0 +1,19 @@
+web/pxi/shell.css
+  s_bd2c90759bfbf7::t_5860940cd4713b 470-471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c1afbb6647bd56ef00e4a99b25b8a9d5a0ae3e28",
+  "prompts": {},
+  "sessions": {
+    "s_bd2c90759bfbf7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_bd2c90759bfbf7",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
