@@ -62,6 +62,11 @@ const ICON = {
   folder: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M1.5 4.5v8h13v-7h-6.5l-1.5-1.5h-5z"/></svg>',
 };
 
+/** Whether name is the open checkout's own entry in the list. */
+export function worktreeIsMain(name) {
+  return !!wtData?.worktrees.some(w => w.main && w.name === name);
+}
+
 export function worktreeCount() {
   return wtData ? wtData.worktrees.filter(w => !w.prunable && !w.main && !wtHidden.has(w.name)).length : 0;
 }

@@ -7,6 +7,7 @@ import { syncPreview, previewing, previewTopLine, previewKind } from './markdown
 import { syncDiffView } from './diff.js';
 import { triggerRefresh } from './gitstream.js';
 import { updateStatus } from './status.js';
+import { pxiEditRedirect } from './pxi-edit.js';
 
 export const editViewEl = $('#editview');
 export const editGutterEl = $('#editview-gutter');
@@ -225,6 +226,7 @@ export function syncEditUI() {
 
 export async function enterEditMode(line) {
   const d = doc_();
+  if (pxiEditRedirect(d, line)) return; // fork: pxi-edit.js (files opened from the Worktrees view)
   if (!d || d.isImage || d.deleted || d.diffRef) return;
 
   if (d.total > 10000 || (d.size && d.size > 1024 * 1024)) {

@@ -473,3 +473,7 @@ body.pxi-shell #btn-top-threads, body.pxi-shell #btn-open-right { display: none;
 /* px0's walkthrough cards sit in a fixed-height flex column: without this they
    shrink to a few pixels each once there are more than fit (px0 0.1.21). */
 .review-file-card { flex: none; }
+
+/* px0 sizes the review screen as 100vh - 28px; in pxi the 30px top bar and the
+   22px status bar both sit inside that height, so it ran under the status bar. */
+body.pxi-shell.in-review-mode .review-view { height: calc(100vh - 30px - 22px); flex: none; }
