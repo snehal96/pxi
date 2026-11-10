@@ -1,0 +1,45 @@
+fork_checkpoint.go
+  s_ee37f451dd2688::t_04613ccd8e7c59 1-172
+fork_checkpoint_test.go
+  s_ee37f451dd2688::t_03312ae231b17f 1-66
+fork_git.go
+  s_ee37f451dd2688::t_5ffc0edad8822d 34
+macos/Sources/TitleBar.swift
+  s_ee37f451dd2688::t_db7eaae2031d82 109-112
+web/pxi/shell.css
+  s_ee37f451dd2688::t_9d08adef87cbdc 487-510
+web/src/history.js
+  s_ee37f451dd2688::t_df25f324c4faa8 2,14-21
+web/src/palette.js
+  s_ee37f451dd2688::t_53961c237bc2e0 2,187-196,203-206,210-233
+web/src/pxi-checkpoint.js
+  s_ee37f451dd2688::t_275843c3a9986a 1-126
+web/src/pxi-native.js
+  s_ee37f451dd2688::t_7523b3b95efeb5 31-33,38
+web/src/pxi-shell.js
+  s_ee37f451dd2688::t_5abaaa7cad162c 21-22,307-308
+web/src/pxi-theme.js
+  s_ee37f451dd2688::t_5e7049bb1df408 1-76
+web/src/state.js
+  s_ee37f451dd2688::t_2fad77e69790d9 92,204
+web/src/tabs.js
+  s_ee37f451dd2688::t_c57b270a50f30b 7,191,581
+web/src/theme.js
+  s_ee37f451dd2688::t_56163dd7af7a5f 10-11,57,74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c24697d93235553a7f504c1516ddf6516e44cbf",
+  "prompts": {},
+  "sessions": {
+    "s_ee37f451dd2688": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_ee37f451dd2688",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
