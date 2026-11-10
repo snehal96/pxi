@@ -1,0 +1,21 @@
+macos/Sources/TitleBar.swift
+  s_2cdcd9308cc671::t_d1d4fb05218e33 145-146
+web/src/pxi-palette.js
+  s_2cdcd9308cc671::t_12610356a6e4fb 8,42-49,51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "530af449b2cf187e0b2bdaf7e6cd98c99f947367",
+  "prompts": {},
+  "sessions": {
+    "s_2cdcd9308cc671": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_2cdcd9308cc671",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
