@@ -101,6 +101,35 @@ pxi https://github.com/owner/repo/pull/123
 Open folders with **File → Open Folder…** (`⌘O`), by dropping one on the Dock icon,
 or `open -a pxi ~/code/project`. Settings live in `~/.pxi/settings.json`.
 
+## FAQ
+
+**Do I need an API key?**
+No. pxi runs the `claude` command you already use, signed in with your own Claude
+subscription. If you have several Claude accounts, each logged-in one shows up as a
+choice.
+
+**Does pxi send my code anywhere?**
+Not by itself. Its server listens on `127.0.0.1` only, telemetry is off in pxi's builds,
+and the one outside request it makes at start is for the code font (Google Fonts).
+Code leaves your Mac only through things you start: Claude when you message it, your git
+host when you push or open a pull request, and the SSH host you connect to in Remote.
+
+**Why does macOS say it can't verify the developer?**
+The app is signed but not yet notarized by Apple. Installing with the `curl` command
+usually avoids the prompt; with the zip, right-click pxi.app and choose **Open** the
+first time.
+
+**Does it work without Claude?**
+Yes. Worktrees, diffs, the review checkpoint, Source Control, search, the terminal and
+Remote all work on their own. Claude sessions, Threads and Ship need `claude` installed;
+Threads can also use Codex, Gemini CLI, Cursor Agent and others.
+
+**How is it different from VS Code or Cursor?**
+They are editors that also show diffs. pxi starts from reviewing: every worktree's
+changes and their overlaps in one view, a checkpoint for what changed since you last
+looked, and review comments that go straight back to the agent that wrote the code. It
+is also much lighter: one Go binary in a Swift window, no Electron.
+
 ## Security
 
 pxi listens on `127.0.0.1` only, refuses requests addressed to another host name
