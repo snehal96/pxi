@@ -445,6 +445,9 @@ func (ix *Index) Build() {
 				if !(isDir && vcsDirs[name]) {
 					kids = append(kids, Node{Name: name, Path: childRel, Dir: isDir, Ignored: true})
 				}
+				if f, ok := pxiIgnoredEntry(e, childRel); ok { // fork: fork_index.go, .env and local config stay findable
+					localFiles = append(localFiles, f)
+				}
 				continue
 			}
 			if isDir {
@@ -946,7 +949,7 @@ func (ix *Index) TouchPath(rel string) {
 		}
 		return
 	}
-	if !isDir && !ignored {
+	if !isDir && (!ignored || pxiIndexIgnoredFile(name)) { // fork: fork_index.go
 		idx := sort.Search(len(ix.files), func(i int) bool { return ix.files[i].Path >= rel })
 		entry := FileEntry{
 			Path:      rel,
