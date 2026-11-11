@@ -480,7 +480,7 @@ func (s *Server) safePath(rel string) (string, string, bool) {
 	if abs != s.ix.Root() && !strings.HasPrefix(abs, s.ix.Root()+string(filepath.Separator)) {
 		return "", "", false
 	}
-	if isWTPath(rel) || !withinReal(s.ix.Root(), abs) { // fork: worktree files are read-only (worktrees.go); symlink escape (fork_security.go)
+	if isWTPath(rel) || pxiIsRemotePath(rel) || !withinReal(s.ix.Root(), abs) { // fork: worktree and SSH files are read-only (worktrees.go, fork_remote.go); symlink escape (fork_security.go)
 		return "", "", false
 	}
 	return abs, filepath.ToSlash(clean), true
@@ -1272,6 +1272,10 @@ func (s *Server) handleFile(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	if isWTPath(q.Get("path")) { // fork: worktrees.go
 		s.handleWTFile(w, r)
+		return
+	}
+	if pxiIsRemotePath(q.Get("path")) { // fork: fork_remote.go, a file on an SSH remote (read-only)
+		s.handlePxiRemoteFile(w, r)
 		return
 	}
 	abs, rel, ok := s.resolvePath(q.Get("path"))

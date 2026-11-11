@@ -11,6 +11,10 @@ import { worktreeIsMain } from './pxi-worktrees.js';
 
 /** Returns true when it handled the edit request for d. */
 export function pxiEditRedirect(d, line) {
+  if (d?.path?.startsWith('@ssh/')) {
+    showToast('!', 'Files on an SSH remote are read-only in pxi.', 4000);
+    return true;
+  }
   if (!d?.path?.startsWith('@wt/')) return false;
   const rest = d.path.slice(4);
   const cut = rest.indexOf('/');

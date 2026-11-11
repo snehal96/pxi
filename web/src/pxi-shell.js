@@ -20,6 +20,7 @@ import { initTerminal, toggleTerminal, TERM_STATUS_ICON } from './pxi-term.js';
 import { initPxiPalette } from './pxi-palette.js';
 import { initPxiTheme } from './pxi-theme.js';
 import { initPxiCheckpoint } from './pxi-checkpoint.js';
+import { setRemoteVisible } from './pxi-remote.js';
 import { setTipsPermanentlyHidden } from './tips.js';
 import { initClaude, openClaude } from './pxi-claude.js';
 
@@ -28,6 +29,7 @@ const VIEW_KEY = 'pxi.sideView';
 const ICONS = {
   explorer: '<path d="M9 3.5H5.5a1.5 1.5 0 0 0-1.5 1.5v14a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 16 19v-1.5"/><path d="M13 3.5h3.5L20 7v9a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 11 16V5a1.5 1.5 0 0 1 1.5-1.5H13z"/><path d="M16.5 3.5V7H20"/>',
   scm: '<circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="8.5" r="2"/><path d="M6.5 7.5v9M17.5 10.5c0 4-4.5 4.5-11 6"/>',
+  remote: '<path d="M4.5 4h15A1.5 1.5 0 0 1 21 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 14.5v-9A1.5 1.5 0 0 1 4.5 4zM8 20h8M12 16v4M7.5 8.5l2 1.5-2 1.5M11.5 12H15"/>',
   worktrees: '<circle cx="5" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="15" r="2"/><path d="M5 7v10M17 7c-6 0-8 1-10.2 3.5M17 15c-6 0-8-1-10.2-3.5"/>',
   refs: '<path d="M4 6h9M4 12h6M4 18h9"/><path d="M16 9l4 3-4 3"/><path d="M20 12h-6"/>',
   symbols: '<path d="M8 4H6.5A1.5 1.5 0 0 0 5 5.5v4L3.5 12 5 14.5v4A1.5 1.5 0 0 0 6.5 20H8M16 4h1.5A1.5 1.5 0 0 1 19 5.5v4l1.5 2.5-1.5 2.5v4a1.5 1.5 0 0 1-1.5 1.5H16"/>',
@@ -46,6 +48,7 @@ const ITEMS = [
   { id: 'explorer', title: 'Explorer', view: true },
   { id: 'scm', title: 'Source Control', view: true },
   { id: 'worktrees', title: 'Worktrees', view: true },
+  { id: 'remote', title: 'Remote (SSH): browse files on another machine', view: true },
   { id: 'claude', title: `Claude: sessions in this repo and its worktrees (${mod}Esc)` },
   { id: 'review', title: `AI Review: run your agent through review stages (${mod}⇧V)` },
 ];
@@ -104,8 +107,9 @@ async function showView(view, { toggle = false } = {}) {
   }
   abCurrent = view;
   try { localStorage.setItem(VIEW_KEY, view); } catch {}
-  for (const v of ['explorer', 'scm', 'worktrees']) document.body.classList.toggle('pxi-view-' + v, view === v);
+  for (const v of ['explorer', 'scm', 'worktrees', 'remote']) document.body.classList.toggle('pxi-view-' + v, view === v);
   setWorktreesVisible(view === 'worktrees');
+  setRemoteVisible(view === 'remote');
   setScmVisible(view === 'scm');
   if (sideHidden()) setSideHidden(false);
   if (view === 'explorer') await setSidebarMode('files');
@@ -313,7 +317,7 @@ export function initShell() {
   if (tabs) {
     const label = () => {
       // A file from another worktree is read-only here: no stage, discard, edit.
-      document.body.classList.toggle('pxi-wt-tab', !!tabs.querySelector('.tab.active[title^="@wt/"]'));
+      document.body.classList.toggle('pxi-wt-tab', !!tabs.querySelector('.tab.active[title^="@wt/"], .tab.active[title^="@ssh/"]'));
       for (const t of tabs.querySelectorAll('.tab[title^="@wt/"]')) {
         if (t.querySelector('.tab-wt')) continue;
         const name = t.title.split('/')[1];
@@ -329,5 +333,5 @@ export function initShell() {
 
   let saved = 'explorer';
   try { saved = localStorage.getItem(VIEW_KEY) || 'explorer'; } catch {}
-  showView(['explorer', 'scm', 'worktrees'].includes(saved) ? saved : 'explorer');
+  showView(['explorer', 'scm', 'worktrees', 'remote'].includes(saved) ? saved : 'explorer');
 }

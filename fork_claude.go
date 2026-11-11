@@ -995,6 +995,8 @@ func (s *Server) registerPxiClaudeRoutes() {
 	h("/api/pxi/procs/stop", s.handlePxiProcsStop)
 	h("/api/pxi/ide/mention", s.handlePxiIDEMentionReq)
 	h("/api/pxi/claude/harness-accounts", s.handlePxiHarnessAccounts) // fork_claude_harness.go
+	h("/api/pxi/ssh/remotes", s.handlePxiSSHRemotes)                  // fork_remote.go
+	h("/api/pxi/ssh/list", s.handlePxiRemoteList)                     // fork_remote.go
 }
 
 func (s *Server) handlePxiClaudeAccounts(w http.ResponseWriter, r *http.Request) {

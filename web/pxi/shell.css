@@ -508,3 +508,28 @@ body.pxi-shell .tr.dir.pxi-ck-dir:not(.dirty) > .nm::after {
 }
 body.pxi-shell .tr.file[data-ck="A"] > .nm::after { background: var(--gi); }
 #pxi-ck-btn .pxi-ck-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-fg, var(--accent)); margin-right: 5px; }
+
+/* Remote (SSH) view (pxi-remote.js): replaces the rest of the sidebar while open. */
+body:not(.pxi-view-remote) #rmt-view { display: none; }
+body.pxi-view-remote #side > :not(#rmt-view) { display: none !important; }
+#rmt-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#rmt-view .rmt-head { gap: 4px; justify-content: flex-start; text-transform: uppercase; }
+#rmt-view .rmt-head .mini { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; }
+#rmt-view .rmt-head .mini:first-of-type { margin-left: auto; }
+.rmt-body { flex: 1; min-height: 0; overflow: auto; padding-bottom: 12px; }
+.rmt-body .rmt-path { margin-left: 8px; color: var(--faint); font: 11px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.rmt-body .rmt-host .nm { font-weight: 600; flex-shrink: 0; }
+.rmt-body .rmt-x { margin-left: auto; display: none; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; background: none; color: var(--dim); border-radius: var(--r); cursor: pointer; }
+.rmt-body .rmt-host:hover .rmt-x { display: grid; }
+.rmt-body .rmt-x:hover { background: var(--bg4); color: var(--fg); }
+.rmt-body .rmt-loading, .rmt-body .rmt-note { color: var(--faint); font-size: 12px; padding: 3px 0; }
+.rmt-body .rmt-error { color: var(--gd); font-size: 12px; padding: 4px 12px 4px 0; line-height: 1.45; white-space: normal; }
+.rmt-form { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px 12px; border-bottom: 1px solid var(--line); }
+.rmt-form label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--dim); }
+.rmt-form input { font: 12px var(--mono); padding: 5px 7px; color: var(--fg); background: var(--pxi-input-bg, var(--bg)); border: 1px solid var(--pxi-input-border, var(--line)); border-radius: var(--r); outline: none; }
+.rmt-form input:focus { border-color: var(--accent); }
+.rmt-form-btns { display: flex; gap: 6px; }
+.rmt-btn { font-size: 12px; padding: 4px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--bg3); color: var(--fg); cursor: pointer; }
+.rmt-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.rmt-btn:disabled { opacity: .6; cursor: default; }
+.rmt-note code { font-family: var(--mono); }
