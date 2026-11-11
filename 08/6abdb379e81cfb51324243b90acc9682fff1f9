@@ -1,0 +1,23 @@
+fork_index.go
+  s_6d5abe37e53c3c::t_af06030ef952e7 1-50
+fork_index_test.go
+  s_6d5abe37e53c3c::t_67f187aacc6837 1-39
+index.go
+  s_6d5abe37e53c3c::t_3a643587f5d04e 448-450,952
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "086abdb379e81cfb51324243b90acc9682fff1f9",
+  "prompts": {},
+  "sessions": {
+    "s_6d5abe37e53c3c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_6d5abe37e53c3c",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
