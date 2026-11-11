@@ -4,6 +4,8 @@
 their own git worktrees, and read, check and ship what each one wrote from one fast
 native Mac window.
 
+Based on [px0](https://github.com/px0-ai/px0), Arpit Bhayani's in-browser review IDE.
+
 [Website](https://snehal96.github.io/pxi/) · [Docs](docs/pxi/README.md) ·
 [Download](https://github.com/snehal96/pxi/releases/latest)
 
