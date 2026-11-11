@@ -1,0 +1,59 @@
+.gitattributes
+  s_5a0f1b61570520::t_a3669b5785bf43 2
+.github/workflows/pxi-pages.yml
+  s_5a0f1b61570520::t_4d33d3aff9acd9 1-39
+.github/workflows/pxi-release.yml
+  s_5a0f1b61570520::t_900da3178d0647 1-62
+.gitignore
+  s_5a0f1b61570520::t_805190eb0bf653 33-36
+README.md
+  s_5a0f1b61570520::t_2b15911469ab6f 3-8,11,14-46,48,50-62,65-67,71-72,76-84,88-90
+docs/README.md
+  s_5a0f1b61570520::t_1743cbf3036548 1-7
+docs/pxi/README.md
+  s_5a0f1b61570520::t_85e2daf5b13f28 1-16
+docs/pxi/claude.md
+  s_5a0f1b61570520::t_b433dc7e7ff8b7 1-37
+docs/pxi/getting-started.md
+  s_5a0f1b61570520::t_42f0d8fcdb0318 1-45
+docs/pxi/remote-ssh.md
+  s_5a0f1b61570520::t_062a21dc2b3bd9 1-36
+docs/pxi/review.md
+  s_5a0f1b61570520::t_6432791d70f1c4 1-42
+docs/pxi/shortcuts.md
+  s_5a0f1b61570520::t_08623c1f81ff10 1-40
+docs/pxi/worktrees.md
+  s_5a0f1b61570520::t_ca87b20c83fb7c 1-39
+macos/get.sh
+  s_5a0f1b61570520::t_262c63cdbc4139 1-41
+scripts/pxi-downloads.sh
+  s_5a0f1b61570520::t_de69e02549c1d4 1-14
+site/base.css
+  s_5a0f1b61570520::t_6679c8a49175a4 1-29
+site/img/icon.svg
+  s_5a0f1b61570520::t_1d1a12b8e8029a 1-31
+site/index.html
+  s_5a0f1b61570520::t_56b3e6b2eb64a0 1-139
+site/site.js
+  s_5a0f1b61570520::t_1ee7b44973ac42 1-98
+site/style.css
+  s_5a0f1b61570520::t_ca228916210300 1-122
+site/tokens.css
+  s_5a0f1b61570520::t_6aaf042e004325 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "abadf5045d0aad68676a82e517e853802cbf48ae",
+  "prompts": {},
+  "sessions": {
+    "s_5a0f1b61570520": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_5a0f1b61570520",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
