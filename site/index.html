@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pxi: the review IDE for parallel coding agents</title>
+<meta name="description" content="pxi shows every Claude Code worktree, its diffs and the files two agents both touched, in one fast native Mac window. Free and open source.">
+<meta property="og:title" content="pxi: the review IDE for parallel coding agents">
+<meta property="og:description" content="Every Claude worktree, its diffs and overlaps, in one native Mac window.">
+<meta property="og:image" content="img/worktrees.jpg">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead" id="top">
+  <p class="banner container"><a href="https://github.com/snehal96/pxi/blob/master/docs/pxi/remote-ssh.md">New: read files on another machine over SSH</a></p>
+  <nav class="bar container" aria-label="Main">
+    <a class="wordmark" href="#top"><img src="img/icon.svg" alt="" width="26" height="26">pxi</a>
+    <div class="bar-links">
+      <a href="https://github.com/snehal96/pxi/blob/master/docs/pxi/README.md">Docs</a>
+      <a href="https://github.com/snehal96/pxi">GitHub</a>
+      <a class="key key--small" href="#download">Download</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-head">
+    <canvas class="field" aria-hidden="true"></canvas>
+    <div class="hero-col">
+      <h1 id="hero-head">Review what your agents wrote.</h1>
+      <p class="lead">Every Claude worktree, its diffs and overlaps, in one native Mac window.</p>
+      <div class="cmd cut" data-copy-wrap>
+        <code id="install-cmd">curl -fsSL https://snehal96.github.io/pxi/get.sh | bash</code>
+        <button class="key key--copy" type="button" data-copy="install-cmd">Copy</button>
+      </div>
+      <div class="hero-actions">
+        <a class="key key--primary" href="https://github.com/snehal96/pxi/releases/latest/download/pxi-mac.zip">Download for Mac</a>
+        <a class="key" href="https://github.com/snehal96/pxi">View source</a>
+      </div>
+      <p class="terms">macOS 13 or later. Free and open source, MIT.</p>
+    </div>
+  </section>
+
+  <section class="needs container" aria-labelledby="needs-head">
+    <h2 id="needs-head">What it needs</h2>
+    <table class="ledger">
+      <tbody>
+        <tr><th scope="row">System</th><td>macOS 13 Ventura or later</td></tr>
+        <tr><th scope="row">Chip</th><td>Apple silicon or Intel, one universal app</td></tr>
+        <tr><th scope="row">Download</th><td class="num">14 MB</td></tr>
+        <tr><th scope="row">Agents</th><td>Claude Code on your own subscription; no API key</td></tr>
+        <tr class="is-signal"><th scope="row">Memory</th><td>Never more than px0, the engine it is built on</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <ol class="stages container">
+    <li class="stage" aria-labelledby="s1">
+      <div class="stage-text">
+        <h2 id="s1"><span class="n">1.</span> See every agent at once.</h2>
+        <p>Each worktree is a card with what it changed. When two agents edit the same file, pxi says so before they merge.</p>
+      </div>
+      <figure class="shot">
+        <img src="img/worktrees.jpg" width="2000" height="1250" alt="pxi's Worktrees view: three agent worktrees with their changed files, a warning that orders.py changed in two of them, and that file's diff.">
+      </figure>
+    </li>
+
+    <li class="stage" aria-labelledby="s2">
+      <div class="stage-text">
+        <h2 id="s2"><span class="n">2.</span> Mark where you left off.</h2>
+        <p><b>Review: Set Checkpoint</b>, then let them work. Every file added or changed after it gets a dot, committed or not.</p>
+      </div>
+      <figure class="shot">
+        <img src="img/checkpoint.jpg" width="2000" height="1250" alt="The explorer with dots on auth.py, sessions.py and test_auth.py, the files changed after the checkpoint; README.md, changed before it, has none. The status bar reads 3 since 04:34 PM.">
+      </figure>
+    </li>
+
+    <li class="stage stage--code" aria-labelledby="s3">
+      <div class="stage-text">
+        <h2 id="s3"><span class="n">3.</span> Send the fix back.</h2>
+        <p>Select the lines, press <kbd>⌥</kbd><kbd>K</kbd>, add a sentence. It goes to the Claude session of the worktree the file came from.</p>
+      </div>
+      <div class="graphite cut-dark" role="figure" aria-label="The message pxi sends to the order-cancel worktree's Claude session">
+        <div class="pane-head"><span>To Claude in order-cancel</span><span>⌥K</span></div>
+<pre><code>Review comment on `api/routes/orders.py` lines 27-28:
+```py
+    if order.status == "shipped":
+        raise HTTPException(status_code=409, detail="already shipped")
+```
+<span class="you">Refunded orders can't be cancelled either.</span></code></pre>
+      </div>
+    </li>
+  </ol>
+
+  <section class="budget container" aria-labelledby="budget-head">
+    <div class="budget-text">
+      <h2 id="budget-head">Measured on every commit</h2>
+      <p>CI fails any change that makes pxi heavier than px0.</p>
+    </div>
+    <table class="ledger ledger--wide">
+      <thead><tr><th scope="col">Check</th><th scope="col">Allowed over px0</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Server memory</th><td class="num">10% or 1 MB</td></tr>
+        <tr><th scope="row">Page JavaScript heap</th><td class="num">10%</td></tr>
+        <tr><th scope="row">Page elements, idle</th><td class="num">120</td></tr>
+        <tr><th scope="row">Page elements, views opened</th><td class="num">200</td></tr>
+        <tr><th scope="row">Bundle, gzipped</th><td class="num">25%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="close container" id="download" aria-labelledby="close-head">
+    <div class="close-text">
+      <h2 id="close-head">Get pxi</h2>
+      <p>Paste it into Terminal; run it again to update.</p>
+      <div class="cmd cut">
+        <code id="install-cmd-2">curl -fsSL https://snehal96.github.io/pxi/get.sh | bash</code>
+        <button class="key key--copy" type="button" data-copy="install-cmd-2">Copy</button>
+      </div>
+      <p class="terms">Or <a href="https://github.com/snehal96/pxi/releases/latest/download/pxi-mac.zip">download the zip</a>; the first time, right-click pxi.app and choose Open.</p>
+    </div>
+    <figure class="shot">
+      <img src="img/light.jpg" width="2000" height="1250" loading="lazy" alt="pxi in its light theme, showing the order-cancel worktree's new cancel endpoint as a diff.">
+    </figure>
+  </section>
+</main>
+
+<footer class="colophon container">
+  <p><span class="wordmark-sm">pxi</span> is built on <a href="https://github.com/px0-ai/px0">px0</a> by Arpit Bhayani and released under the MIT License. Source, issues and releases are on <a href="https://github.com/snehal96/pxi">GitHub</a>; guides are in the <a href="https://github.com/snehal96/pxi/blob/master/docs/pxi/README.md">docs</a>.</p>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

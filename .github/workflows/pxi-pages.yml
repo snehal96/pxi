@@ -1,0 +1,39 @@
+# pxi's website (site/) on GitHub Pages, with macos/get.sh beside it so
+# `curl -fsSL https://snehal96.github.io/pxi/get.sh | bash` installs the app.
+# One-time setup: Settings -> Pages -> Source: GitHub Actions.
+name: pxi website
+
+on:
+  push:
+    branches: [master]
+    paths: ['site/**', 'macos/get.sh', '.github/workflows/pxi-pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble
+        run: |
+          mkdir _site
+          cp -R site/index.html site/style.css site/tokens.css site/base.css site/site.js site/img _site/
+          cp macos/get.sh _site/get.sh
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

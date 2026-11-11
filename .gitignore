@@ -30,3 +30,7 @@ px0
 
 # pxi build outputs
 /pxi
+
+# design tooling output (Hallmark lint screenshots, build log)
+.hallmark/
+site/.hallmark/

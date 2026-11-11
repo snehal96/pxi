@@ -1,0 +1,62 @@
+# pxi's Mac app release. Push a tag like pxi-v0.2.0 (px0's own release.yml only
+# runs for v* tags). Builds the universal, ad-hoc signed pxi.app on a Mac runner and
+# attaches it as pxi-mac.zip, the file macos/get.sh and the website download.
+# Download counts: scripts/pxi-downloads.sh.
+name: pxi release
+
+on:
+  push:
+    tags: ['pxi-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release, e.g. pxi-v0.2.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  mac-app:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Version
+        id: v
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          [ -n "$TAG" ] || TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "${TAG#pxi-v}" > VERSION
+
+      - name: Build pxi.app
+        run: macos/build.sh
+
+      - name: Package
+        run: |
+          cd macos/dist
+          ditto -c -k --keepParent pxi.app pxi-mac.zip
+          shasum -a 256 pxi-mac.zip > pxi-mac.zip.sha256
+          cat pxi-mac.zip.sha256
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.v.outputs.tag }}
+          name: pxi ${{ steps.v.outputs.tag }}
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            macos/dist/pxi-mac.zip
+            macos/dist/pxi-mac.zip.sha256
