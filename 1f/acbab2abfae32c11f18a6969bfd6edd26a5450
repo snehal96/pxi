@@ -1,0 +1,19 @@
+README.md
+  s_3119669b4cda1a::t_502cc7f4e45081 104-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1facbab2abfae32c11f18a6969bfd6edd26a5450",
+  "prompts": {},
+  "sessions": {
+    "s_3119669b4cda1a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_3119669b4cda1a",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
