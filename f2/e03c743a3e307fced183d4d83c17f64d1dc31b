@@ -1,0 +1,23 @@
+fork_remote.go
+  s_2dd7a77d6cf569::t_a61d08bae714a2 197-200,206-209,236-251,254,260-263
+web/pxi/shell.css
+  s_2dd7a77d6cf569::t_3a1f1eaa55420e 522-524,537-539
+web/src/pxi-remote.js
+  s_2dd7a77d6cf569::t_7871324ac6136c 23-24,44-76,86,103-105,107-108,114,116-136,146,169-172,224-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f2e03c743a3e307fced183d4d83c17f64d1dc31b",
+  "prompts": {},
+  "sessions": {
+    "s_2dd7a77d6cf569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_2dd7a77d6cf569",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
