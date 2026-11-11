@@ -194,19 +194,19 @@ func (s *Server) handlePxiSSHRemotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var b struct {
-		Host   string `json:"host"`
-		Path   string `json:"path"`
-		Remove string `json:"remove"`
+		Host    string `json:"host"`
+		Path    string `json:"path"`
+		Remove  string `json:"remove"`
+		Replace string `json:"replace"` // a saved remote this one takes the place of (folder changed)
 	}
 	if !pxiReadBody(w, r, &b) {
 		return
 	}
-	pxiRemoteMu.Lock()
-	defer pxiRemoteMu.Unlock()
-	list := pxiRemotesRead()
 	if b.Remove != "" {
-		out := list[:0]
-		for _, x := range list {
+		pxiRemoteMu.Lock()
+		defer pxiRemoteMu.Unlock()
+		out := []pxiSSHRemote{}
+		for _, x := range pxiRemotesRead() {
 			if x.ID != b.Remove {
 				out = append(out, x)
 			}
@@ -233,22 +233,34 @@ func (s *Server) handlePxiSSHRemotes(w http.ResponseWriter, r *http.Request) {
 	}
 	sum := sha1.Sum([]byte(host + "\x00" + abs))
 	rem := pxiSSHRemote{ID: hex.EncodeToString(sum[:])[:8], Host: host, Path: abs}
-	found := false
-	for _, x := range list {
-		if x.ID == rem.ID {
-			found = true
+	pxiRemoteMu.Lock()
+	defer pxiRemoteMu.Unlock()
+	list := []pxiSSHRemote{}
+	placed := false
+	for _, x := range pxiRemotesRead() {
+		switch {
+		case x.ID == rem.ID:
+			if !placed {
+				list, placed = append(list, rem), true
+			}
+		case b.Replace != "" && x.ID == b.Replace:
+			if !placed {
+				list, placed = append(list, rem), true
+			}
+		default:
+			list = append(list, x)
 		}
 	}
-	if !found {
+	if !placed {
 		if len(list) >= pxiRemoteMax {
 			fail(w, http.StatusBadRequest, "too many saved remotes; remove one first")
 			return
 		}
 		list = append(list, rem)
-		if err := pxiRemotesWrite(list); err != nil {
-			fail(w, http.StatusInternalServerError, err.Error())
-			return
-		}
+	}
+	if err := pxiRemotesWrite(list); err != nil {
+		fail(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	writeJSON(w, map[string]any{"remote": rem, "remotes": list})
 }

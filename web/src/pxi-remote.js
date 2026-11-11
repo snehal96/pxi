@@ -20,6 +20,8 @@ const rmtErr = new Map();     // id -> last error
 const RMT_ICON = {
   plus: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3v10M3 8h10"/></svg>',
   refresh: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 8a5 5 0 1 1-1.5-3.5M13 3v2.5h-2.5"/></svg>',
+  up: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 13V3M4 7l4-4 4 4"/></svg>',
+  edit: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13l1-3.5 6.5-6.5 2.5 2.5L6.5 12z"/></svg>',
   close: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
 };
 
@@ -39,6 +41,39 @@ function rmtEnsureDom() {
   rmtRoot.querySelector('#rmt-refresh').addEventListener('click', rmtLoad);
   rmtBody.addEventListener('click', rmtClick);
   rmtBody.addEventListener('submit', rmtSubmit);
+  rmtBody.addEventListener('contextmenu', rmtMenu);
+}
+
+function rmtCloseMenu() {
+  document.getElementById('rmt-menu')?.remove();
+  document.removeEventListener('mousedown', rmtMenuAway, true);
+}
+
+function rmtMenuAway(e) {
+  if (!e.target.closest('#rmt-menu')) rmtCloseMenu();
+}
+
+// Right-click a folder: open it as the remote's folder.
+function rmtMenu(e) {
+  const dir = e.target.closest('.tr.dir[data-rmt-id]');
+  if (!dir || !dir.dataset.rmtDir) return;
+  e.preventDefault();
+  rmtCloseMenu();
+  const r = rmtList.find(x => x.id === dir.dataset.rmtId);
+  if (!r) return;
+  const target = r.path.replace(/\/+$/, '') + '/' + dir.dataset.rmtDir;
+  const menu = document.createElement('div');
+  menu.id = 'rmt-menu';
+  menu.className = 'rmt-menu';
+  menu.innerHTML = '<button type="button">Open as Remote Folder</button>';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.firstChild.addEventListener('click', async () => {
+    rmtCloseMenu();
+    try { await rmtConnect(r.host, target, r.id); } catch (err) { showToast('!', err.message, 6000); }
+  });
+  document.body.append(menu);
+  document.addEventListener('mousedown', rmtMenuAway, true);
 }
 
 export function setRemoteVisible(on) {
@@ -48,6 +83,7 @@ export function setRemoteVisible(on) {
     rmtEnsureDom();
     rmtLoad();
   } else if (rmtBody) {
+    rmtCloseMenu();
     rmtBody.replaceChildren(); // a closed view keeps no rows
   }
 }
@@ -64,23 +100,40 @@ async function rmtLoad() {
   rmtDraw();
 }
 
-function rmtFormHTML() {
-  return '<form class="rmt-form" id="rmt-form">' +
-    '<label>Host<input name="host" list="rmt-hosts" placeholder="devbox or user@host" required autocomplete="off" spellcheck="false"></label>' +
+function rmtFormHTML(pre = {}) {
+  return '<form class="rmt-form" id="rmt-form"' + (pre.replace ? ' data-replace="' + esc(pre.replace) + '"' : '') + '>' +
+    '<label>Host<input name="host" list="rmt-hosts" placeholder="devbox or user@host" required autocomplete="off" spellcheck="false" value="' + esc(pre.host || '') + '"></label>' +
     '<datalist id="rmt-hosts">' + rmtHosts.map(h => '<option value="' + esc(h) + '">').join('') + '</datalist>' +
-    '<label>Folder<input name="path" placeholder="~/code/project" autocomplete="off" spellcheck="false"></label>' +
-    '<div class="rmt-form-btns"><button type="submit" class="rmt-btn primary">Connect</button>' +
+    '<label>Folder to open (empty: your home folder)<input name="path" placeholder="~/code/project" autocomplete="off" spellcheck="false" value="' + esc(pre.path || '') + '"></label>' +
+    '<div class="rmt-form-btns"><button type="submit" class="rmt-btn primary">' + (pre.replace ? 'Open' : 'Connect') + '</button>' +
     (rmtList.length ? '<button type="button" class="rmt-btn" data-rmt-cancel>Cancel</button>' : '') + '</div>' +
     '<div class="rmt-note">Uses your SSH keys or agent, the same as <code>ssh</code> in a terminal. Files are read-only.</div>' +
     '</form>';
 }
 
-function rmtForm(show) {
+function rmtForm(show, pre) {
   const f = rmtBody.querySelector('#rmt-form');
-  if (!show) { f?.remove(); return; }
-  if (f) { f.querySelector('input').focus(); return; }
-  rmtBody.insertAdjacentHTML('afterbegin', rmtFormHTML());
-  rmtBody.querySelector('#rmt-form input').focus();
+  if (f && (!show || pre)) f.remove();
+  if (!show) return;
+  if (f && !pre) { f.querySelector('input').focus(); return; }
+  rmtBody.insertAdjacentHTML('afterbegin', rmtFormHTML(pre));
+  const input = rmtBody.querySelector('#rmt-form input[name=' + (pre ? 'path' : 'host') + ']');
+  input.focus();
+  input.select();
+}
+
+// Connects host:path; with replace, it takes the place of that saved remote.
+async function rmtConnect(host, path, replace) {
+  const j = await apiPostJson('/api/pxi/ssh/remotes', { host, path, replace: replace || '' });
+  rmtList = j.remotes || [];
+  rmtErr.delete(j.remote.id);
+  rmtOpen.add(j.remote.id + ':');
+  rmtDraw();
+}
+
+function rmtParent(p) {
+  const i = p.replace(/\/+$/, '').lastIndexOf('/');
+  return i <= 0 ? '/' : p.slice(0, i);
 }
 
 async function rmtSubmit(e) {
@@ -90,11 +143,7 @@ async function rmtSubmit(e) {
   btn.disabled = true;
   btn.textContent = 'Connecting…';
   try {
-    const j = await apiPostJson('/api/pxi/ssh/remotes', { host: f.host.value.trim(), path: f.path.value.trim() });
-    rmtList = j.remotes || [];
-    rmtErr.delete(j.remote.id);
-    rmtOpen.add(j.remote.id + ':');
-    rmtDraw();
+    await rmtConnect(f.host.value.trim(), f.path.value.trim(), f.dataset.replace);
   } catch (err) {
     btn.disabled = false;
     btn.textContent = 'Connect';
@@ -117,7 +166,10 @@ function rmtDraw() {
     wrap.innerHTML =
       '<div class="tr dir rmt-host' + (open ? ' open' : '') + '" data-rmt-id="' + esc(r.id) + '" data-rmt-dir="" title="' + esc(r.host + ':' + r.path) + '" style="padding-left:8px">' +
       '<span class="ar"></span><span class="nm">' + esc(r.host) + '</span><span class="rmt-path">' + esc(r.path) + '</span>' +
-      '<button type="button" class="rmt-x" data-rmt-remove="' + esc(r.id) + '" title="Remove this remote">' + RMT_ICON.close + '</button></div>' +
+      '<span class="rmt-acts">' +
+      (r.path !== '/' ? '<button type="button" class="rmt-x" data-rmt-up="' + esc(r.id) + '" title="Open the parent folder (' + esc(rmtParent(r.path)) + ')">' + RMT_ICON.up + '</button>' : '') +
+      '<button type="button" class="rmt-x" data-rmt-edit="' + esc(r.id) + '" title="Open another folder on ' + esc(r.host) + '">' + RMT_ICON.edit + '</button>' +
+      '<button type="button" class="rmt-x" data-rmt-remove="' + esc(r.id) + '" title="Remove this remote">' + RMT_ICON.close + '</button></span></div>' +
       '<div class="kids' + (open ? ' open' : '') + '"></div>';
     rmtBody.append(wrap);
     if (open) rmtFill(r.id, '', wrap.querySelector('.kids'), 1);
@@ -169,6 +221,15 @@ async function rmtClick(e) {
     return;
   }
   if (e.target.closest('[data-rmt-retry]')) { rmtDraw(); return; }
+  const act = e.target.closest('[data-rmt-up], [data-rmt-edit]');
+  if (act) {
+    e.stopPropagation();
+    const r = rmtList.find(x => x.id === (act.dataset.rmtUp || act.dataset.rmtEdit));
+    if (!r) return;
+    if (act.dataset.rmtEdit) { rmtForm(true, { host: r.host, path: r.path, replace: r.id }); return; }
+    try { await rmtConnect(r.host, rmtParent(r.path), r.id); } catch (err) { showToast('!', err.message, 6000); }
+    return;
+  }
   const file = e.target.closest('.tr.file[data-rmt-file]');
   if (file) {
     for (const s of rmtBody.querySelectorAll('.tr.sel')) s.classList.remove('sel');
