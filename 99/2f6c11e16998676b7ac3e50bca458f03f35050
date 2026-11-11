@@ -1,0 +1,35 @@
+fork_claude.go
+  s_45692f191eb6c2::t_d54244537f3239 998-999
+fork_remote.go
+  s_45692f191eb6c2::t_3cd37029d25cb3 1-424
+fork_remote_test.go
+  s_45692f191eb6c2::t_827f40a86da9c7 1-124
+fork_term_windows.go
+  s_45692f191eb6c2::t_5b4a6b8db201db 5-6,18-21
+server.go
+  s_45692f191eb6c2::t_76c920c331fccc 483,1277-1280
+web/pxi/shell.css
+  s_45692f191eb6c2::t_a680b70d97ac2d 511-535
+web/src/pxi-edit.js
+  s_45692f191eb6c2::t_ecc01f3805d070 14-17
+web/src/pxi-remote.js
+  s_45692f191eb6c2::t_4f61ae66e6488b 1-195
+web/src/pxi-shell.js
+  s_45692f191eb6c2::t_d2227c7ed71faf 23,32,51,110,112,320,336
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "992f6c11e16998676b7ac3e50bca458f03f35050",
+  "prompts": {},
+  "sessions": {
+    "s_45692f191eb6c2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_45692f191eb6c2",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
