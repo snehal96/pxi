@@ -1,13 +1,30 @@
-# pxi
+<p align="center">
+  <img src="site/img/icon.svg" alt="pxi icon" width="96" height="96">
+</p>
 
-**The review IDE for parallel coding agents.** Run several Claude Code sessions in
-their own git worktrees, and read, check and ship what each one wrote from one fast
-native Mac window.
+<h1 align="center">pxi</h1>
 
-Based on [px0](https://github.com/px0-ai/px0), Arpit Bhayani's in-browser review IDE.
+<p align="center">
+  <b>The review IDE for parallel coding agents.</b><br>
+  Run several Claude Code sessions in their own git worktrees, and read, check and
+  ship what each one wrote from one fast native Mac window.
+</p>
 
-[Website](https://snehal96.github.io/pxi/) · [Docs](docs/pxi/README.md) ·
-[Download](https://github.com/snehal96/pxi/releases/latest)
+<p align="center">
+  <a href="https://snehal96.github.io/pxi/">Website</a> ·
+  <a href="docs/pxi/README.md">Docs</a> ·
+  <a href="https://github.com/snehal96/pxi/releases/latest">Download</a>
+</p>
+
+<p align="center">
+  Based on <a href="https://github.com/px0-ai/px0">px0</a>, Arpit Bhayani's in-browser review IDE.
+</p>
+
+<p align="center">
+  <img src="site/img/worktrees.jpg" alt="pxi's Worktrees view: three agent worktrees with their changed files, a warning that orders.py changed in two of them, and that file's diff" width="900">
+</p>
+
+## Install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/snehal96/pxi/master/macos/get.sh | bash
@@ -32,6 +49,17 @@ Agents write code faster than anyone can read it. pxi is built for the reading:
   repositories instantly and never uses more memory than px0, the engine it is
   built on (checked on every commit).
 
+<table>
+  <tr>
+    <td width="50%"><img src="site/img/checkpoint.jpg" alt="Review checkpoint: dots on the three files changed since it was set; README.md, changed before it, has none"></td>
+    <td width="50%"><img src="site/img/light.jpg" alt="pxi in its light theme, showing a worktree's new cancel endpoint as a diff"></td>
+  </tr>
+  <tr>
+    <td align="center">Review checkpoint: dots on what changed since you looked</td>
+    <td align="center">Light theme, or follow macOS light/dark</td>
+  </tr>
+</table>
+
 ## Features
 
 | Area | What you get |
@@ -47,9 +75,9 @@ Agents write code faster than anyone can read it. pxi is built for the reading:
 
 The full list, with shortcuts: [docs/pxi](docs/pxi/README.md).
 
-## Install
+## Other ways to install
 
-**Prebuilt app (recommended):** the command at the top. Or download `pxi-mac.zip` from
+**Zip:** download `pxi-mac.zip` from
 [Releases](https://github.com/snehal96/pxi/releases/latest), unzip, move pxi.app to
 Applications, then right-click it and choose **Open** the first time (the app is not
 notarized yet).
