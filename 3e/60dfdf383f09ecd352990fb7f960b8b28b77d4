@@ -1,0 +1,29 @@
+fork_newfiles.go
+  s_fb8607a6f844ba::t_27a7aefd390bbf 1-61
+fork_newfiles_test.go
+  s_fb8607a6f844ba::t_3ece3a9760728f 1-61
+git.go
+  s_fb8607a6f844ba::t_51439c965a409d 1705-1707
+web/src/main.js
+  s_fb8607a6f844ba::t_298ca0833ff1f0 42-43,140
+web/src/pxi-wake.js
+  s_fb8607a6f844ba::t_50d30520dff26f 1-64
+web/src/tree.js
+  s_fb8607a6f844ba::t_1562c21174c1d7 338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3e60dfdf383f09ecd352990fb7f960b8b28b77d4",
+  "prompts": {},
+  "sessions": {
+    "s_fb8607a6f844ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_fb8607a6f844ba",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
