@@ -1,0 +1,23 @@
+fork_findignored.go
+  s_f2a448bda49359::t_17917756cb1fd3 1-189
+fork_findignored_test.go
+  s_f2a448bda49359::t_7db4219a372692 1-44
+server.go
+  s_f2a448bda49359::t_a530e2a3bf59d9 1244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3479fbbae6ed17dd49543657bdf1c9084c6c6549",
+  "prompts": {},
+  "sessions": {
+    "s_f2a448bda49359": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_f2a448bda49359",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
