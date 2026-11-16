@@ -335,7 +335,7 @@ export async function patchTreeGitStatus(statuses = {}, dirtyDirs = {}, staged =
     const dirtyFiles = treeEl.querySelectorAll('.tr.file.dirty');
     for (const fileRow of dirtyFiles) {
       const p = fileRow.dataset.file;
-      if (!statuses[p] && fileRow.classList.contains('git-D')) {
+      if (!statuses[p] && (fileRow.classList.contains('git-D') || fileRow.classList.contains('git-untracked'))) { // fork: fork_newfiles.go
         needRefresh = true;
         break;
       }

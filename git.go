@@ -1702,6 +1702,9 @@ func (gw *GitWatcher) refreshInternal(worktreeOnly bool) (GitStatusPayload, bool
 	ready := gw.ix.Ready()
 	inGit := gitAvailable(gw.root)
 	count, files, changed, statuses, dirtyDirs, staged, yourStatuses, yourDirtyDirs := gw.ix.UpdateGitStatus()
+	if changed {
+		pxiSyncNewFiles(gw.ix, statuses) // fork: fork_newfiles.go
+	}
 	partial := gw.ix.GitPartial()
 
 	gw.mu.Lock()

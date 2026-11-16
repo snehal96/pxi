@@ -39,6 +39,8 @@ import { initShell } from './pxi-shell.js';
 import { initNative } from './pxi-native.js';
 // fork: pxi HTML preview
 import { initHtmlPreview } from './pxi-html.js';
+// fork: pxi workspace restart after sleep
+import { initWake } from './pxi-wake.js';
 
 // Initialize all subsystems
 initRenderer();
@@ -135,6 +137,7 @@ initPRScope();
   initShell(); // fork: pxi-shell.js
   initNative(); // fork: pxi-native.js
   initHtmlPreview(); // fork: pxi-html.js
+  initWake(); // fork: pxi-wake.js
   initGitStream();
 
   // Split into helpers so the readiness poll below can redo this once the
