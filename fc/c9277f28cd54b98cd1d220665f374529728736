@@ -1,0 +1,27 @@
+fork_git.go
+  s_02096943628aaa::t_c65423af4f367f 35
+fork_gitignore.go
+  s_02096943628aaa::t_59357f943da2d9 1-322
+fork_gitignore_test.go
+  s_02096943628aaa::t_51df1f8d33a483 1-89
+web/src/pxi-ignore.js
+  s_02096943628aaa::t_b0c5d8cf6f4124 1-67
+web/src/tree.js
+  s_02096943628aaa::t_f8391a6fc1215d 11-12,50,560,590
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fcc9277f28cd54b98cd1d220665f374529728736",
+  "prompts": {},
+  "sessions": {
+    "s_02096943628aaa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_02096943628aaa",
+        "model": "unknown"
+      },
+      "human_author": "Snehal Maheshwari <snehal.maheshwari14@gmail.com>"
+    }
+  }
+}
