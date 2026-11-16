@@ -1241,6 +1241,7 @@ func (s *Server) handleFind(w http.ResponseWriter, r *http.Request) {
 	}
 	ready := s.ix.Ready()
 	res := fuzzy.Find(s.ix.Files(), q, limit)
+	res = pxiFindIgnored(s.ix, q, res, limit) // fork: fork_findignored.go, files in gitignored folders
 	if res == nil {
 		res = []fuzzy.Result{}
 	}
