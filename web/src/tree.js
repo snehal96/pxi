@@ -8,6 +8,8 @@ import { emit, on } from './bus.js';
 import { isAutoRevealEnabled } from './settings.js';
 import { promptNewItem } from './newitem.js';
 import { handleGitStatus, triggerRefresh } from './gitstream.js';
+// fork: pxi ignore / stop ignoring from the explorer menu
+import { ignMenuItems, ignMenuRun } from './pxi-ignore.js';
 
 export const treeEl = $('#tree');
 const treeMenu = $('#tree-menu');
@@ -45,7 +47,7 @@ export async function drawTree(dir, container, depth, isCurrent) {
     const pad = 8 + depth * 12;
     // Ignored by .gitignore: still browsable, dimmed, and absent from search.
     const ig = c.ignored ? ' ignored' : '';
-    const note = c.ignored ? ' (ignored by .gitignore, not searched)' : '';
+    const note = c.ignored ? ' (ignored by .gitignore)' : '';
     const menuBtn = '<button class="tr-menu-btn" title="Actions" aria-label="Actions" tabindex="-1"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><circle cx="2.5" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13.5" cy="8" r="1.5"/></svg></button>';
     if (c.dir) {
       const dc = c.dirty ? ' dirty' : ''; // backend marks any ancestor of a change
@@ -555,6 +557,7 @@ export function openTreeMenu(row, x, y) {
     { action: 'copy-name', label: isDir ? 'Copy Folder Name' : 'Copy File Name' },
     { action: 'copy-absolute', label: 'Copy Absolute Path' },
   );
+  items.push(...ignMenuItems(row)); // fork: pxi-ignore.js
 
   for (const item of items) {
     const btn = document.createElement('button');
@@ -584,6 +587,7 @@ export function initTree() {
       const { path, name } = activeTreeTarget;
       const act = btn.dataset.action;
       closeTreeMenu();
+      if (ignMenuRun(act, { path, name })) return; // fork: pxi-ignore.js
 
       if (act === 'new-file') {
         promptNewItem('file', path);
